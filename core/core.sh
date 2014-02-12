@@ -1,120 +1,55 @@
 #!/usr/bin/env bash
 
 # Load variables into the core
+egrep -v "^#" "pudding.conf" | egrep -v "^loadMod" | while read line; do
+	line
+done
 
-# Check for a sane environment from our variables
-if [ ! -d "$dataDir" ]; then
-	mkdir "$dataDir"
-fi
-if [ -e "$input" ]; then
-	rm -f "$input"
-fi
-if [ -e "$output" ]; then
-	rm -f "$output"
-fi
-
-# Set some variables we need to be boolean instead of blank
+# We need these to be boolean instead of blank
 fullCon="0"
 readMemo="0"
 nickPassSent="0"
-
-# This should start the bot on a screen
-if [ "$TERM" = "xterm" ]; then
-	screen -d -m -S bashbot $0
-	echo "Starting bot..."
-	rm -f $output
-	rm -f $input
-	exit 0
-fi
+inArr="0"
+# Convert some variables to boolean
 
 # So we can know what our uptime is
 startTime="$(date +%s)"
 
-# These commands are used to depict if the sender of a message is a bot admin
+# Functions
 inArray() {
+# When passing items to this to see if they're in the array or not,
+# the format should be:
+# inArray "${itemToBeCheck}" "${arrayToCheck}"
+# If it is in the array, it'll return the boolean of inArr=1.
 local n=$1 h
 shift
 for h; do
-	[[ $n = "$h" ]] && senderIsAdmin="1"
+	if [[ $n = "$h" ]]; then
+		inArr="1"
+	else
+		inArr="0"
+	fi
 done
 }
 
-inArray2() {
-local n=$1 h
-shift
-for h; do
-	[[ $n = "$h" ]] && servConnected="1"
-done
-}
-
-# All of the bot's commands
-runCommand () {
-command=$(echo "$message" | awk '{print $4}' | sed "s/^:${comPrefix}//" | tr '[A-Z]' '[a-z]')
-case "$command" in
-	help)
-		if [ -z "$(echo "$message" | awk '{print $5}')" ]; then
-			echo "NOTICE $senderNick :Supported Commands: ${comPrefix}quit ${comPrefix}die ${comPrefix}exit ${comPrefix}host ${comPrefix}dns ${comPrefix}status ${comPrefix}uptime ${comPrefix}admins ${comPrefix}purge ${comPrefix}wiki ${comPrefix}google ${comPrefix}spell ${comPrefix}isup ${comPrefix}calc ${comPrefix}math ${comPrefix}whois ${comPrefix}wolfram ${comPrefix}find ${comPrefix}search ${comPrefix}goatse ${comPrefix}shorten" >> $output
-		else
-			case "$(echo "$message" | awk '{print $5}' | sed "s/^\${comPrefix}//" | tr '[A-Z]' '[a-z]')" in
-				help)
-					echo "NOTICE $senderNick :How fucking stupid are you?" >> $output;;
-				exit|quit|die)
-					echo "NOTICE $senderNick :(Exit|Die|Quit) I'll disconnect and exit." >> $output;;
-				host|dns)
-					echo "NOTICE $senderNick :(Host|DNS) I'll check the given site for A/AAAA/MX/C records." >> $output;;
-				status)
-					echo "NOTICE $senderNick :(Status) Tells you some informational status about me." >> $output;;
-				uptime)
-					echo "NOTICE $senderNick :(Uptime) States my current amount of uptime." >> $output;;
-				purge)
-					echo "NOTICE $senderNick :(Purge) Clean up my \${config} and \${logFile} files, to save some disk space." >> $output;;
-				wiki)
-					echo "NOTICE $senderNick :(Wiki) I'll search Wikipedia for a term, and return to you the first result I get." >> $output;;
-				google)
-					echo "NOTICE $senderNick :(Google) I'll search Google for a term, and return to you the first result I get." >> $output;;
-				spell)
-					echo "NOTICE $senderNick :(Spell) I'll spell check a word for you." >> $output;;
-				isup)
-					echo "NOTICE $senderNick :(IsUp) I'll check the http://isup.me/ status of a website for you." >> $output;;
-				calc|math)
-					echo "NOTICE $senderNick :(Calc|Math) I'll do a math equation for you." >> $output;;
-				whois)
-					echo "NOTICE $senderNick :(Whois) I'll check a domain for availability" >> $output;;
-				wolfram)
-					echo "NOTICE $senderNick :(Wolfram) I'll query Wolfram Alpha for whatever you ask" >> $output;;
-				find|search)
-					echo "NOTICE $senderNick :(Find|Search) I'll search for a file on cptain-kickass.net" >> $output;;
-				goatse)
-					echo "NOTICE $senderNick :(Goatse) Try it and see what happens" >> $output;;
-				shorten)
-					echo "NOTICE $senderNick :(Shorten) I'll shorten a URL via goo.gl. If you do not provide me with a URL, I will shorten the most recently sent to channel URL." >> $output;;
-				*)
-					echo "NOTICE $senderNick :($(echo "$message" | awk '{print $5}' | sed "s/^\${comPrefix}//" | tr '[A-Z]' '[a-z]')) No such command" >> $output;;
-			esac
-		fi;;
-	exit|quit|die)
-		echo "QUIT :Exiting per ${senderNick}" >> $output
-		sleep 1
-		rm -fv $output $input > /dev/null 2>&1
-		kill $$
-		;;
-	*)
-		echo "PRIVMSG $senderTarget :Unknown command (${command})" >> $output;;
-esac
-}
-
-# This is where the initial connection is spawned
-echo "NICK $nick" > $output 
-echo "USER $ident +iwx * :${gecos}" >> $output 
+# Create the pipe that will be the messages going out to the server
+mkfifo "$output"
+# This needs to be a one liner that outputs to two lines, for the sake
+# of the pipe only letting in one line at a time.
 if [ -n "$serverpass" ]; then
-	echo "PASS $serverpass" >> $output
+		echo -e "NICK $nick\nUSER $ident +iwx * :${gecos}\nPASS $serverpass" >> $output
+	else
+		echo -e "NICK $nick\nUSER $ident +iwx * :${gecos}" >> $output 
 fi
 
+# This is where the initial connection is spawned
 tail -f $output | nc $server $port | while read message 
 do
-	message="$(echo "$message" | sed "s///")"
-	echo "$message" >> $input
-	echo "$message"
+	# Remote the ^M control character at the end of each line
+	message="${message%}"
+	if [ "$logInput" -eq "1" ]; then
+		# This is where messages should be parsed for logging
+	fi
 	# The incoming messages should be in one of the following formats:
 	# :${botNick} (Bot setting modes on itself)
 	# :n!u@h (Another client)
