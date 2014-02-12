@@ -31,18 +31,14 @@
 
 ## Version 1.0.0
 
-## Changelog
-# 1.0.0 - Initial commit
-
-## Todo
-# None, yet
-
-## Config
-
 ## Source
 
 # Define some variables.
 ver="$(fgrep -m 1 "## Version" "${0}" | awk '{print $3}')"
+red='\E[0;31m'
+green='\E[0;32m'
+yellow='\E[1;33m'
+reset="\033[1m\033[0m"
 
 # Check for args for non interactive mode. If not present, start in interactive mode.
 if [ -n "${1}" ]; then
@@ -79,8 +75,23 @@ fi
 # If we bypassed the above if statement, we must be starting in interactive mode.
 clear
 while true; do
-	echo "PuddingBot Interactive Console."
+	echo "PuddingBot Interactive Console"
+	if [ -e "var/bot.pid" ]; then
+		# PID exists. Is it actually running?
+		pid="$(< var/bot.pid)"
+		if [ "$(ps aux | awk '{print $2}' | fgrep -c "${pid}")" -eq "1" ]; then
+			# The bot's PID matches an actual process
+			echo -e "Bot status: ${green}Running${reset}"
+		else
+			echo -e "Bot status: ${yellow}Unknown${reset}"
+		fi
+	else
+		echo -e "Bot status: ${red}Not running${reset}"
+	fi
+	echo ""
 	echo "Please choose an option:"
+	echo ""
+	echo "[0] Exit console"
 	echo ""
 	echo "[1] Start bot"
 	echo "[2] Stop bot"
@@ -93,12 +104,14 @@ while true; do
 	echo ""
 	echo "[7] Print bot version"
 	echo ""
-	echo "[8] Exit console"
-	echo ""
 	echo "Please choose a number:"
 	read -p "> " opt
-	clear
+	echo ""
 	case "$opt" in
+		0)
+			echo "Goodbye."
+			exit 0
+		;;
 		1)
 		;;
 		2)
@@ -112,14 +125,15 @@ while true; do
 		6)
 		;;
 		7)
+			echo "Version: ${ver}"
 		;;
 		8)
-			echo "Goodbye."
-			exit 0
 		;;
 		*)
 			echo "Invalid option!"
 		;;
 	esac
 	echo ""
+	read -p "[Press any key to continue]" null
+	clear
 done
