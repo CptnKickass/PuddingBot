@@ -41,6 +41,15 @@ yellow='\E[1;33m'
 reset="\033[1m\033[0m"
 badConf="0"
 
+# Check dependencies for the controller script
+deps=("fgrep" "egrep" "echo" "cut" "sed" "ps" "awk")
+for i in ${deps[@]}; do
+	if ! command -v ${i} > /dev/null 2>&1; then
+		echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
+		exit 1 
+	fi
+done
+
 # Define some functions
 checkSanity () {
 	botNick="$(egrep -m 1 "^nick=" "pudding.conf")"
@@ -148,7 +157,7 @@ checkSanity () {
 
 startBot () {
 if [ -e "var/bot.pid" ]; then
-	echo "Bot appears to be running already (Under PID: $(cat "var/bot.pid"))"
+	echo "Bot appears to be running already (Under PID: $(<var/bot.pid))"
 	exit 1
 else
 	echo "Initiating PuddingBot v${ver}"
@@ -209,17 +218,40 @@ else
 		done
 		# Start the actual bot
 		echo "Starting bot..."
+		# Commented out until core.sh is ready for testing
 		#./core/core.sh
 	fi
 fi
 }
 
 stopBot () {
-echo "Place holder"
+if [ -e "var/bot.pid" ]; then
+	echo "Sending QUIT to IRCd"
+	echo "QUIT :Killed from console" >> $output
+	echo "Killing bot PID ($(< var/bot.pid))"
+	kill < var/bot.pid
+else
+	echo "Unable to find bot.pid! (Is the bot even running?)"
+fi
 }
 
 forceStopBot () {
-echo "Place holder"
+if [ -e "var/bot.pid" ]; then
+	echo "Sending QUIT to IRCd"
+	echo "QUIT :Killed from console" >> $output
+	echo "Attempting to kill bot PID ($(< var/bot.pid)) nicely"
+	kill < var/bot.pid
+	if [ -e "var/bot.pid" ]; then
+		echo "Quit unsuccessful. Killing bot by all means possible (SIGKILL)"
+		kill -9 < var/bot.pid
+	fi
+	if [ -e "$output" ]; then
+		echo "Removing pipe"
+		rm -f "$output"
+	fi
+else
+	echo "Unable to find bot.pid! (Is the bot even running?)"
+fi
 }
 
 # Check for args for non interactive mode. If not present, start in interactive mode.
@@ -248,7 +280,7 @@ if [ -n "${1}" ]; then
 					echo -e "Bot status: ${yellow}Unknown${reset}"
 				fi
 			else
-				echo -e "Bot status: ${red}Not running${reset}"
+				echo -e "Bot status: ${red}Stopped${reset}"
 			fi
 		;;
 		--force-stop)
@@ -315,12 +347,16 @@ while true; do
 			startBot;
 		;;
 		2)
+			stopBot;
 		;;
 		3)
+			stopBot;
+			startBot;
 		;;
 		4)
 		;;
 		5)
+			forceStopBot;
 		;;
 		6)
 			echo "Version: ${ver}"
