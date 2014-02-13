@@ -1,12 +1,57 @@
+#!/usr/bin/env bash
+
+## Config
 # goo.gl API key
 googleApi=""
-shorten)
-	if [ -z "$(echo "$message" | awk '{print $5}')" ]; then
-		shortItem="$(egrep -o "http(s?):\/\/[^ \"\(\)\<\>]*" "${input}" | tail -n 1)"
-		echo "PRIVMSG $senderTarget :Shortening most recently spoken URL (${shortItem})" >> $output
+
+## Source
+
+# Check dependencies 
+if [[ "$1" == "--dep-check" ]]; then
+	depFail="0"
+	# Dependencies go in this array
+	# Dependencies already required by the controller script:
+	# read fgrep egrep echo cut sed ps awk
+	# Format is: deps=("foo" "bar")
+	deps=("curl")
+	if [ "${#deps[@]}" -ne "0" ]; then
+		for i in ${deps[@]}; do
+			if ! command -v ${i} > /dev/null 2>&1; then
+				echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
+				depFail="1"
+			fi
+		done
+		if [ "$depFail" -eq "1" ]; then
+			exit 1
+		else
+			echo "ok"
+			exit 0
+		fi
 	else
-		shortItem="$(read -r one two three four rest <<<"$message"; echo "$rest" | egrep -o "http(s?):\/\/[^ \"\(\)\<\>]*")"
+		echo "ok"
+		exit 0
 	fi
-	shortUrl="$(curl -A 'Pudding' -m 5 -k -s -L -H "Content-Type: application/json" -d "{\"longUrl\": \"${shortItem}\"}" "https://www.googleapis.com/urlshortener/v1/url?key=${googleApi}" | fgrep "\"id\"" | egrep -o "http(s)?://goo.gl/[A-Z|a-z|0-9]+")"
-	echo "PRIVMSG $senderTarget :Shortened URL: ${shortUrl}" >> $output
+fi
+
+# Hook should either be "Prefix" or "Format". Prefix will patch whatever
+# the $comPrefix is, i.e. !command. Format will match a message specific
+# format, i.e. the sed module.
+hook="Prefix"
+
+# This is where the module source should start
+msg="$@"
+msg="${msg#${0} }"
+com="$(echo "$msg" | awk '{print $4}')"
+com="${com:2}"
+case "$com" in
+	shorten)
+		if [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
+			echo "This command requires a parameter"
+		else
+			shortItem="$(read -r one two three four rest <<<"$msg"; echo "$rest" | egrep -o "http(s?):\/\/[^ \"\(\)\<\>]*")"
+			shortUrl="$(curl -A 'Pudding' -m 5 -k -s -L -H "Content-Type: application/json" -d "{\"longUrl\": \"${shortItem}\"}" "https://www.googleapis.com/urlshortener/v1/url?key=${googleApi}" | fgrep "\"id\"" | egrep -o "http(s)?://goo.gl/[A-Z|a-z|0-9]+")"
+			echo "Shortened URL: ${shortUrl}"
+		fi
 	;;
+esac
+exit 0

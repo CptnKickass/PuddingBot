@@ -44,31 +44,31 @@ com="$(echo "$msg" | awk '{print $4}')"
 com="${com:2}"
 case "$com" in
 	goatse)
-		echo "* g o a t s e x * g o a t s e x * g o a t s e x *" >> $output
-		echo "g                                               g" >> $output
-		echo "o /     \\             \\            /    \\       o" >> $output
-		echo "a|       |             \\          |      |      a" >> $output
-		echo "t|       \\`.             |         |       :     t" >> $output
-		echo "s\\`        |             |        \\|       |     s" >> $output
-		echo "e \\       | /       /  \\\\\\   --__ \\\\       :    e" >> $output
-		echo "x  \\      \\/   _--~~          ~--__| \\     |    x" >> $output
-		echo "*   \\      \\_-~                    ~-_\\    |    *" >> $output
-		echo "g    \\_     \\        _.--------.______\\|   |    g" >> $output
-		echo "o      \\     \\______// _ ___ _ (_(__>  \\   |    o" >> $output
-		echo "a       \\   .  C ___)  ______ (_(____>  |  /    a" >> $output
-		echo "t       /\\ |   C ____)/      \\ (_____>  |_/     t" >> $output
-		echo "s      / /\\|   C_____)       |  (___>   /  \\    s" >> $output
-		echo "e     |   (   _C_____)\\______/  // _/ /     \\   e" >> $output
-		echo "x     |    \\  |__   \\\\_________// (__/       |  x" >> $output
-		echo "*    | \\    \\____)   \\`----   --'             |  *" >> $output
-		echo "g    |  \\_          ___\\       /_          _/ | g" >> $output
-		echo "o   |              /    |     |  \\            | o" >> $output
-		echo "a   |             |    /       \\  \\           | a" >> $output
-		echo "t   |          / /    |         |  \\           |t" >> $output
-		echo "s   |         / /      \\__/\\___/    |          |s" >> $output
-		echo "e  |           /        |    |       |         |e" >> $output
-		echo "x  |          |         |    |       |         |x" >> $output
-		echo "* g o a t s e x * g o a t s e x * g o a t s e x *" >> $output
+		echo "* g o a t s e x * g o a t s e x * g o a t s e x *"
+		echo "g                                               g"
+		echo "o /     \\             \\            /    \\       o"
+		echo "a|       |             \\          |      |      a"
+		echo "t|       \\`.             |         |       :     t"
+		echo "s\\`        |             |        \\|       |     s"
+		echo "e \\       | /       /  \\\\\\   --__ \\\\       :    e"
+		echo "x  \\      \\/   _--~~          ~--__| \\     |    x"
+		echo "*   \\      \\_-~                    ~-_\\    |    *"
+		echo "g    \\_     \\        _.--------.______\\|   |    g"
+		echo "o      \\     \\______// _ ___ _ (_(__>  \\   |    o"
+		echo "a       \\   .  C ___)  ______ (_(____>  |  /    a"
+		echo "t       /\\ |   C ____)/      \\ (_____>  |_/     t"
+		echo "s      / /\\|   C_____)       |  (___>   /  \\    s"
+		echo "e     |   (   _C_____)\\______/  // _/ /     \\   e"
+		echo "x     |    \\  |__   \\\\_________// (__/       |  x"
+		echo "*    | \\    \\____)   \\`----   --'             |  *"
+		echo "g    |  \\_          ___\\       /_          _/ | g"
+		echo "o   |              /    |     |  \\            | o"
+		echo "a   |             |    /       \\  \\           | a"
+		echo "t   |          / /    |         |  \\           |t"
+		echo "s   |         / /      \\__/\\___/    |          |s"
+		echo "e  |           /        |    |       |         |e"
+		echo "x  |          |         |    |       |         |x"
+		echo "* g o a t s e x * g o a t s e x * g o a t s e x *"
 	;;
 esac
 exit 0
