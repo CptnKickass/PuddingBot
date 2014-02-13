@@ -42,7 +42,7 @@ reset="\033[1m\033[0m"
 badConf="0"
 
 # Check dependencies for the controller script
-deps=("fgrep" "egrep" "echo" "cut" "sed" "ps" "awk")
+deps=("read" "fgrep" "egrep" "echo" "cut" "sed" "ps" "awk")
 for i in ${deps[@]}; do
 	if ! command -v ${i} > /dev/null 2>&1; then
 		echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
@@ -158,7 +158,7 @@ checkSanity () {
 startBot () {
 if [ -e "var/bot.pid" ]; then
 	echo "Bot appears to be running already (Under PID: $(<var/bot.pid))"
-	exit 1
+	return 1
 else
 	echo "Initiating PuddingBot v${ver}"
 	echo ""
@@ -209,7 +209,7 @@ else
 				./modules/${mod} --dep-check 2>&1 | head -n 1 | while read line; do
 					if [[ "$line" == "ok" ]]; then
 						echo "${mod}" >> var/.mods
-						echo -e "Loaded module:  ${green}${mod}${reset}!"
+						echo -e "Loaded module:  ${green}${mod}${reset}"
 					else
 						echo -e "Skipped module: ${red}${mod}${reset} (Dependency check failed)"
 					fi
@@ -248,6 +248,12 @@ if [ -e "var/bot.pid" ]; then
 	if [ -e "$output" ]; then
 		echo "Removing pipe"
 		rm -f "$output"
+	fi
+	if [ -e "var/.conf" ]; then
+		rm -f "var/.conf"
+	fi
+	if [ -e "var/.mods" ]; then
+		rm -f "var/.mods"
 	fi
 else
 	echo "Unable to find bot.pid! (Is the bot even running?)"
