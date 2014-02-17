@@ -29,7 +29,7 @@ if [ -e "../var/.mods" ]; then
 	<../var/.mods | while read line; do
 		cp ../modules/${line} .mods
 	done
-	source ModHook.sh
+	source modhook.sh
 	#rm -f ../var/.mods
 fi
 
