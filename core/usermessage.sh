@@ -1,43 +1,18 @@
-senderNick="$(echo "$message" | awk '{print $1}' | sed -E "s/:(.*)\!.*\@.*/\1/")"
-senderUser="$(echo "$message" | awk '{print $1}' | sed -E "s/:.*\!(.*)\@.*/\1/")"
-senderHost="$(echo "$message" | awk '{print $1}' | sed -E "s/:.*\!.*\@(.*)/\1/")"
-senderFull="$(echo "$message" | awk '{print $1}' | sed "s/^://")"
-senderAction="$(echo "$message" | awk '{print $2}')"
+source var/.conf
+message="$@"
 senderTarget="$(echo "$message" | awk '{print $3}')"
-senderIsAdmin="0"
-#inArray "$senderNick" "${admins[@]}"
-if [ "$senderTarget" = "$nick" ]; then
-	# It's a PM. 
-	senderTarget="$senderNick"
-fi
-case "$(echo "$message" | awk '{print $2}')" in
-	JOIN) 
-		senderTarget="$(echo "$senderTarget" | sed "s/\://")"
-		;;
-	KICK)
-		;;
-	NOTICE)
-		;;
-	PRIVMSG)
-		;;
-	QUIT)
-		;;
-	MODE)
-		;;
-	PART) 
-		;;
-	NICK)
-		;;
-	WALLOPS)
-		;;
-	TOPIC)
-		;;
-	INVITE)
-		;;
-	*)
-		echo "$(date) | Received unknown message level 3: ${message}" >> ${dataDir}/$$.debug
-		;;
-esac
+senderAction="$(echo "$message" | awk '{print $2}')"
+senderFull="$(echo "$message" | awk '{print $1}')"
+senderFull="${senderFull#:}"
+senderNick="${senderFull%!*}"
+senderUser="${senderFull#*!}"
+senderUser="${senderUser%@*}"
+senderHost="${senderFull#*@}"
+
+# Core commands
+comExec () {
+com="$(echo "$message" | awk '{print $4}' | tr "[:upper:]" "[:lower:]")"
+com="${com:2}"
 case "$com" in
 	join)
 	if [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
@@ -70,4 +45,42 @@ case "$com" in
 		seconds=$((timeDiff%60))
 		echo "Uptime: $days days, ${hours} hours, ${minutes} minutes, ${seconds} seconds"
 	;;
+esac
+}
+
+if [ "$senderTarget" = "$nick" ]; then
+	# It's a PM. 
+	senderTarget="$senderNick"
+fi
+
+case "$(echo "$message" | awk '{print $2}')" in
+	JOIN) 
+		senderTarget="$(echo "$senderTarget" | sed "s/\://")"
+		;;
+	KICK)
+		;;
+	NOTICE)
+		;;
+	PRIVMSG)
+		if [ "$(echo "$message" | awk '{print $4}' | cut -b 2)" == "${comPrefix}" ]; then
+			comExec;
+		fi
+		;;
+	QUIT)
+		;;
+	MODE)
+		;;
+	PART) 
+		;;
+	NICK)
+		;;
+	WALLOPS)
+		;;
+	TOPIC)
+		;;
+	INVITE)
+		;;
+	*)
+		echo "$(date) | Received unknown message level 3: ${message}" >> ${dataDir}/$$.debug
+		;;
 esac

@@ -1,10 +1,11 @@
-message="$(read -r one rest <<<"$@"; echo "$rest")"
+source var/.conf
+message="$@"
 case "$(echo "$message" | awk '{print $2}')" in
 # 001 is the welcome message
 001)
 	networkName="$message"
 	networkname="${message#*Welcome to the }"
-	networkname="${message*Internet Relay Chat Network*}"
+	networkname="${message% Internet Relay Chat Network*}"
 	actualServer="$(echo "$message" | awk '{print $1}')"
 	actualServer="${message#:}"
 	;;
@@ -28,9 +29,6 @@ case "$(echo "$message" | awk '{print $2}')" in
 	;;
 # 017 is the end of MAP reply
 017)
-	if [ -n "$lastCom" ]; then
-		echo "$lastCom" >> $output
-	fi
 	;;
 # 219 is end of STATS report
 219)
@@ -73,9 +71,6 @@ case "$(echo "$message" | awk '{print $2}')" in
 	;;
 # 353 is a /NAMES list
 353)
-	if [ "$(echo "$message" | awk '{print $5}' | fgrep -i -c "#foxden")" -eq "1" ]; then
-		read -r -a admins < <(echo "$message" | sed "s/.*://" | sed -E "s/(Pudding|Yogurt|[A-Z|a-z]+Serv)(\ )?//ig" | sed -E "s/[!~&@%+]//g")
-	fi
 	;;
 # 366 is the end of a /NAMES list
 366)
@@ -87,21 +82,24 @@ case "$(echo "$message" | awk '{print $2}')" in
 375)
 	fullCon="1"
 	if [ -n "$operId" ] && [ -n "$operPass" ]; then
-		echo "OPER $operId $operPass" >> $output
+		echo "OPER $operId $operPass"
 		if [ -n "$operModes" ]; then
-			echo "MODE $nick $operModes" >> $output
+			echo "MODE $nick $operModes"
 		fi
 	fi
 	if [ -n "$nickPass" ]; then
-		echo "PRIVMSG NickServ :identify $nickPass" >> $output
+		echo "PRIVMSG NickServ :identify $nickPass"
 		nickPassSent="1"
+	fi
+	for item in ${channels[*]}; do
+		echo "JOIN $item"
+	done
+	if [ -n "$lastCom" ]; then
+		echo "$lastCom"
 	fi
 	;;
 # 376 Signifies end of MOTD numeric
 376)
-	for item in ${channels[*]}; do
-		echo "JOIN $item" >> $output
-	done
 	;;
 # 381 means we're opered up
 381)

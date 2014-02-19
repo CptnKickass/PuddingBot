@@ -1,3 +1,13 @@
 NICK Pudding-Dev
 USER Pudding-Dev +iwx * :#!/usr/bin/env bash
-PONG :68C1FE40
+PONG :F1EF2870
+JOIN #Pudding-Dev
+PRIVMSG #Pudding-Dev :Successfully logged in
+PRIVMSG #Pudding-Dev :${admins[@]}: goose@staff.ext3.net
+PRIVMSG #Pudding-Dev :${admins[@]}: 
+PRIVMSG #Pudding-Dev :Successfully logged in
+PRIVMSG #Pudding-Dev :${admins[@]}: goose@staff.ext3.net
+PRIVMSG #Pudding-Dev :Already logged in
+PONG :zorro.ext3.net
+PONG :zorro.ext3.net
+PRIVMSG #Pudding-Dev :This command requires a parameter

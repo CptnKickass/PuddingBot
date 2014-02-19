@@ -82,6 +82,7 @@ checkSanity () {
 	else
 		echo "${botGecos}" >> var/.conf
 	fi
+	egrep -m 1 "^channels=" "pudding.conf" >> var/.conf
 	botServer="$(egrep -m 1 "^server=" "pudding.conf")"
 	tmpBotServer="${botServer#*\"}"
 	tmpBotServer="${tmpBotServer%\"}"
