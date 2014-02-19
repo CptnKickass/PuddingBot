@@ -52,6 +52,9 @@ done
 
 # Define some functions
 checkSanity () {
+	if [ -e "var/.conf" ]; then
+		rm -f "var/.conf"
+	fi
 	botNick="$(egrep -m 1 "^nick=" "pudding.conf")"
 	tmpBotNick="${botNick#*\"}"
 	tmpBotNick="${tmpBotNick%\"}"
@@ -197,7 +200,7 @@ else
 		fi
 
 		# Check for sanity with the modules
-		echo "Checking modules..."
+		echo "Checking for modules"
 		egrep "^loadMod" "pudding.conf" | sort -u | while read mod; do
 			mod="${mod%\"}"
 			mod="${mod#*\"}"
@@ -217,9 +220,8 @@ else
 			fi
 		done
 		# Start the actual bot
-		echo "Starting bot..."
-		# Commented out until core.sh is ready for testing
-		#./core/core.sh
+		echo "Starting bot"
+		./core/core.sh
 	fi
 fi
 }

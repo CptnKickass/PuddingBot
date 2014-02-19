@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Check dependencies
-deps=("nc" "mkfifo")
+deps=("nc" "touch")
 for i in ${deps[@]}; do
 	if ! command -v ${i} > /dev/null 2>&1; then
 		echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
@@ -10,27 +10,27 @@ for i in ${deps[@]}; do
 done
 
 # Load variables into the core
-if [ -e "../var/.conf" ]; then
+if [ -e "var/.conf" ]; then
 	echo "Loading variables into bot."
-	source ../var/.conf
-	#rm -f ../var/.conf
+	source var/.conf
+	#rm -f var/.conf
 else
 	echo "Unable to locate bot config!"
 	exit 1
 fi
 
 # Load modules
-if [ -e "../var/.mods" ]; then
+if [ -e "var/.mods" ]; then
 	echo "Loading moduels into bot."
 	if [ -d ".mods" ]; then
 		rm -rf .mods
 		mkdir .mods
 	fi
-	<../var/.mods | while read line; do
-		cp ../modules/${line} .mods
+	<var/.mods | while read line; do
+		cp modules/${line} .mods
 	done
 	source modhook.sh
-	#rm -f ../var/.mods
+	#rm -f var/.mods
 fi
 
 # We need these to be boolean instead of blank
@@ -60,24 +60,29 @@ for h; do
 done
 }
 
+echo "Creating pipe"
 # Create the pipe that will be the messages going out to the server
-mkfifo "$output"
+touch "$output"
 # This needs to be a one liner that outputs to two lines, for the sake
 # of the pipe only letting in one line at a time.
 if [ -n "$serverpass" ]; then
-		echo -e "NICK ${nick}\nUSER $ident +iwx * :${gecos}\nPASS $serverpass" >> $output
+		echo -e "NICK ${nick}\nUSER $ident +iwx * :${gecos}\nPASS $serverpass" >> $output &
 	else
-		echo -e "NICK $nick\nUSER $ident +iwx * :${gecos}" >> $output 
+		echo -e "NICK $nick\nUSER $ident +iwx * :${gecos}" >> $output &
 fi
 
+echo "Connecting to IRC server"
 # This is where the initial connection is spawned
-tail -f $output | nc $server $port | while read message; do
+tail -f "$output" | nc "$server" "$port" | while read message
+do
 	# Remote the ^M control character at the end of each line
 	message="${message%}"
+	echo "$message"
 	# ${msgArr[@]} array will contain all input
 	msgArr=("${msgArr[@]}" "${message}")
-	if [ "$logInput" -eq "1" ]; then
+	if [ "$logIn" -eq "1" ]; then
 		# This is where messages should be parsed for logging
+		echo "Place holder"
 	fi
 	# The incoming messages should be in one of the following formats:
 	# :${botNick} (Bot setting modes on itself)
@@ -86,16 +91,17 @@ tail -f $output | nc $server $port | while read message; do
 	# PING (PING's from the IRCd server)
 	if [[ "$message" == "PING"* ]]; then
 		# The message is a PING
+		echo "PONG${message#PING}" 
 		echo "PONG${message#PING}" >> $output
 	elif [[ "$(echo "$message" | awk '{print $1}')" == ":${botNick}" ]]; then
 		# The bot is changing modes on itself
-		./botmodechange.sh
+		./core/botmodechange.sh "$message"
 	elif [ "$(echo "$message" | awk '{print $1}' | egrep -c "^:.*!.*@.*$")" -eq "1" ]; then
 		# The message matches an n!u@h mask
-		./usermessage.sh
+		./core/usermessage.sh "$message"
 	elif [ "$(echo "$message" | awk '{print $1}' | egrep -c "^:.*!.*@.*$")" -eq "0" ]; then
 		# The message does not match an n!u@h mask, and should be a server
-		./servermessage.sh
+		./core/servermessage.sh "$message"
 	else
 		# This should never be reached, but exists for debug purposes
 		echo "$(date -R): $message" >> $$.debug

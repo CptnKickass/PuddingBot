@@ -1,0 +1,3 @@
+NICK Pudding-Dev
+USER Pudding-Dev +iwx * :#!/usr/bin/env bash
+PONG :68C1FE40

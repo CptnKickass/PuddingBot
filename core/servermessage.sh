@@ -1,3 +1,4 @@
+message="$(read -r one rest <<<"$@"; echo "$rest")"
 case "$(echo "$message" | awk '{print $2}')" in
 # 001 is the welcome message
 001)
@@ -128,3 +129,4 @@ WALLOPS)
 *)
 	echo "$(date) | Received unknown message level 1: ${message}" >> ${dataDir}/$$.debug
 	;;
+esac
