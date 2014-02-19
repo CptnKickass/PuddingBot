@@ -84,18 +84,18 @@ case "$(echo "$message" | awk '{print $2}')" in
 	if [ -n "$operId" ] && [ -n "$operPass" ]; then
 		echo "OPER $operId $operPass"
 		if [ -n "$operModes" ]; then
-			echo "MODE $nick $operModes"
+			echo "MODE $nick $operModes" >> $output
 		fi
 	fi
 	if [ -n "$nickPass" ]; then
-		echo "PRIVMSG NickServ :identify $nickPass"
+		echo "PRIVMSG NickServ :identify $nickPass" >> $output
 		nickPassSent="1"
 	fi
 	for item in ${channels[*]}; do
-		echo "JOIN $item"
+		echo "JOIN $item" >> $output
 	done
 	if [ -n "$lastCom" ]; then
-		echo "$lastCom"
+		echo "$lastCom" >> $output
 	fi
 	;;
 # 376 Signifies end of MOTD numeric
@@ -125,6 +125,7 @@ NOTICE)
 WALLOPS)
 	;;
 *)
-	echo "$(date) | Received unknown message level 1: ${message}" >> ${dataDir}/$$.debug
+	outArr=("${outArr[@]}" "[DEBUG-servermessage.sh] $message")
+	echo "$(date -R): $message" >> $$.debug
 	;;
 esac
