@@ -1,4 +1,0 @@
-NICK Pudding-Dev
-USER Pudding-Dev +iwx * :#!/usr/bin/env bash
-PONG :E48158D4
-JOIN #Pudding-Dev
