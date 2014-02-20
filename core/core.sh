@@ -2,7 +2,7 @@
 
 # Check dependencies
 deps=("nc" "touch")
-for i in ${deps[@]}; do
+for i in "${deps[@]}"; do
 	if ! command -v ${i} > /dev/null 2>&1; then
 		echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
 		exit 1 
@@ -45,6 +45,12 @@ if [ -e "var/.mods" ]; then
 	#rm -f var/.mods
 fi
 
+# Setup file for status checks
+if [ -e "var/.status" ]; then
+	rm -f var/.status
+fi
+touch var/.status
+
 # We need these to be boolean instead of blank
 fullCon="0"
 readMemo="0"
@@ -73,14 +79,12 @@ done
 }
 
 parseOutput () {
-echo "[DEBUG] Parse Output hit"
 if [ "${#outArr[@]}" -ne "0" ]; then
-	echo "[DEBUG] If is true"
 	unset sendArr
-	while IFS= read -rn256 -d '' sendArr[i++]; do :; done <<< "${outArr[@]}"
+	for line in "${outArr[@]}"; do
+		while IFS= read -rn320 -d '' sendArr[i++]; do :; done <<< "${line}"
+	done
 	unset outArr
-	echo "[DEBUG] \${sendArr[@]}: ${sendArr[@]}"
-	echo "[DEBUG] \${#sendArr[@]}: ${#sendArr[@]}"
 	for line in "${sendArr[@]}"; do
 		echo "PRIVMSG ${senderTarget} :${line}" >> $output
 		sleep 0.25
@@ -102,7 +106,7 @@ fi
 
 echo "Connecting to IRC server"
 # This is where the initial connection is spawned
-tail -f "$output" | nc "$server" "$port" | while read message
+tail -f "$output" | nc "$server" "$port" | while read -r message
 do
 	# Unset the previous output message
 	unset out
@@ -125,7 +129,10 @@ do
 		echo "PONG${message#PING}" >> $output
 	elif [ "$(echo "$message" | awk '{print $1}')" == ":${nick}" ]; then
 		# The bot is changing modes on itself
-		#./core/botmodechange.sh "$message"
+		out="$(./core/botmodechange.sh "$message")"
+		if [ -n "$out" ]; then
+			mapfile outArr <<<"$out"
+		fi
 		echo "Place holder"
 	elif [ "$(echo "$message" | awk '{print $1}' | egrep -c "^:.*!.*@.*$")" -eq "1" ]; then
 		# The message matches an n!u@h mask
@@ -139,22 +146,19 @@ do
 		senderHost="${senderFull#*@}"
 		out="$(./core/usermessage.sh "$message")"
 		if [ -n "$out" ]; then
-			outArr=("$out")
+			mapfile <<<"$out" outArr
 		fi
 	elif [ "$(echo "$message" | awk '{print $1}' | egrep -c "^:.*!.*@.*$")" -eq "0" ]; then
 		# The message does not match an n!u@h mask, and should be a server
 		out="$(./core/servermessage.sh "$message")"
 		if [ -n "$out" ]; then
-			outArr=("$out")
+			mapfile <<<"$out" outArr
 		fi
 	else
 		# This should never be reached, but exists for debug purposes
-		outArr=("[DEBUG-core.sh] $message")
+		mapfile <<<"[DEBUG-core.sh] $message" outArr
 		echo "$(date -R): $message" >> $$.debug
 	fi
-	echo "[DEBUG] \$out: $out"
-	echo "[DEBUG] \${outArr}[@]: ${outArr[@]}"
-	echo "[DEBUG] \${#outArr[@]}: ${#outArr[@]}"
 	parseOutput;
 done
 

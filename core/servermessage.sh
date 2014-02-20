@@ -3,11 +3,13 @@ message="$@"
 case "$(echo "$message" | awk '{print $2}')" in
 # 001 is the welcome message
 001)
-	networkName="$message"
-	networkname="${message#*Welcome to the }"
-	networkname="${message% Internet Relay Chat Network*}"
-	actualServer="$(echo "$message" | awk '{print $1}')"
-	actualServer="${message#:}"
+	fullCon="1"
+	networkName="$(sed -E "s/.*Welcome to the (.*) Internet Relay Chat Network*/\1/i" <<<"$message")"
+	# TODO FIX THIS BROKEN ASS LINE! ^^
+	echo "networkName=\"${networkName}\"" >> var/.status
+	actualServer="$(awk '{print $1}' <<<"$message")"
+	actualServer="${actualServer#:}"
+	echo "actualServer=\"${actualServer}\"" >> var/.status
 	;;
 # 002 is the "Your host is" reply
 002)
@@ -80,7 +82,6 @@ case "$(echo "$message" | awk '{print $2}')" in
 	;;
 # 375 is the start of the MOTD
 375)
-	fullCon="1"
 	if [ -n "$operId" ] && [ -n "$operPass" ]; then
 		echo "OPER $operId $operPass"
 		if [ -n "$operModes" ]; then
@@ -119,13 +120,13 @@ case "$(echo "$message" | awk '{print $2}')" in
 # Server is setting a mode
 MODE)
 	;;
+# It's a snotice
 NOTICE)
-	# It's a snotice
 	;;
 WALLOPS)
 	;;
 *)
-	outArr=("${outArr[@]}" "[DEBUG-servermessage.sh] $message")
+	echo "[DEBUG-servermessage.sh] $message"
 	echo "$(date -R): $message" >> $$.debug
 	;;
 esac

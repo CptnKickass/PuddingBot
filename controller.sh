@@ -222,7 +222,7 @@ else
 		done
 		# Start the actual bot
 		echo "Starting bot"
-		./core/core.sh
+		screen -d -m -S bashbot-devel ./core/core.sh
 	fi
 fi
 }
