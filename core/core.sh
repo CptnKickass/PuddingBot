@@ -51,6 +51,8 @@ if [ -e "var/.status" ]; then
 fi
 touch var/.status
 
+echo "$$" > var/bot.pid
+
 # We need these to be boolean instead of blank
 fullCon="0"
 readMemo="0"
@@ -114,7 +116,7 @@ do
 	message="${message%}"
 	echo "$message"
 	# ${msgArr[@]} array will contain all input
-	msgArr=("${msgArr[@]}" "${message}")
+	msgArr+=("${message}")
 	if [ "$logIn" -eq "1" ]; then
 		# This is where messages should be parsed for logging
 		echo "Place holder"
@@ -133,7 +135,6 @@ do
 		if [ -n "$out" ]; then
 			mapfile outArr <<<"$out"
 		fi
-		echo "Place holder"
 	elif [ "$(echo "$message" | awk '{print $1}' | egrep -c "^:.*!.*@.*$")" -eq "1" ]; then
 		# The message matches an n!u@h mask
 		senderTarget="$(echo "$message" | awk '{print $3}')"

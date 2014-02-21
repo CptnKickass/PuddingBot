@@ -4,11 +4,11 @@ case "$(echo "$message" | awk '{print $2}')" in
 # 001 is the welcome message
 001)
 	fullCon="1"
-	networkName="$(sed -E "s/.*Welcome to the (.*) Internet Relay Chat Network*/\1/i" <<<"$message")"
-	# TODO FIX THIS BROKEN ASS LINE! ^^
-	echo "networkName=\"${networkName}\"" >> var/.status
+	networkName="${message#*Welcome to the }"
+	networkName="${networkName% Internet Relay Chat Network*}"
 	actualServer="$(awk '{print $1}' <<<"$message")"
 	actualServer="${actualServer#:}"
+	echo "networkName=\"${networkName}\"" >> var/.status
 	echo "actualServer=\"${actualServer}\"" >> var/.status
 	;;
 # 002 is the "Your host is" reply

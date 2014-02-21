@@ -184,9 +184,9 @@ else
 			mkdir "$dataDir"
 		fi
 
-		# If output pipe still exists from last time, remove it
+		# If output datafile still exists from last time, remove it
 		if [ -e "$output" ]; then
-			echo "Removing old pipe (Improper shutdown?)"
+			echo "Removing old datafile (Improper shutdown?)"
 			rm -f "$output"
 		fi
 
@@ -222,7 +222,8 @@ else
 		done
 		# Start the actual bot
 		echo "Starting bot"
-		screen -d -m -S bashbot-devel ./core/core.sh
+		#screen -d -m -S bashbot-devel ./core/core.sh
+		./core/core.sh
 	fi
 fi
 }
@@ -232,7 +233,7 @@ if [ -e "var/bot.pid" ]; then
 	echo "Sending QUIT to IRCd"
 	echo "QUIT :Killed from console" >> $output
 	echo "Killing bot PID ($(< var/bot.pid))"
-	kill < var/bot.pid
+	kill $(<var/bot.pid)
 else
 	echo "Unable to find bot.pid! (Is the bot even running?)"
 fi
@@ -246,10 +247,10 @@ if [ -e "var/bot.pid" ]; then
 	kill < var/bot.pid
 	if [ -e "var/bot.pid" ]; then
 		echo "Quit unsuccessful. Killing bot by all means possible (SIGKILL)"
-		kill -9 < var/bot.pid
+		kill -9 $(<var/bot.pid)
 	fi
 	if [ -e "$output" ]; then
-		echo "Removing pipe"
+		echo "Removing datafile"
 		rm -f "$output"
 	fi
 	if [ -e "var/.conf" ]; then
@@ -257,6 +258,12 @@ if [ -e "var/bot.pid" ]; then
 	fi
 	if [ -e "var/.mods" ]; then
 		rm -f "var/.mods"
+	fi
+	if [ -e "var/.status" ]; then
+		rm -f "var/.status"
+	fi
+	if [ -e "var/.admins" ]; then
+		rm -f "var/.admins"
 	fi
 else
 	echo "Unable to find bot.pid! (Is the bot even running?)"

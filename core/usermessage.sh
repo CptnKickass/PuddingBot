@@ -130,7 +130,6 @@ case "$com" in
 					echo "$(echo "$message" | awk '{print $5}') does not appear to be a valid channel"
 				else
 					echo "JOIN $(echo "$message" | awk '{print $5}')" >> $output
-					echo "Joined $(echo "$message" | awk '{print $5}')"
 				fi
 			else
 				echo "You do not have sufficient permissions for this command"
@@ -149,8 +148,7 @@ case "$com" in
 				elif [ "$(echo "$message" | awk '{print $5}' | egrep -c "^(#|&)")" -eq "0" ]; then
 					echo "$(echo "$message" | awk '{print $5}') does not appear to be a valid channel"
 				else
-					echo "PART $(echo "$message" | awk '{print $5}')" >> $output
-					echo "Left $(echo "$message" | awk '{print $5}')"
+					echo "PART $(echo "$message" | awk '{print $5}') :Leaving channel per ${senderNick}" >> $output
 				fi
 			else
 				echo "You do not have sufficient permissions for this command"
