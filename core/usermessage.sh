@@ -274,7 +274,7 @@ case "$com" in
 			reqFlag="a"
 			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
 				source var/.status
-				echo "I am $nick, currently connected to $server (${actualServer} on ${networkName}) via port $port. I am hosted on $(uname -n). My PID is $(<var/bot.pid). My owner is $owner ($ownerEmail)."
+				echo "I am $nick, currently connected to $server (${actualServer} on ${networkName}) via port $port. I am hosted on $(uname -n). My PIDs are $(cat var/bot.pid | tr '\n' ' ')and my owner is $owner ($ownerEmail)."
 			else
 				echo "I am $nick. My owner is $owner ($ownerEmail)"
 			fi
@@ -288,6 +288,20 @@ case "$com" in
 			reqFlag="A"
 			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
 				echo "QUIT :Quitting per ${senderNick}" >> $output
+			else
+				echo "You do not have sufficient permissions for this command"
+			fi
+		else
+			echo "You must be logged in to use this command"
+		fi
+	;;
+	restart)
+		loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
+		if [ "$loggedIn" -eq "1" ]; then
+			reqFlag="A"
+			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
+				./controller.sh --from-irc-restart > /dev/null 2>&1 &
+				echo "QUIT :Restarting per ${senderNick}" >> $output
 			else
 				echo "You do not have sufficient permissions for this command"
 			fi
@@ -317,9 +331,11 @@ done < var/ignore.db
 
 if [ "$ignoreUser" -eq "0" ]; then
 
-if [ "$senderTarget" = "$nick" ]; then
-	# It's a PM. 
+isPm="0"
+if [ "$(fgrep -c "$senderTarget" <<< "$nick")" -eq "1" ]; then
+	# It's a PM. We should assume we're being addressed in the same manner as commands.
 	senderTarget="$senderNick"
+	isPm="1"
 fi
 
 case "$(echo "$message" | awk '{print $2}')" in
@@ -330,14 +346,21 @@ case "$(echo "$message" | awk '{print $2}')" in
 	NOTICE)
 		;;
 	PRIVMSG)
+		# This is a ${comPrefix} addressed command
 		if [ "$(echo "$message" | awk '{print $4}' | cut -b 2)" == "${comPrefix}" ]; then
 			isCom="1"
 			com="$(awk '{print $4}' <<<"$message" | tr "[:upper:]" "[:lower:]")"
 			com="${com:2}"
+		# This is a command beginning with ${nick}: ${nick}; or ${nick},
 		elif [[ "$(awk '{print $4}' <<<"$message")" == ":${nick}"?([:;,]) ]]; then
 			isCom="1"
 			message="$(sed -E "s/:${nick}[:;,]? //" <<<"$message")"
 			com="$(awk '{print $4}' <<<"$message" | tr "[:upper:]" "[:lower:]")"
+		# It's a PM
+		elif [ "$isPm" -eq "1" ]; then
+			isCom="1"
+			com="$(awk '{print $4}' <<<"$message" | tr "[:upper:]" "[:lower:]")"
+			com="${com:1}"
 		else
 			isCom="0"
 		fi
@@ -364,8 +387,8 @@ case "$(echo "$message" | awk '{print $2}')" in
 	INVITE)
 		;;
 	*)
-		echo "[DEBUG-usermessage.sh] $message"
-		echo "$(date) | Received unknown message level 3: ${message}" >> ${dataDir}/$(<var/bot.pid).debug
+		echo "[DEBUG - ${0}] $message"
+		echo "$(date -R) [${0}] ${message}" >> ${dataDir}/$(<var/bot.pid).debug
 		;;
 esac
 fi

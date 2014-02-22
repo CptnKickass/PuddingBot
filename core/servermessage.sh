@@ -3,6 +3,16 @@ message="$@"
 case "$(echo "$message" | awk '{print $2}')" in
 # 001 is the welcome message
 001)
+	ps aux | grep -v grep | grep "bash ./core/core.sh" | awk '{print $2}' | while read i; do
+		if [ "$(fgrep -c "$i" "var/bot.pid")" -eq "0" ]; then
+			echo "$i" >> var/bot.pid
+		fi
+	done
+	ps aux | grep -v grep | grep "tail -f ${outbound}" | awk '{print $2}' | while read i; do
+		if [ "$(fgrep -c "$i" "var/bot.pid")" -eq "0" ]; then
+			echo "$i" >> var/bot.pid
+		fi
+	done
 	fullCon="1"
 	networkName="${message#*Welcome to the }"
 	networkName="${networkName% Internet Relay Chat Network*}"
@@ -127,10 +137,11 @@ MODE)
 # It's a snotice
 NOTICE)
 	;;
+# It's wallops
 WALLOPS)
 	;;
 *)
-	echo "[DEBUG-servermessage.sh] $message"
-	echo "$(date -R): $message" >> $(<var/bot.pid).debug
+	echo "[DEBUG - ${0}] $message"
+	echo "$(date -R) [${0}] $message" >> $(<var/bot.pid).debug
 	;;
 esac

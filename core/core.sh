@@ -151,9 +151,32 @@ do
 		senderUser="${senderUser%@*}"
 		senderHost="${senderFull#*@}"
 		out="$(./core/usermessage.sh "$message")"
+		if [ "$(fgrep -c "$senderTarget" <<< "$nick")" -eq "1" ]; then
+			senderTarget="$senderNick"
+		fi
 		if [ -n "$out" ]; then
 			mapfile <<<"$out" outArr
 		fi
+	elif [ "$(awk '{print $1}' <<<"$message")" == "ERROR" ]; then
+		if [ -e "$output" ]; then
+			rm -f "$output" 
+		fi
+		if [ -e "var/.admins" ]; then
+			rm -f "var/.admins"
+		fi
+		if [ -e "var/.conf" ]; then
+			rm -f "var/.conf"
+		fi
+		if [ -e "var/.mods" ]; then
+			rm -f "var/.mods"
+		fi
+		if [ -e "var/.status" ]; then
+			rm -f "var/.status"
+		fi
+		if [ -e "var/bot.pid" ]; then
+			rm -f "var/bot.pid"
+		fi
+		echo "Received error message: $message"
 	elif [ "$(echo "$message" | awk '{print $1}' | egrep -c "^:.*!.*@.*$")" -eq "0" ]; then
 		# The message does not match an n!u@h mask, and should be a server
 		out="$(./core/servermessage.sh "$message")"
@@ -162,12 +185,15 @@ do
 		fi
 	else
 		# This should never be reached, but exists for debug purposes
-		mapfile <<<"[DEBUG-core.sh] $message" outArr
-		echo "$(date -R): $message" >> $(<var/bot.pid).debug
+		mapfile <<<"[DEBUG - ${0}] $message" outArr
+		echo "$(date -R) [${0}] $message" >> $(<var/bot.pid).debug
 	fi
 	parseOutput;
+	#echo "" > "$output"
 done
 
+# We've broken free of the above loop? We're exiting.
+cp var/bot.pid var/bot.pid.old
 if [ -e "$output" ]; then
 	rm -f "$output" 
 fi
@@ -186,7 +212,7 @@ fi
 if [ -e "var/bot.pid" ]; then
 	rm -f "var/bot.pid"
 fi
-
+./controller.sh --kill-pids
 exit 0
 
 # This is the CTCP character, commented out for copy/paste use as needed.
