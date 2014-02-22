@@ -117,6 +117,10 @@ case "$(echo "$message" | awk '{print $2}')" in
 # 412 is no text to send
 412)
 	;;
+# 432 is erroneous nickname
+432)
+	echo "Invalid nick"
+	;;
 # Server is setting a mode
 MODE)
 	;;
@@ -127,6 +131,6 @@ WALLOPS)
 	;;
 *)
 	echo "[DEBUG-servermessage.sh] $message"
-	echo "$(date -R): $message" >> $$.debug
+	echo "$(date -R): $message" >> $(<var/bot.pid).debug
 	;;
 esac

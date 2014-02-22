@@ -15,7 +15,7 @@ case "$com" in
 	login)
 		loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
 		if [ "$loggedIn" -eq "0" ]; then
-			lUser="$(echo "$message" | awk '{print $5}')"
+			lUser="$(awk '{print $5}' <<<"$message")"
 			lPass="$(echo "$message" | awk '{print $6}')"
 			lPass="$(echo "$lPass" | md5sum | awk '{print $1}')"
 			lPass2="$(echo "$lPass" | md5sum | awk '{print $1}')"
@@ -124,12 +124,12 @@ case "$com" in
 		if [ "$loggedIn" -eq "1" ]; then
 			reqFlag="t"
 			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
-				if [ -z "$(echo "$message" | awk '{print $5}')" ]; then
+				if [ -z "$(awk '{print $5}' <<<"$message")" ]; then
 					echo "This command requires a parameter"
-				elif [ "$(echo "$message" | awk '{print $5}' | egrep -c "^(#|&)")" -eq "0" ]; then
-					echo "$(echo "$message" | awk '{print $5}') does not appear to be a valid channel"
+				elif [ "$(awk '{print $5}' <<<"$message" | egrep -c "^(#|&)")" -eq "0" ]; then
+					echo "$(awk '{print $5}' <<<"$message") does not appear to be a valid channel"
 				else
-					echo "JOIN $(echo "$message" | awk '{print $5}')" >> $output
+					echo "JOIN $(awk '{print $5}' <<<"$message")" >> $output
 				fi
 			else
 				echo "You do not have sufficient permissions for this command"
@@ -143,12 +143,123 @@ case "$com" in
 		if [ "$loggedIn" -eq "1" ]; then
 			reqFlag="t"
 			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
-				if [ -z "$(echo "$message" | awk '{print $5}')" ]; then
+				if [ -z "$(awk '{print $5}' <<<"$message")" ]; then
 					echo "This command requires a parameter"
-				elif [ "$(echo "$message" | awk '{print $5}' | egrep -c "^(#|&)")" -eq "0" ]; then
-					echo "$(echo "$message" | awk '{print $5}') does not appear to be a valid channel"
+				elif [ "$(awk '{print $5}' <<<"$message" | egrep -c "^(#|&)")" -eq "0" ]; then
+					echo "$(awk '{print $5}' <<<"$message") does not appear to be a valid channel"
 				else
-					echo "PART $(echo "$message" | awk '{print $5}') :Leaving channel per ${senderNick}" >> $output
+					echo "PART $(awk '{print $5}' <<<"$message") :Leaving channel per ${senderNick}" >> $output
+				fi
+			else
+				echo "You do not have sufficient permissions for this command"
+			fi
+		else
+			echo "You must be logged in to use this command"
+		fi
+	;;
+	speak|say)
+		loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
+		if [ "$loggedIn" -eq "1" ]; then
+			reqFlag="s"
+			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
+				if [ -z "$(awk '{print $5}' <<<"$message")" ]; then
+					echo "This command requires a parameter"
+				elif [ "$(awk '{print $5}' <<<"$message" | egrep -c "^(#|&)")" -eq "0" ]; then
+					echo "$(awk '{print $5}' <<<"$message") does not appear to be a valid channel"
+				else
+					sayMsg="$(read -r one two three four five rest <<<"$message"; echo "$rest")"
+					echo "PRIVMSG $(awk '{print $5}' <<<"$message") :${sayMsg}" >> $output
+				fi
+			else
+				echo "You do not have sufficient permissions for this command"
+			fi
+		else
+			echo "You must be logged in to use this command"
+		fi
+	;;
+	action|do)
+		loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
+		if [ "$loggedIn" -eq "1" ]; then
+			reqFlag="s"
+			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
+				if [ -z "$(awk '{print $5}' <<<"$message")" ]; then
+					echo "This command requires a parameter"
+				elif [ "$(awk '{print $5}' <<<"$message" | egrep -c "^(#|&)")" -eq "0" ]; then
+					echo "$(awk '{print $5}' <<<"$message") does not appear to be a valid channel"
+				else
+					sayMsg="$(read -r one two three four five rest <<<"$message"; echo "$rest")"
+					echo "PRIVMSG $(awk '{print $5}' <<<"$message") :ACTION ${sayMsg}" >> $output
+				fi
+			else
+				echo "You do not have sufficient permissions for this command"
+			fi
+		else
+			echo "You must be logged in to use this command"
+		fi
+	;;
+	nick)
+		loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
+		if [ "$loggedIn" -eq "1" ]; then
+			reqFlag="s"
+			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
+				if [ -z "$(awk '{print $5}' <<<"$message")" ]; then
+					echo "This command requires a parameter"
+				else
+					echo "NICK $(awk '{print $5}' <<<"$message")" >> $output
+				fi
+			else
+				echo "You do not have sufficient permissions for this command"
+			fi
+		else
+			echo "You must be logged in to use this command"
+		fi
+	;;
+	ignore)
+		loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
+		if [ "$loggedIn" -eq "1" ]; then
+			reqFlag="i"
+			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
+				if [ -z "$(awk '{print $5}' <<<"$message")" ]; then
+					echo "This command requires a command parameter"
+				else
+					ignoreHost="$(awk '{print $6}' <<<"$message" | tr "[:upper:]" "[:lower:]")"
+					case "$(awk '{print $5}' <<<"$message" | tr "[:upper:]" "[:lower:]")" in
+						list)
+							ignoreList="$(<var/ignore.db)"
+							if [ -n "$ignoreList" ]; then
+								echo "$ignoreList"
+							else
+								echo "Ignore list empty"
+							fi
+							;;
+						add)
+							if [ -z "$(awk '{print $6}' <<<"$message")" ]; then
+								echo "This command requires a host parameter"
+							# It's important to check for patterns with fgrep instead of
+							# egrep, because we don't want a pattern we've already set
+							# blocking a new pattern we're trying to set
+							elif fgrep -q "${ignoreHost}" var/ignore.db; then
+								echo "Host ${ignoreHost} already being ignored"
+							else
+								echo "${ignoreHost}" >> var/ignore.db
+								echo "Added ${ignoreHost} to ignore list."
+							fi
+							;;
+						del)
+							if [ -z "$(awk '{print $6}' <<<"$message")" ]; then
+								echo "This command requires a host parameter"
+							elif fgrep -q "${ignoreHost}" var/ignore.db; then
+								escapedHost="${ignoreHost//\*/\\*}"
+								sed -i "/${escapedHost}/d" var/ignore.db
+								echo "Removed ${ignoreHost} from ignore list."
+							else
+								echo "Host ${ignoreHost} not being ignored"
+							fi
+							;;
+						*)
+							echo "Invalid option"
+							;;
+					esac
 				fi
 			else
 				echo "You do not have sufficient permissions for this command"
@@ -163,12 +274,25 @@ case "$com" in
 			reqFlag="a"
 			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
 				source var/.status
-				echo "I am $nick, currently connected to $server (${actualServer} on ${networkName}) via port $port. I am hosted on $(uname -n). My PID is $$. My owner is $owner ($ownerEmail)."
+				echo "I am $nick, currently connected to $server (${actualServer} on ${networkName}) via port $port. I am hosted on $(uname -n). My PID is $(<var/bot.pid). My owner is $owner ($ownerEmail)."
 			else
 				echo "I am $nick. My owner is $owner ($ownerEmail)"
 			fi
 		else
 			echo "I am $nick. My owner is $owner ($ownerEmail)"
+		fi
+	;;
+	die|quit|exit)
+		loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
+		if [ "$loggedIn" -eq "1" ]; then
+			reqFlag="A"
+			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
+				echo "QUIT :Quitting per ${senderNick}" >> $output
+			else
+				echo "You do not have sufficient permissions for this command"
+			fi
+		else
+			echo "You must be logged in to use this command"
 		fi
 	;;
 	uptime)
@@ -182,6 +306,16 @@ case "$com" in
 esac
 
 }
+
+# Check to see if we're ignoring this user or not
+ignoreUser="0"
+while read i; do
+	if [ "$(egrep -c "$i" <<<"${senderFull}")" -eq "1" ]; then
+		ignoreUser="1"
+	fi
+done < var/ignore.db
+
+if [ "$ignoreUser" -eq "0" ]; then
 
 if [ "$senderTarget" = "$nick" ]; then
 	# It's a PM. 
@@ -231,6 +365,7 @@ case "$(echo "$message" | awk '{print $2}')" in
 		;;
 	*)
 		echo "[DEBUG-usermessage.sh] $message"
-		echo "$(date) | Received unknown message level 3: ${message}" >> ${dataDir}/$$.debug
+		echo "$(date) | Received unknown message level 3: ${message}" >> ${dataDir}/$(<var/bot.pid).debug
 		;;
 esac
+fi

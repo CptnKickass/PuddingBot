@@ -51,6 +51,11 @@ if [ -e "var/.status" ]; then
 fi
 touch var/.status
 
+# Setup file for ignore list
+if [ ! -e "var/ignore.db" ]; then
+	touch var/ignore.db
+fi
+
 echo "$$" > var/bot.pid
 
 # We need these to be boolean instead of blank
@@ -158,14 +163,31 @@ do
 	else
 		# This should never be reached, but exists for debug purposes
 		mapfile <<<"[DEBUG-core.sh] $message" outArr
-		echo "$(date -R): $message" >> $$.debug
+		echo "$(date -R): $message" >> $(<var/bot.pid).debug
 	fi
 	parseOutput;
 done
 
-# We shouldn't ever break out of the above loop. If we do, something went wrong.
-rm -f "$output"
-exit 255
+if [ -e "$output" ]; then
+	rm -f "$output" 
+fi
+if [ -e "var/.admins" ]; then
+	rm -f "var/.admins"
+fi
+if [ -e "var/.conf" ]; then
+	rm -f "var/.conf"
+fi
+if [ -e "var/.mods" ]; then
+	rm -f "var/.mods"
+fi
+if [ -e "var/.status" ]; then
+	rm -f "var/.status"
+fi
+if [ -e "var/bot.pid" ]; then
+	rm -f "var/bot.pid"
+fi
+
+exit 0
 
 # This is the CTCP character, commented out for copy/paste use as needed.
 # PRIVMSG goose :VERSION
