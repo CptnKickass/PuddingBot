@@ -37,25 +37,10 @@ fi
 # format, i.e. the sed module.
 modHook="Prefix"
 
-# If the $modHook is "Format", what format should the message match to
-# catch the script? This should be a regular expression pattern, mathing
-# a regular channel PRIVMSG following the colon (It won't match a /ME)
-# For example, if you wanted to match:
-#  :goose!goose@goose PRIVMSG #GooseDen :s/foo/bar/
-# Your $modForm would be:
-#  modForm="^s/.+/.+/"
-# Leave blank if you don't need this
-modForm=""
-
-# If you need your modForm to be case insensitive, and yes. If not, answer
-# no. If you don't need this, leave it blank.
-modFormCase=""
-
-# A one liner on how to use the module/what it does
-modHelp="This module provides examples on how to write other modules"
+# modHelp should be a one liner on how to use the command
+modHelp="Try it and see what it does"
 
 # This is where the module source should start
-# The whole IRC message will be passed to the script using $@
 msg="$@"
 msg="${msg#${0} }"
 com="$(echo "$msg" | awk '{print $4}')"

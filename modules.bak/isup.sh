@@ -12,7 +12,7 @@ if [[ "$1" == "--dep-check" ]]; then
 	# Dependencies already required by the controller script:
 	# read fgrep egrep echo cut sed ps awk
 	# Format is: deps=("foo" "bar")
-	deps=()
+	deps=("curl")
 	if [ "${#deps[@]}" -ne "0" ]; then
 		for i in ${deps[@]}; do
 			if ! command -v ${i} > /dev/null 2>&1; then
@@ -37,31 +37,25 @@ fi
 # format, i.e. the sed module.
 modHook="Prefix"
 
-# If the $modHook is "Format", what format should the message match to
-# catch the script? This should be a regular expression pattern, mathing
-# a regular channel PRIVMSG following the colon (It won't match a /ME)
-# For example, if you wanted to match:
-#  :goose!goose@goose PRIVMSG #GooseDen :s/foo/bar/
-# Your $modForm would be:
-#  modForm="^s/.+/.+/"
-# Leave blank if you don't need this
-modForm=""
-
-# If you need your modForm to be case insensitive, and yes. If not, answer
-# no. If you don't need this, leave it blank.
-modFormCase=""
-
-# A one liner on how to use the module/what it does
-modHelp="This module provides examples on how to write other modules"
-
 # This is where the module source should start
-# The whole IRC message will be passed to the script using $@
 msg="$@"
+msg="${msg#${0} }"
 com="$(echo "$msg" | awk '{print $4}')"
 com="${com:2}"
 case "$com" in
-	command)
-		echo "You typed !command"
+	isup)
+	if [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
+		echo "This command requires a parameter"
+	else
+		siteToCheck="$(echo "$msg" | awk '{print $5}' | sed "s/http:\/\///")"
+		isSiteUp="$(curl -s "http://isup.me/${siteToCheck}" | fgrep -c "It's just you.")"
+		# 1 means it's up, 0 means it's down
+		if [ "$isSiteUp"-eq "1" ]; then
+			echo "${siteToCheck} is UP, according to http://isup.me/"
+		else
+			echo "${siteToCheck} is DOWN, according to http://isup.me/"
+		fi
+	fi
 	;;
 esac
 exit 0
