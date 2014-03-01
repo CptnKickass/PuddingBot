@@ -1,1 +1,0 @@
-contrib/filesearch.sh
