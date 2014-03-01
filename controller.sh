@@ -128,6 +128,7 @@ checkSanity () {
 	else
 		echo "${botPrefix}" >> var/.conf
 	fi
+	egrep -m 1 "^nickPass=" "pudding.conf" >> var/.conf
 	botLog="$(egrep -m 1 "^logIn=" "pudding.conf")"
 	tmpBotLog="${botLog#*\"}"
 	tmpBotLog="${tmpBotLog%\"}"
@@ -224,6 +225,7 @@ else
 		echo "Starting bot"
 		#screen -d -m -S pudding ./core/core.sh
 		./core/core.sh > /dev/null 2>&1 &
+		#./core/core.sh
 	fi
 fi
 }
@@ -285,6 +287,7 @@ if [ -n "${1}" ]; then
 		;;
 		--restart)
 			stopBot;
+			sleep 1
 			startBot;
 		;;
 		--from-irc-restart)
@@ -299,18 +302,6 @@ if [ -n "${1}" ]; then
 				fi
 				sleep 1
 			done
-		;;
-		--kill-pids)
-			sleep 1
-			while read i; do
-				kill $i
-			done < var/bot.pid.old
-			while read i; do
-				if ps aux | grep -v grep | awk '{print $2}' | fgrep -q "$i"; then
-					kill -9 $i
-				fi
-			done < var/bot.pid.old
-			rm var/bot.pid.old
 		;;
 		--status)
 			if [ -e "var/bot.pid" ]; then

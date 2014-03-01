@@ -13,53 +13,58 @@ senderHost="${senderFull#*@}"
 comExec () {
 case "$com" in
 	login)
-		loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
-		if [ "$loggedIn" -eq "0" ]; then
-			lUser="$(awk '{print $5}' <<<"$message")"
-			lPass="$(echo "$message" | awk '{print $6}')"
-			lPass="$(echo "$lPass" | md5sum | awk '{print $1}')"
-			lPass2="$(echo "$lPass" | md5sum | awk '{print $1}')"
-			lHash="${lPass}${lPass2}"
-			if egrep -v "(^#|^\$)" admins.conf | fgrep -q "user=\"${lUser}\""; then
-				# User exists
-				if egrep -v "(^#|^\$)" admins.conf | fgrep -A 3 "user=\"${lUser}\"" | fgrep -q "pass=\"${lHash}\""; then
-					if egrep -q "^${lUser}" var/.admins; then
-						# User is already logged in. How many clones are they allowed?
-						numClonesAllowed="$(egrep -v "(^#|^\$)" admins.conf | fgrep -A 3 "user=\"${lUser}" | egrep "clones=\"[0-9]+\"")"
-						numClonesAllowed="${numClonesAllowed%\"}"
-						numClonesAllowed="${numClonesAllowed#*\"}"
-						numClones="$(egrep "^${lUser}" var/.admins | awk '{print $2}')"
-						if [ "$numClones" -lt "$numClonesAllowed" ]; then
-							userLine="$(egrep "^${lUser}" var/.admins)"
-							numClones="$(( $numClones + 1 ))"
-							allowedFlags="$(awk '{print $3}' <<<"$userLine")"
-							existingHosts="$(read -r one two three rest <<<"$userLine"; echo "$rest")"
-							sed -i "/^${lHost}/d" var/.admins
-							echo "${lUser} ${numClones} ${allowedFlags} ${senderUser}@${senderHost} ${existingHosts}" >> var/.admins
-							echo "${senderNick}: Successfully logged in."
+		# Commented out for development purposes, uncomment for production and remove if true line
+		#if [ "$isPm" -eq "1" ]; then
+		if true; then
+			loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
+			if [ "$loggedIn" -eq "0" ]; then
+				lUser="$(awk '{print $5}' <<<"$message")"
+				lPass="$(echo "$message" | awk '{print $6}')"
+				lPass="$(echo "$lPass" | md5sum | awk '{print $1}')"
+				lPass2="$(echo "$lPass" | md5sum | awk '{print $1}')"
+				lHash="${lPass}${lPass2}"
+				if egrep -v "(^#|^\$)" admins.conf | fgrep -q "user=\"${lUser}\""; then
+					# User exists
+					if egrep -v "(^#|^\$)" admins.conf | fgrep -A 3 "user=\"${lUser}\"" | fgrep -q "pass=\"${lHash}\""; then
+						if egrep -q "^${lUser}" var/.admins; then
+							# User is already logged in. How many clones are they allowed?
+							numClonesAllowed="$(egrep -v "(^#|^\$)" admins.conf | fgrep -A 3 "user=\"${lUser}" | egrep "clones=\"[0-9]+\"")"
+							numClonesAllowed="${numClonesAllowed%\"}"
+							numClonesAllowed="${numClonesAllowed#*\"}"
+							numClones="$(egrep "^${lUser}" var/.admins | awk '{print $2}')"
+							if [ "$numClones" -lt "$numClonesAllowed" ]; then
+								userLine="$(egrep "^${lUser}" var/.admins)"
+								numClones="$(( $numClones + 1 ))"
+								allowedFlags="$(awk '{print $3}' <<<"$userLine")"
+								existingHosts="$(read -r one two three rest <<<"$userLine"; echo "$rest")"
+								sed -i "/^${lHost}/d" var/.admins
+								echo "${lUser} ${numClones} ${allowedFlags} ${senderUser}@${senderHost} ${existingHosts}" >> var/.admins
+								echo "Successfully logged in."
+							else
+								echo "User ${lUser} is already logged in with the maximum number of alloted clones."
+							fi
 						else
-							echo "User ${lUser} is already logged in with the maximum number of alloted clones."
+							# Password matches user
+							allowedFlags="$(egrep -v "(^#|^\$)" admins.conf | fgrep -A 3 "user=\"${lUser}\"" | egrep "flags=\"[a-z|A-Z]+\"")"
+							allowedFlags="${allowedFlags%\"}"
+							allowedFlags="${allowedFlags#*\"}"
+							echo "${lUser} 1 ${allowedFlags} ${senderUser}@${senderHost}" >> var/.admins
+							echo "Successfully logged in."
 						fi
 					else
-						# Password matches user
-						allowedFlags="$(egrep -v "(^#|^\$)" admins.conf | fgrep -A 3 "user=\"${lUser}\"" | egrep "flags=\"[a-z|A-Z]+\"")"
-						allowedFlags="${allowedFlags%\"}"
-						allowedFlags="${allowedFlags#*\"}"
-						echo "${lUser} 1 ${allowedFlags} ${senderUser}@${senderHost}" >> var/.admins
-						echo "${senderNick}: Successfully logged in."
+						# Password does not match user
+						echo "Invalid login."
 					fi
 				else
-					# Password does not match user
-					echo "Invalid login"
-					echo "${senderNick}: Invalid login."
+					# No such user
+					echo "Invalid login."
 				fi
 			else
-				# No such user
-				echo "${senderNick}: Invalid login."
+				loggedInUser="$(fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $1}')"
+				echo "Already logged in as ${loggedInUser}."
 			fi
 		else
-			loggedInUser="$(fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $1}')"
-			echo "Already logged in as ${loggedInUser}"
+			echo "This command cannot be used in public channels."
 		fi
 	;;
 	logout)
@@ -274,7 +279,7 @@ case "$com" in
 			reqFlag="a"
 			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
 				source var/.status
-				echo "I am $nick, currently connected to $server (${actualServer} on ${networkName}) via port $port. I am hosted on $(uname -n). My PIDs are $(cat var/bot.pid | tr '\n' ' ')and my owner is $owner ($ownerEmail)."
+				echo "I am $nick, currently connected to $server (${actualServer} on ${networkName}) via port $port. I am hosted on $(uname -n). My PID is $(<var/bot.pid) and my owner is $owner ($ownerEmail)."
 			else
 				echo "I am $nick. My owner is $owner ($ownerEmail)"
 			fi
@@ -310,12 +315,18 @@ case "$com" in
 		fi
 	;;
 	uptime)
+		startTime="$(egrep -m 1 "^startTime=\"" var/.status)"
+		startTime="${startTime#*"}"
+		startTime="${startTime%"}"
 		timeDiff="$(( $(date +%s) - $startTime ))"
 		days=$((timeDiff/60/60/24))
 		hours=$((timeDiff/60/60%24))
 		minutes=$((timeDiff/60%60))
 		seconds=$((timeDiff%60))
 		echo "Uptime: $days days, ${hours} hours, ${minutes} minutes, ${seconds} seconds"
+	;;
+	*)
+		# We should check for external command hooks from modules here
 	;;
 esac
 

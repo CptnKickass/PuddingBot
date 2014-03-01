@@ -66,7 +66,7 @@ inArr="0"
 # Convert some variables to boolean
 
 # So we can know what our uptime is
-startTime="$(date +%s)"
+echo "startTime=\"$(date +%s)\"" >> var/.status
 
 # Functions
 inArray() {
@@ -93,8 +93,10 @@ if [ "${#outArr[@]}" -ne "0" ]; then
 	done
 	unset outArr
 	for line in "${sendArr[@]}"; do
-		echo "PRIVMSG ${senderTarget} :${line}" >> $output
-		sleep 0.25
+		if [[ "$line" = *[[:alpha:]]* ]]; then
+			echo "PRIVMSG ${senderTarget} :${line}" >> $output
+			sleep 0.25
+		fi
 	done
 fi
 }
@@ -113,13 +115,14 @@ fi
 
 echo "Connecting to IRC server"
 # This is where the initial connection is spawned
-tail -f "$output" | nc "$server" "$port" | while read -r message
+while [ -e "$output" ]; do tail -f "$output" | nc "$server" "$port" | while read -r message
 do
 	# Unset the previous output message
 	unset out
 	# Remote the ^M control character at the end of each line
 	message="${message%}"
 	echo "$message"
+	echo "$message" >> var/input
 	# ${msgArr[@]} array will contain all input
 	msgArr+=("${message}")
 	if [ "$logIn" -eq "1" ]; then
@@ -158,29 +161,12 @@ do
 			mapfile <<<"$out" outArr
 		fi
 	elif [ "$(awk '{print $1}' <<<"$message")" == "ERROR" ]; then
-		if [ -e "$output" ]; then
-			rm -f "$output" 
-		fi
-		if [ -e "var/.admins" ]; then
-			rm -f "var/.admins"
-		fi
-		if [ -e "var/.conf" ]; then
-			rm -f "var/.conf"
-		fi
-		if [ -e "var/.mods" ]; then
-			rm -f "var/.mods"
-		fi
-		if [ -e "var/.status" ]; then
-			rm -f "var/.status"
-		fi
-		if [ -e "var/bot.pid" ]; then
-			rm -f "var/bot.pid"
-		fi
 		echo "Received error message: $message"
 	elif [ "$(echo "$message" | awk '{print $1}' | egrep -c "^:.*!.*@.*$")" -eq "0" ]; then
 		# The message does not match an n!u@h mask, and should be a server
 		out="$(./core/servermessage.sh "$message")"
 		if [ -n "$out" ]; then
+			senderTarget="${channels[0]}"
 			mapfile <<<"$out" outArr
 		fi
 	else
@@ -191,11 +177,14 @@ do
 	parseOutput;
 	#echo "" > "$output"
 done
+done
 
 # We've broken free of the above loop? We're exiting.
-cp var/bot.pid var/bot.pid.old
 if [ -e "$output" ]; then
 	rm -f "$output" 
+fi
+if [ -e "var/input" ]; then
+	rm -f "var/input"
 fi
 if [ -e "var/.admins" ]; then
 	rm -f "var/.admins"
@@ -212,8 +201,9 @@ fi
 if [ -e "var/bot.pid" ]; then
 	rm -f "var/bot.pid"
 fi
-./controller.sh --kill-pids
-exit 0
+
+#exit 0
+kill $$
 
 # This is the CTCP character, commented out for copy/paste use as needed.
 # PRIVMSG goose :VERSION

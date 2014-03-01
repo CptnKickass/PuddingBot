@@ -1,97 +1,553 @@
 source var/.conf
 message="$@"
-case "$(echo "$message" | awk '{print $2}')" in
-# 001 is the welcome message
-001)
-	ps aux | grep -v grep | grep "bash ./core/core.sh" | awk '{print $2}' | while read i; do
-		if [ "$(fgrep -c "$i" "var/bot.pid")" -eq "0" ]; then
-			echo "$i" >> var/bot.pid
-		fi
-	done
-	ps aux | grep -v grep | grep "tail -f ${outbound}" | awk '{print $2}' | while read i; do
-		if [ "$(fgrep -c "$i" "var/bot.pid")" -eq "0" ]; then
-			echo "$i" >> var/bot.pid
-		fi
-	done
+case "$(awk '{print $2}' <<<"$message")" in
+	# 001 is RPL_WELCOME
+	001)
 	fullCon="1"
 	networkName="${message#*Welcome to the }"
-	networkName="${networkName% Internet Relay Chat Network*}"
+	if echo "$networkName" | fgrep -q " Internet Relay Chat Network"; then
+		networkName="${networkName% Internet Relay Chat Network*}"
+	else
+		networkName="${networkName% IRC Network*}"
+	fi
 	actualServer="$(awk '{print $1}' <<<"$message")"
 	actualServer="${actualServer#:}"
 	echo "networkName=\"${networkName}\"" >> var/.status
 	echo "actualServer=\"${actualServer}\"" >> var/.status
 	;;
-# 002 is the "Your host is" reply
-002)
+	# 002 is RPL_YOURHOST
+	002)
 	;;
-# 003 is the "Server Creation Date" reply
-003)
+	# 003 is RPL_CREATED
+	003)
 	;;
-# 004 is the VERSION reply
-004)
+	# 004 is RPL_MYINFO
+	004)
 	;;
-# 005 is the "I support" reply
-005)
+	# 005 is RPL_BOUNCE
+	005)
 	;;
-# 008 are the server notice masks
-008)
+	# 006 is RPL_MAP
+	006)
 	;;
-# 015 is the MAP reply
-015)
+	# 007 is RPL_MAPEND
+	007)
 	;;
-# 017 is the end of MAP reply
-017)
+	# 008 is RPL_SNOMASK
+	008)
 	;;
-# 219 is end of STATS report
-219)
+	# 009 is RPL_STATMEMTOT
+	009)
 	;;
-# 249 lists the currently online opers
-249)
+	# 010 is RPL_BOUNCE
+	010)
 	;;
-# 250 is the highest global connections count
-250)
+	# 014 is RPL_YOURCOOKIE
+	014)
 	;;
-# 251 is the initial LUSERS reply
-251)
+	# 015 is RPL_MAP
+	015)
 	;;
-# 252 is the LUSERS reply of IRC operators online
-252)
+	# 016 is RPL_MAPMORE
+	016)
 	;;
-# 253 is the LUSERS reply of number of connections
-253)
+	# 017 is RPL_MAPEND
+	017)
 	;;
-# 254 is the LUSERS reply to the number of channels formed
-254)
+	# 042 is RPL_YOURID
+	042)
 	;;
-# 255 is the LUSERS reply for information to local connections
-255)
+	# 043 is RPL_SAVENICK
+	043)
 	;;
-# 265 is the local users count
-265)
+	# 050 is RPL_ATTEMPTINGJUNC
+	050)
 	;;
-# 266 is the global users count
-266)
+	# 051 is RPL_ATTEMPTINGREROUTE
+	051)
 	;;
-# 331 is when no topic is set
-331)
+	# 200 is RPL_TRACELINK
+	200)
 	;;
-# 332 is a channel's topic
-332)
+	# 201 is RPL_TRACECONNECTING
+	201)
 	;;
-# 333 is who set a channel's topic and the timestamp
-333)
+	# 202 is RPL_TRACEHANDSHAKE
+	202)
 	;;
-# 353 is a /NAMES list
-353)
+	# 203 is RPL_TRACEUNKNOWN
+	203)
 	;;
-# 366 is the end of a /NAMES list
-366)
+	# 204 is RPL_TRACEOPERATOR
+	204)
 	;;
-# 372 is part of the MOTD
-372)
+	# 205 is RPL_TRACEUSER
+	205)
 	;;
-# 375 is the start of the MOTD
-375)
+	# 206 is RPL_TRACESERVER
+	206)
+	;;
+	# 207 is RPL_TRACESERVICE
+	207)
+	;;
+	# 208 is RPL_TRACENEWTYPE
+	208)
+	;;
+	# 209 is RPL_TRACECLASS
+	209)
+	;;
+	# 210 is RPL_TRACERECONNECT
+	210)
+	;;
+	# 211 is RPL_STATSLINKINFO
+	211)
+	;;
+	# 212 is RPL_STATSCOMMANDS
+	212)
+	;;
+	# 213 is RPL_STATSCLINE
+	213)
+	;;
+	# 214 is RPL_STATSNLINE
+	214)
+	;;
+	# 215 is RPL_STATSILINE
+	215)
+	;;
+	# 216 is RPL_STATSKLINE
+	216)
+	;;
+	# 217 is RPL_STATSQLINE
+	217)
+	;;
+	# 218 is RPL_STATSYLINE
+	218)
+	;;
+	# 219 is RPL_ENDOFSTATS
+	219)
+	;;
+	# 220 is RPL_STATSPLINE
+	220)
+	;;
+	# 221 is RPL_UMODEIS
+	221)
+	;;
+	# 222 is RPL_MODLIST
+	222)
+	;;
+	# 223 is RPL_STATSELINE
+	223)
+	;;
+	# 224 is RPL_STATSFLINE
+	224)
+	;;
+	# 225 is RPL_STATSDLINE
+	225)
+	;;
+	# 226 is RPL_STATSCOUNT
+	226)
+	;;
+	# 227 is RPL_STATSGLINE
+	227)
+	;;
+	# 228 is RPL_STATSQLINE
+	228)
+	;;
+	# 231 is RPL_SERVICEINFO
+	231)
+	;;
+	# 232 is RPL_ENDOFSERVICES
+	232)
+	;;
+	# 233 is RPL_SERVICE
+	233)
+	;;
+	# 234 is RPL_SERVLIST
+	234)
+	;;
+	# 235 is RPL_SERVLISTEND
+	235)
+	;;
+	# 236 is RPL_STATSVERBOSE
+	236)
+	;;
+	# 237 is RPL_STATSENGINE
+	237)
+	;;
+	# 238 is RPL_STATSFLINE
+	238)
+	;;
+	# 239 is RPL_STATSIAUTH
+	239)
+	;;
+	# 240 is RPL_STATSVLINE
+	240)
+	;;
+	# 241 is RPL_STATSLLINE
+	241)
+	;;
+	# 242 is RPL_STATSUPTIME
+	242)
+	;;
+	# 243 is RPL_STATSOLINE
+	243)
+	;;
+	# 244 is RPL_STATSHLINE
+	244)
+	;;
+	# 245 is RPL_STATSSLINE
+	245)
+	;;
+	# 246 is RPL_STATSPING
+	246)
+	;;
+	# 247 is RPL_STATSBLINE
+	247)
+	;;
+	# 248 is RPL_STATSULINE
+	248)
+	;;
+	# 249 is RPL_STATSULINE
+	249)
+	;;
+	# 250 is RPL_STATSDLINE
+	250)
+	;;
+	# 251 is RPL_LUSERCLIENT
+	251)
+	;;
+	# 252 is RPL_LUSEROP
+	252)
+	;;
+	# 253 is RPL_LUSERUNKNOWN
+	253)
+	;;
+	# 254 is RPL_LUSERCHANNELS
+	254)
+	;;
+	# 255 is RPL_LUSERME
+	255)
+	;;
+	# 256 is RPL_ADMINME
+	256)
+	;;
+	# 257 is RPL_ADMINLOC1
+	257)
+	;;
+	# 258 is RPL_ADMINLOC2
+	258)
+	;;
+	# 259 is RPL_ADMINEMAIL
+	259)
+	;;
+	# 261 is RPL_TRACELOG
+	261)
+	;;
+	# 262 is RPL_TRACEPING
+	262)
+	;;
+	# 263 is RPL_TRYAGAIN
+	263)
+	;;
+	# 265 is RPL_LOCALUSERS
+	265)
+	;;
+	# 266 is RPL_GLOBALUSERS
+	266)
+	;;
+	# 267 is RPL_START_NETSTAT
+	267)
+	;;
+	# 268 is RPL_NETSTAT
+	268)
+	;;
+	# 269 is RPL_END_NETSTAT
+	269)
+	;;
+	# 270 is RPL_PRIVS
+	270)
+	;;
+	# 271 is RPL_SILELIST
+	271)
+	;;
+	# 272 is RPL_ENDOFSILELIST
+	272)
+	;;
+	# 273 is RPL_NOTIFY
+	273)
+	;;
+	# 274 is RPL_ENDNOTIFY
+	274)
+	;;
+	# 275 is RPL_STATSDLINE
+	275)
+	;;
+	# 276 is RPL_VCHANEXIST
+	276)
+	;;
+	# 277 is RPL_VCHANLIST
+	277)
+	;;
+	# 278 is RPL_VCHANHELP
+	278)
+	;;
+	# 280 is RPL_GLIST
+	280)
+	;;
+	# 281 is RPL_ENDOFGLIST
+	281)
+	;;
+	# 282 is RPL_ENDOFACCEPT
+	282)
+	;;
+	# 283 is RPL_ALIST
+	283)
+	;;
+	# 284 is RPL_ENDOFALIST
+	284)
+	;;
+	# 285 is RPL_GLIST_HASH
+	285)
+	;;
+	# 286 is RPL_CHANINFO_USERS
+	286)
+	;;
+	# 287 is RPL_CHANINFO_CHOPS
+	287)
+	;;
+	# 288 is RPL_CHANINFO_VOICES
+	288)
+	;;
+	# 289 is RPL_CHANINFO_AWAY
+	289)
+	;;
+	# 290 is RPL_CHANINFO_OPERS
+	290)
+	;;
+	# 291 is RPL_CHANINFO_BANNED
+	291)
+	;;
+	# 292 is RPL_CHANINFO_BANS
+	292)
+	;;
+	# 293 is RPL_CHANINFO_INVITE
+	293)
+	;;
+	# 294 is RPL_CHANINFO_INVITES
+	294)
+	;;
+	# 295 is RPL_CHANINFO_KICK
+	295)
+	;;
+	# 296 is RPL_CHANINFO_KICKS
+	296)
+	;;
+	# 299 is RPL_END_CHANINFO
+	299)
+	;;
+	# 300 is RPL_NONE
+	300)
+	;;
+	# 301 is RPL_AWAY
+	301)
+	;;
+	# 302 is RPL_USERHOST
+	302)
+	;;
+	# 303 is RPL_ISON
+	303)
+	;;
+	# 304 is RPL_TEXT
+	304)
+	;;
+	# 305 is RPL_UNAWAY
+	305)
+	;;
+	# 306 is RPL_NOWAWAY
+	306)
+	;;
+	# 307 is RPL_USERIP
+	307)
+	;;
+	# 308 is RPL_NOTIFYACTION
+	308)
+	;;
+	# 309 is RPL_NICKTRACE
+	309)
+	;;
+	# 310 is RPL_WHOISSVCMSG
+	310)
+	;;
+	# 311 is RPL_WHOISUSER
+	311)
+	;;
+	# 312 is RPL_WHOISSERVER
+	312)
+	;;
+	# 313 is RPL_WHOISOPERATOR
+	313)
+	;;
+	# 314 is RPL_WHOWASUSER
+	314)
+	;;
+	# 315 is RPL_ENDOFWHO
+	315)
+	;;
+	# 316 is RPL_WHOISCHANOP
+	316)
+	;;
+	# 317 is RPL_WHOISIDLE
+	317)
+	;;
+	# 318 is RPL_ENDOFWHOIS
+	318)
+	;;
+	# 319 is RPL_WHOISCHANNELS
+	319)
+	;;
+	# 320 is RPL_WHOISVIRT
+	320)
+	;;
+	# 321 is RPL_LISTSTART
+	321)
+	;;
+	# 322 is RPL_LIST
+	322)
+	;;
+	# 323 is RPL_LISTEND
+	323)
+	;;
+	# 324 is RPL_CHANNELMODEIS
+	324)
+	;;
+	# 325 is RPL_UNIQOPIS
+	325)
+	;;
+	# 326 is RPL_NOCHANPASS
+	326)
+	;;
+	# 327 is RPL_CHPASSUNKNOWN
+	327)
+	;;
+	# 328 is RPL_CHANNEL_URL
+	328)
+	;;
+	# 329 is RPL_CREATIONTIME
+	329)
+	;;
+	# 330 is RPL_WHOWAS_TIME
+	330)
+	;;
+	# 331 is RPL_NOTOPIC
+	331)
+	;;
+	# 332 is RPL_TOPIC
+	332)
+	;;
+	# 333 is RPL_TOPICWHOTIME
+	333)
+	;;
+	# 334 is RPL_LISTUSAGE
+	334)
+	;;
+	# 335 is RPL_WHOISBOT
+	335)
+	;;
+	# 338 is RPL_CHANPASSOK
+	338)
+	;;
+	# 339 is RPL_BADCHANPASS
+	339)
+	;;
+	# 340 is RPL_USERIP
+	340)
+	;;
+	# 341 is RPL_INVITING
+	341)
+	;;
+	# 342 is RPL_SUMMONING
+	342)
+	;;
+	# 345 is RPL_INVITED
+	345)
+	;;
+	# 346 is RPL_INVITELIST
+	346)
+	;;
+	# 347 is RPL_ENDOFINVITELIST
+	347)
+	;;
+	# 348 is RPL_EXCEPTLIST
+	348)
+	;;
+	# 349 is RPL_ENDOFEXCEPTLIST
+	349)
+	;;
+	# 351 is RPL_VERSION
+	351)
+	;;
+	# 352 is RPL_WHOREPLY
+	352)
+	;;
+	# 353 is RPL_NAMREPLY
+	353)
+	;;
+	# 354 is RPL_WHOSPCRPL
+	354)
+	;;
+	# 355 is RPL_NAMREPLY_
+	355)
+	;;
+	# 357 is RPL_MAP
+	357)
+	;;
+	# 358 is RPL_MAPMORE
+	358)
+	;;
+	# 359 is RPL_MAPEND
+	359)
+	;;
+	# 361 is RPL_KILLDONE
+	361)
+	;;
+	# 362 is RPL_CLOSING
+	362)
+	;;
+	# 363 is RPL_CLOSEEND
+	363)
+	;;
+	# 364 is RPL_LINKS
+	364)
+	;;
+	# 365 is RPL_ENDOFLINKS
+	365)
+	;;
+	# 366 is RPL_ENDOFNAMES
+	366)
+	;;
+	# 367 is RPL_BANLIST
+	367)
+	;;
+	# 368 is RPL_ENDOFBANLIST
+	368)
+	;;
+	# 369 is RPL_ENDOFWHOWAS
+	369)
+	;;
+	# 371 is RPL_INFO
+	371)
+	;;
+	# 372 is RPL_MOTD
+	372)
+	;;
+	# 373 is RPL_INFOSTART
+	373)
+	;;
+	# 374 is RPL_ENDOFINFO
+	374)
+	;;
+	# 375 is RPL_MOTDSTART
+	375)
 	if [ -n "$operId" ] && [ -n "$operPass" ]; then
 		echo "OPER $operId $operPass"
 		if [ -n "$operModes" ]; then
@@ -109,39 +565,684 @@ case "$(echo "$message" | awk '{print $2}')" in
 		echo "$lastCom" >> $output
 	fi
 	;;
-# 376 Signifies end of MOTD numeric
-376)
+	# 376 is RPL_ENDOFMOTD
+	376)
 	;;
-# 381 means we're opered up
-381)
+	# 377 is RPL_KICKEXPIRED
+	377)
 	;;
-# 396 is a hostname change
-396)
+	# 378 is RPL_BANEXPIRED
+	378)
 	;;
-# 401 is a "No such recipient" error
-401)
+	# 379 is RPL_KICKLINKED
+	379)
 	;;
-# 404 is a cannot send to channel
-404)
+	# 380 is RPL_BANLINKED
+	380)
 	;;
-# 412 is no text to send
-412)
+	# 381 is RPL_YOUREOPER
+	381)
 	;;
-# 432 is erroneous nickname
-432)
+	# 382 is RPL_REHASHING
+	382)
+	;;
+	# 383 is RPL_YOURESERVICE
+	383)
+	;;
+	# 384 is RPL_MYPORTIS
+	384)
+	;;
+	# 385 is RPL_NOTOPERANYMORE
+	385)
+	;;
+	# 386 is RPL_QLIST
+	386)
+	;;
+	# 387 is RPL_ENDOFQLIST
+	387)
+	;;
+	# 388 is RPL_ALIST
+	388)
+	;;
+	# 389 is RPL_ENDOFALIST
+	389)
+	;;
+	# 391 is RPL_TIME
+	391)
+	;;
+	# 392 is RPL_USERSSTART
+	392)
+	;;
+	# 393 is RPL_USERS
+	393)
+	;;
+	# 394 is RPL_ENDOFUSERS
+	394)
+	;;
+	# 395 is RPL_NOUSERS
+	395)
+	;;
+	# 396 is RPL_HOSTHIDDEN
+	396)
+	;;
+	# 400 is ERR_UNKNOWNERROR
+	400)
+	;;
+	# 401 is ERR_NOSUCHNICK
+	401)
+	;;
+	# 402 is ERR_NOSUCHSERVER
+	402)
+	;;
+	# 403 is ERR_NOSUCHCHANNEL
+	403)
+	;;
+	# 404 is ERR_CANNOTSENDTOCHAN
+	404)
+	;;
+	# 405 is ERR_TOOMANYCHANNELS
+	405)
+	;;
+	# 406 is ERR_WASNOSUCHNICK
+	406)
+	;;
+	# 407 is ERR_TOOMANYTARGETS
+	407)
+	;;
+	# 408 is ERR_NOSUCHSERVICE
+	408)
+	;;
+	# 409 is ERR_NOORIGIN
+	409)
+	;;
+	# 411 is ERR_NORECIPIENT
+	411)
+	;;
+	# 412 is ERR_NOTEXTTOSEND
+	412)
+	;;
+	# 413 is ERR_NOTOPLEVEL
+	413)
+	;;
+	# 414 is ERR_WILDTOPLEVEL
+	414)
+	;;
+	# 415 is ERR_BADMASK
+	415)
+	;;
+	# 416 is ERR_TOOMANYMATCHES
+	416)
+	;;
+	# 419 is ERR_LENGTHTRUNCATED
+	419)
+	;;
+	# 421 is ERR_UNKNOWNCOMMAND
+	421)
+	;;
+	# 422 is ERR_NOMOTD
+	422)
+	;;
+	# 423 is ERR_NOADMININFO
+	423)
+	;;
+	# 424 is ERR_FILEERROR
+	424)
+	;;
+	# 425 is ERR_NOOPERMOTD
+	425)
+	;;
+	# 429 is ERR_TOOMANYAWAY
+	429)
+	;;
+	# 430 is ERR_EVENTNICKCHANGE
+	430)
+	;;
+	# 431 is ERR_NONICKNAMEGIVEN
+	431)
+	;;
+	# 432 is ERR_ERRONEUSNICKNAME
+	432)
 	echo "Invalid nick"
 	;;
-# Server is setting a mode
-MODE)
+	# 433 is ERR_NICKNAMEINUSE
+	433)
 	;;
-# It's a snotice
-NOTICE)
+	# 434 is ERR_SERVICENAMEINUSE
+	434)
 	;;
-# It's wallops
-WALLOPS)
+	# 435 is ERR_SERVICECONFUSED
+	435)
 	;;
-*)
-	echo "[DEBUG - ${0}] $message"
-	echo "$(date -R) [${0}] $message" >> $(<var/bot.pid).debug
+	# 436 is ERR_NICKCOLLISION
+	436)
 	;;
+	# 437 is ERR_UNAVAILRESOURCE
+	437)
+	;;
+	# 438 is ERR_NICKTOOFAST
+	438)
+	;;
+	# 439 is ERR_TARGETTOOFAST
+	439)
+	;;
+	# 440 is ERR_SERVICESDOWN
+	440)
+	;;
+	# 441 is ERR_USERNOTINCHANNEL
+	441)
+	;;
+	# 442 is ERR_NOTONCHANNEL
+	442)
+	;;
+	# 443 is ERR_USERONCHANNEL
+	443)
+	;;
+	# 444 is ERR_NOLOGIN
+	444)
+	;;
+	# 445 is ERR_SUMMONDISABLED
+	445)
+	;;
+	# 446 is ERR_USERSDISABLED
+	446)
+	;;
+	# 447 is ERR_NONICKCHANGE
+	447)
+	;;
+	# 449 is ERR_NOTIMPLEMENTED
+	449)
+	;;
+	# 451 is ERR_NOTREGISTERED
+	451)
+	;;
+	# 452 is ERR_IDCOLLISION
+	452)
+	;;
+	# 453 is ERR_NICKLOST
+	453)
+	;;
+	# 455 is ERR_HOSTILENAME
+	455)
+	;;
+	# 456 is ERR_ACCEPTFULL
+	456)
+	;;
+	# 457 is ERR_ACCEPTEXIST
+	457)
+	;;
+	# 458 is ERR_ACCEPTNOT
+	458)
+	;;
+	# 459 is ERR_NOHIDING
+	459)
+	;;
+	# 460 is ERR_NOTFORHALFOPS
+	460)
+	;;
+	# 461 is ERR_NEEDMOREPARAMS
+	461)
+	;;
+	# 462 is ERR_ALREADYREGISTERED
+	462)
+	;;
+	# 463 is ERR_NOPERMFORHOST
+	463)
+	;;
+	# 464 is ERR_PASSWDMISMATCH
+	464)
+	;;
+	# 465 is ERR_YOUREBANNEDCREEP
+	465)
+	;;
+	# 466 is ERR_YOUWILLBEBANNED
+	466)
+	;;
+	# 467 is ERR_KEYSET
+	467)
+	;;
+	# 468 is ERR_INVALIDUSERNAME
+	468)
+	;;
+	# 469 is ERR_LINKSET
+	469)
+	;;
+	# 470 is ERR_LINKCHANNEL
+	470)
+	;;
+	# 471 is ERR_CHANNELISFULL
+	471)
+	;;
+	# 472 is ERR_UNKNOWNMODE
+	472)
+	;;
+	# 473 is ERR_INVITEONLYCHAN
+	473)
+	;;
+	# 474 is ERR_BANNEDFROMCHAN
+	474)
+	;;
+	# 475 is ERR_BADCHANNELKEY
+	475)
+	;;
+	# 476 is ERR_BADCHANMASK
+	476)
+	;;
+	# 477 is ERR_NOCHANMODES
+	477)
+	;;
+	# 478 is ERR_BANLISTFULL
+	478)
+	;;
+	# 479 is ERR_BADCHANNAME
+	479)
+	;;
+	# 480 is ERR_NOULINE
+	480)
+	;;
+	# 481 is ERR_NOPRIVILEGES
+	481)
+	;;
+	# 482 is ERR_CHANOPRIVSNEEDED
+	482)
+	;;
+	# 483 is ERR_CANTKILLSERVER
+	483)
+	;;
+	# 484 is ERR_RESTRICTED
+	484)
+	;;
+	# 485 is ERR_UNIQOPRIVSNEEDED
+	485)
+	;;
+	# 486 is ERR_NONONREG
+	486)
+	;;
+	# 487 is ERR_CHANTOORECENT
+	487)
+	;;
+	# 488 is ERR_TSLESSCHAN
+	488)
+	;;
+	# 489 is ERR_VOICENEEDED
+	489)
+	;;
+	# 491 is ERR_NOOPERHOST
+	491)
+	;;
+	# 492 is ERR_NOSERVICEHOST
+	492)
+	;;
+	# 493 is ERR_NOFEATURE
+	493)
+	;;
+	# 494 is ERR_BADFEATURE
+	494)
+	;;
+	# 495 is ERR_BADLOGTYPE
+	495)
+	;;
+	# 496 is ERR_BADLOGSYS
+	496)
+	;;
+	# 497 is ERR_BADLOGVALUE
+	497)
+	;;
+	# 498 is ERR_ISOPERLCHAN
+	498)
+	;;
+	# 499 is ERR_CHANOWNPRIVNEEDED
+	499)
+	;;
+	# 501 is ERR_UMODEUNKNOWNFLAG
+	501)
+	;;
+	# 502 is ERR_USERSDONTMATCH
+	502)
+	;;
+	# 503 is ERR_GHOSTEDCLIENT
+	503)
+	;;
+	# 504 is ERR_USERNOTONSERV
+	504)
+	;;
+	# 511 is ERR_SILELISTFULL
+	511)
+	;;
+	# 512 is ERR_TOOMANYWATCH
+	512)
+	;;
+	# 513 is ERR_BADPING
+	513)
+	;;
+	# 514 is ERR_INVALID_ERROR
+	514)
+	;;
+	# 515 is ERR_BADEXPIRE
+	515)
+	;;
+	# 516 is ERR_DONTCHEAT
+	516)
+	;;
+	# 517 is ERR_DISABLED
+	517)
+	;;
+	# 518 is ERR_NOINVITE
+	518)
+	;;
+	# 519 is ERR_ADMONLY
+	519)
+	;;
+	# 520 is ERR_OPERONLY
+	520)
+	;;
+	# 521 is ERR_LISTSYNTAX
+	521)
+	;;
+	# 522 is ERR_WHOSYNTAX
+	522)
+	;;
+	# 523 is ERR_WHOLIMEXCEED
+	523)
+	;;
+	# 524 is ERR_QUARANTINED
+	524)
+	;;
+	# 525 is ERR_REMOTEPFX
+	525)
+	;;
+	# 526 is ERR_PFXUNROUTABLE
+	526)
+	;;
+	# 550 is ERR_BADHOSTMASK
+	550)
+	;;
+	# 551 is ERR_HOSTUNAVAIL
+	551)
+	;;
+	# 552 is ERR_USINGSLINE
+	552)
+	;;
+	# 553 is ERR_STATSSLINE
+	553)
+	;;
+	# 600 is RPL_LOGON
+	600)
+	;;
+	# 601 is RPL_LOGOFF
+	601)
+	;;
+	# 602 is RPL_WATCHOFF
+	602)
+	;;
+	# 603 is RPL_WATCHSTAT
+	603)
+	;;
+	# 604 is RPL_NOWON
+	604)
+	;;
+	# 605 is RPL_NOWOFF
+	605)
+	;;
+	# 606 is RPL_WATCHLIST
+	606)
+	;;
+	# 607 is RPL_ENDOFWATCHLIST
+	607)
+	;;
+	# 608 is RPL_WATCHCLEAR
+	608)
+	;;
+	# 610 is RPL_MAPMORE
+	610)
+	;;
+	# 611 is RPL_ISLOCOP
+	611)
+	;;
+	# 612 is RPL_ISNOTOPER
+	612)
+	;;
+	# 613 is RPL_ENDOFISOPER
+	613)
+	;;
+	# 615 is RPL_MAPMORE
+	615)
+	;;
+	# 616 is RPL_WHOISHOST
+	616)
+	;;
+	# 617 is RPL_DCCSTATUS
+	617)
+	;;
+	# 618 is RPL_DCCLIST
+	618)
+	;;
+	# 619 is RPL_ENDOFDCCLIST
+	619)
+	;;
+	# 620 is RPL_DCCINFO
+	620)
+	;;
+	# 621 is RPL_RULES
+	621)
+	;;
+	# 622 is RPL_ENDOFRULES
+	622)
+	;;
+	# 623 is RPL_MAPMORE
+	623)
+	;;
+	# 624 is RPL_OMOTDSTART
+	624)
+	;;
+	# 625 is RPL_OMOTD
+	625)
+	;;
+	# 626 is RPL_ENDOFO
+	626)
+	;;
+	# 630 is RPL_SETTINGS
+	630)
+	;;
+	# 631 is RPL_ENDOFSETTINGS
+	631)
+	;;
+	# 640 is RPL_DUMPING
+	640)
+	;;
+	# 641 is RPL_DUMPRPL
+	641)
+	;;
+	# 642 is RPL_EODUMP
+	642)
+	;;
+	# 660 is RPL_TRACEROUTE_HOP
+	660)
+	;;
+	# 661 is RPL_TRACEROUTE_START
+	661)
+	;;
+	# 662 is RPL_MODECHANGEWARN
+	662)
+	;;
+	# 663 is RPL_CHANREDIR
+	663)
+	;;
+	# 664 is RPL_SERVMODEIS
+	664)
+	;;
+	# 665 is RPL_OTHERUMODEIS
+	665)
+	;;
+	# 666 is RPL_ENDOF_GENERIC
+	666)
+	;;
+	# 670 is RPL_WHOWASDETAILS
+	670)
+	;;
+	# 671 is RPL_WHOISSECURE
+	671)
+	;;
+	# 672 is RPL_UNKNOWNMODES
+	672)
+	;;
+	# 673 is RPL_CANNOTSETMODES
+	673)
+	;;
+	# 678 is RPL_LUSERSTAFF
+	678)
+	;;
+	# 679 is RPL_TIMEONSERVERIS
+	679)
+	;;
+	# 682 is RPL_NETWORKS
+	682)
+	;;
+	# 687 is RPL_YOURLANGUAGEIS
+	687)
+	;;
+	# 688 is RPL_LANGUAGE
+	688)
+	;;
+	# 689 is RPL_WHOISSTAFF
+	689)
+	;;
+	# 690 is RPL_WHOISLANGUAGE
+	690)
+	;;
+	# 702 is RPL_MODLIST
+	702)
+	;;
+	# 703 is RPL_ENDOFMODLIST
+	703)
+	;;
+	# 704 is RPL_HELPSTART
+	704)
+	;;
+	# 705 is RPL_HELPTXT
+	705)
+	;;
+	# 706 is RPL_ENDOFHELP
+	706)
+	;;
+	# 708 is RPL_ETRACEFULL
+	708)
+	;;
+	# 709 is RPL_ETRACE
+	709)
+	;;
+	# 710 is RPL_KNOCK
+	710)
+	;;
+	# 711 is RPL_KNOCKDLVR
+	711)
+	;;
+	# 712 is ERR_TOOMANYKNOCK
+	712)
+	;;
+	# 713 is ERR_CHANOPEN
+	713)
+	;;
+	# 714 is ERR_KNOCKONCHAN
+	714)
+	;;
+	# 715 is ERR_KNOCKDISABLED
+	715)
+	;;
+	# 716 is RPL_TARGUMODEG
+	716)
+	;;
+	# 717 is RPL_TARGNOTIFY
+	717)
+	;;
+	# 718 is RPL_UMODEGMSG
+	718)
+	;;
+	# 720 is RPL_OMOTDSTART
+	720)
+	;;
+	# 721 is RPL_OMOTD
+	721)
+	;;
+	# 722 is RPL_ENDOFOMOTD
+	722)
+	;;
+	# 723 is ERR_NOPRIVS
+	723)
+	;;
+	# 724 is RPL_TESTMARK
+	724)
+	;;
+	# 725 is RPL_TESTLINE
+	725)
+	;;
+	# 726 is RPL_NOTESTLINE
+	726)
+	;;
+	# 771 is RPL_XINFO
+	771)
+	;;
+	# 773 is RPL_XINFOSTART
+	773)
+	;;
+	# 774 is RPL_XINFOEND
+	774)
+	;;
+	# 900 is InspIRCd replying with what NickServ account you've successfully identified to
+	900)
+	;;
+	# 931 is InspIRCd telling us they don't tolerate spam bots
+	931)
+	;;
+	# 972 is ERR_CANNOTDOCOMMAND
+	972)
+	;;
+	# 973 is ERR_CANNOTCHANGEUMODE
+	973)
+	;;
+	# 974 is ERR_CANNOTCHANGECHANMODE
+	974)
+	;;
+	# 975 is ERR_CANNOTCHANGESERVERMODE
+	975)
+	;;
+	# 976 is ERR_CANNOTSENDTONICK
+	976)
+	;;
+	# 977 is ERR_UNKNOWNSERVERMODE
+	977)
+	;;
+	# 979 is ERR_SERVERMODELOCK
+	979)
+	;;
+	# 980 is ERR_BADCHARENCODING
+	980)
+	;;
+	# 981 is ERR_TOOMANYLANGUAGES
+	981)
+	;;
+	# 982 is ERR_NOLANGUAGE
+	982)
+	;;
+	# 983 is ERR_TEXTTOOSHORT
+	983)
+	;;
+	# 999 is ERR_NUMERIC_ERR
+	999)
+	;;
+	# Server is setting a mode
+	MODE)
+		;;
+	# It's a snotice
+	NOTICE)
+		;;
+	# It's wallops
+	WALLOPS)
+		;;
+	# It's a PRIVMSG
+	PRIVMSG)
+		;;
+	*)
+		echo "[DEBUG - ${0}] $message"
+		echo "$(date -R) [${0}] $message" >> $(<var/bot.pid).debug
+		;;
 esac

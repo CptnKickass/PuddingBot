@@ -43,25 +43,26 @@ modHook="Prefix"
 # For example, if you wanted to match:
 #  :goose!goose@goose PRIVMSG #GooseDen :s/foo/bar/
 # Your $modForm would be:
-#  modForm="^s/.+/.+/"
-# Leave blank if you don't need this
-modForm=""
+#  modForm=("^.*PRIVMSG.*:s/.+/.+/$")
+# If the $modHook is "Prefix", what command word should trigger the module?
+# This is an array, so you can set as many hooks as you need.
+modForm=("example")
 
-# If you need your modForm to be case insensitive, and yes. If not, answer
-# no. If you don't need this, leave it blank.
+# If you need your modForm to be case insensitive, answer yes. If not, answer
+# no. This only applies for messages trigged by "Format" mode.
+# If you're using "Prefix" mode, you can leave this blank.
 modFormCase=""
 
 # A one liner on how to use the module/what it does
 modHelp="This module provides examples on how to write other modules"
 
+# What flag should be required for the user to access this module? No
+# error message will be sent if insufficient privs are found. This is
+# where you can use the custom flags feature of admins.conf
+modFlag="m"
+
 # This is where the module source should start
 # The whole IRC message will be passed to the script using $@
 msg="$@"
-com="$(echo "$msg" | awk '{print $4}')"
-com="${com:2}"
-case "$com" in
-	command)
-		echo "You typed !command"
-	;;
-esac
+echo "You typed !example, your message was ${msg}"
 exit 0

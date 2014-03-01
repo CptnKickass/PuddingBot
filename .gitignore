@@ -1,4 +1,5 @@
-# Runfiles that don't need to be pushe
+# Runfiles that don't need to be pushed
+*.debug
 var/.mods
 var/.conf
 var/.admins
