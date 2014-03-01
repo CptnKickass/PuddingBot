@@ -41,8 +41,7 @@ if [ -e "var/.mods" ]; then
 	<var/.mods | while read line; do
 		cp modules/${line} core/.mods
 	done
-	source core/modhook.sh
-	#rm -f var/.mods
+	#source core/modhook.sh --build
 fi
 
 # Setup file for status checks
@@ -93,7 +92,7 @@ if [ "${#outArr[@]}" -ne "0" ]; then
 	done
 	unset outArr
 	for line in "${sendArr[@]}"; do
-		if [[ "$line" = *[[:alpha:]]* ]]; then
+		if [ -n "$line" ]; then
 			echo "PRIVMSG ${senderTarget} :${line}" >> $output
 			sleep 0.25
 		fi
@@ -162,6 +161,30 @@ do
 		fi
 	elif [ "$(awk '{print $1}' <<<"$message")" == "ERROR" ]; then
 		echo "Received error message: $message"
+		if [ -e "$output" ]; then
+			rm -f "$output" 
+		fi
+		if [ -e "var/input" ]; then
+			rm -f "var/input"
+		fi
+		if [ -e "var/.admins" ]; then
+			rm -f "var/.admins"
+		fi
+		if [ -e "var/.conf" ]; then
+			rm -f "var/.conf"
+		fi
+		if [ -e "var/.mods" ]; then
+			rm -rf "var/.mods"
+		fi
+		if [ -e "var/.status" ]; then
+			rm -f "var/.status"
+		fi
+		if [ -e "var/bot.pid" ]; then
+			rm -f "var/bot.pid"
+		fi
+		
+		#exit 0
+		kill $$
 	elif [ "$(echo "$message" | awk '{print $1}' | egrep -c "^:.*!.*@.*$")" -eq "0" ]; then
 		# The message does not match an n!u@h mask, and should be a server
 		out="$(./core/servermessage.sh "$message")"
@@ -193,7 +216,7 @@ if [ -e "var/.conf" ]; then
 	rm -f "var/.conf"
 fi
 if [ -e "var/.mods" ]; then
-	rm -f "var/.mods"
+	rm -rf "var/.mods"
 fi
 if [ -e "var/.status" ]; then
 	rm -f "var/.status"

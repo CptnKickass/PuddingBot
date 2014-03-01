@@ -14,10 +14,6 @@ fi
 # Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
-	# Dependencies go in this array
-	# Dependencies already required by the controller script:
-	# read fgrep egrep echo cut sed ps awk
-	# Format is: deps=("foo" "bar")
 	deps=("curl" "tr")
 	if [ "${#deps[@]}" -ne "0" ]; then
 		for i in ${deps[@]}; do
@@ -37,34 +33,11 @@ if [[ "$1" == "--dep-check" ]]; then
 		exit 0
 	fi
 fi
-
-# Hook should either be "Prefix" or "Format". Prefix will patch whatever
-# the $comPrefix is, i.e. !command. Format will match a message specific
-# format, i.e. the sed module.
 modHook="Prefix"
-
-# If the $modHook is "Format", what format should the message match to
-# catch the script? This should be a regular expression pattern, mathing
-# a regular channel PRIVMSG following the colon (It won't match a /ME)
-# For example, if you wanted to match:
-#  :goose!goose@goose PRIVMSG #GooseDen :s/foo/bar/
-# Your $modForm would be:
-#  modForm=("^.*PRIVMSG.*:s/.+/.+/$")
-# If the $modHook is "Prefix", what command word should trigger the module?
-# This is an array, so you can set as many hooks as you need.
-modForm=("example")
-
-# If you need your modForm to be case insensitive, answer yes. If not, answer
-# no. This only applies for messages trigged by "Format" mode.
-# If you're using "Prefix" mode, you can leave this blank.
+modForm=("wolf" "wolfram")
 modFormCase=""
-
-# A one liner on how to use the module/what it does
 modHelp="This module provides examples on how to write other modules"
 modFlag="m"
-
-# This is where the module source should start
-# The whole IRC message will be passed to the script using $@
 msg="$@"
 # Color character used to start a category: [1;36m
 # Color character used to end a category: [0m

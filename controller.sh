@@ -224,8 +224,8 @@ else
 		# Start the actual bot
 		echo "Starting bot"
 		#screen -d -m -S pudding ./core/core.sh
-		./core/core.sh > /dev/null 2>&1 &
-		#./core/core.sh
+		#./core/core.sh > /dev/null 2>&1 &
+		./core/core.sh
 	fi
 fi
 }

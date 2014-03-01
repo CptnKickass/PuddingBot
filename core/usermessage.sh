@@ -316,17 +316,38 @@ case "$com" in
 	;;
 	uptime)
 		startTime="$(egrep -m 1 "^startTime=\"" var/.status)"
-		startTime="${startTime#*"}"
-		startTime="${startTime%"}"
+		startTime="${startTime#*\"}"
+		startTime="${startTime%\"}"
 		timeDiff="$(( $(date +%s) - $startTime ))"
-		days=$((timeDiff/60/60/24))
-		hours=$((timeDiff/60/60%24))
-		minutes=$((timeDiff/60%60))
-		seconds=$((timeDiff%60))
-		echo "Uptime: $days days, ${hours} hours, ${minutes} minutes, ${seconds} seconds"
+		days="$((timeDiff/60/60/24))"
+		if [ "$days" -eq "1" ]; then
+			days="${days} day"
+		else
+			days="${days} days"
+		fi
+		hours="$((timeDiff/60/60%24))"
+		if [ "$hours" -eq "1" ]; then
+			hours="${hours} hour"
+		else
+			hours="${hours} hours"
+		fi
+		minutes="$((timeDiff/60%60))"
+		if [ "$minutes" -eq "1" ]; then
+			minutes="${minutes} minute"
+		else
+			minutes="${minutes} minutes"
+		fi
+		seconds="$((timeDiff%60))"
+		if [ "$seconds" -eq "1" ]; then
+			seconds="${seconds} second"
+		else
+			seconds="${seconds} seconds"
+		fi
+		echo "Uptime: ${days}, ${hours}, ${minutes}, ${seconds}"
 	;;
 	*)
 		# We should check for external command hooks from modules here
+		./core/modhook.sh "$message"
 	;;
 esac
 
@@ -339,7 +360,6 @@ while read i; do
 		ignoreUser="1"
 	fi
 done < var/ignore.db
-
 if [ "$ignoreUser" -eq "0" ]; then
 
 isPm="0"
