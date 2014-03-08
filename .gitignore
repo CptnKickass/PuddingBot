@@ -8,3 +8,5 @@ var/input
 var/outbound
 var/ignore.db
 var/bot.pid
+pudding.conf
+admins.conf
