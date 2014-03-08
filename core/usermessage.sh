@@ -367,7 +367,7 @@ case "$com" in
 					file="${file//\" \"/|}"
 					file="${file//\"/}"
 				else
-					file="${i#*/}"
+					file="${i##*/}"
 					file="${file%.sh}"
 				fi
 				line="$(fgrep "modHelp" "$i")"
