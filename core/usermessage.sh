@@ -13,9 +13,7 @@ senderHost="${senderFull#*@}"
 comExec () {
 case "$com" in
 	login)
-		# Commented out for development purposes, uncomment for production and remove if true line
-		#if [ "$isPm" -eq "1" ]; then
-		if true; then
+		if [ "$isPm" -eq "1" ]; then
 			loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
 			if [ "$loggedIn" -eq "0" ]; then
 				lUser="$(awk '{print $5}' <<<"$message")"
@@ -346,9 +344,7 @@ case "$com" in
 		echo "Uptime: ${days}, ${hours}, ${minutes}, ${seconds}"
 	;;
 	help)
-		# Commented out for development purposes, uncomment for production and remove if true line
-		#if [ "$isPm" -eq "1" ]; then
-		if true; then
+		if [ "$isPm" -eq "1" ]; then
 			echo "(login) => Logs you in to the bot"
 			echo "(logout) => Logs you out of the bot"
 			echo "(flogout) => Force logs another user out of the bot"
@@ -363,9 +359,9 @@ case "$com" in
 			echo "(die|quit|exit) => I'll quit IRC and shut down"
 			echo "(restart) => I'll restart, quitting IRC and joining a new spawn"
 			echo "(uptime) => I'll give you an uptime report"
-			for i in modules/*.sh; do
+			for i in var/.mods/*.sh; do
 				if fgrep -i -q "modHook=\"Prefix\"" "$i"; then
-					file="$(fgrep -i "modForm=" "$i")"
+					file="$(fgrep "modForm=" "$i")"
 					file="${file#*(}"
 					file="${file%)}"
 					file="${file//\" \"/|}"
@@ -384,7 +380,17 @@ case "$com" in
 		fi
 	;;
 	*)
-		./core/modhook.sh
+		for i in var/.mods/*.sh; do
+			if fgrep -i -q "modHook=\"Prefix\"" "$i"; then
+				modArr="$(fgrep "modForm=" "$i")"
+				modArr="${modArr#modForm=}"
+				modArr="${modArr#(}"
+				modArr="${modArr%)}"
+				if echo "$modArr" | fgrep -q "\"$com\""; then
+					./${i} "$message"
+				fi
+			fi
+		done
 	;;
 esac
 
@@ -435,6 +441,28 @@ case "$(echo "$message" | awk '{print $2}')" in
 		fi
 		if [ "$isCom" -eq "1" ]; then
 			comExec;
+		else	
+			for i in var/.mods/*.sh; do
+				if fgrep -i -q "modHook=\"Format\"" "$i"; then
+					pattern="$(fgrep "modForm=" "$i")"
+					pattern="${pattern#modForm=}"
+					pattern="${pattern#(\"}"
+					pattern="${pattern%\")}"
+					caseSensitive="$(fgrep "modFormCase=" "$i")"
+					caseSensitive="${caseSensitive#modFormCase=}"
+					caseSensitive="${caseSensitive#\"}"
+					caseSensitive="${caseSensitive%\"}"
+					if echo "$caseSensitive" | grep -i -q "Yes"; then
+						if echo "$message" | egrep -q "$pattern"; then
+							./${i} "$message"
+						fi
+					else
+						if echo "$message" | egrep -i -q "$pattern"; then
+							./${i} "$message"
+						fi
+					fi
+				fi
+			done
 		fi
 		;;
 	QUIT)

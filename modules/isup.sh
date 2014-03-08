@@ -39,7 +39,8 @@ modFormCase=""
 modHelp="Checks a site for up/down status via http://isup.me/"
 modFlag="m"
 msg="$@"
-if [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
+siteToCheck="$(awk '{print $5}' <<<"$msg")"
+if [ -z "$siteToCheck" ]; then
 	echo "This command requires a parameter"
 elif ! echo "$siteToCheck" | egrep -q "(([a-zA-Z](-?[a-zA-Z0-9])*)\.)*[a-zA-Z](-?[a-zA-Z0-9])+\.[a-zA-Z]{2,}"; then
 	echo "The domain ${siteToCheck} does not appear to be a valid domain"
@@ -49,7 +50,7 @@ else
 	siteToCheck="$(echo "$msg" | awk '{print $5}' | sed "s/http:\/\///")"
 	isSiteUp="$(curl -A "$nick" -m 5 -k -s -L "http://isup.me/${siteToCheck}" | fgrep -c "It's just you.")"
 	# 1 means it's up, 0 means it's down
-	if [ "$isSiteUp"-eq "1" ]; then
+	if [ "$isSiteUp" -eq "1" ]; then
 		echo "${siteToCheck} is UP, according to http://isup.me/"
 	elif [ "$isSiteUp" -eq "0" ]; then
 		echo "${siteToCheck} is DOWN, according to http://isup.me/"

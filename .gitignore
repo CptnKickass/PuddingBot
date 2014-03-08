@@ -4,6 +4,7 @@ var/.mods
 var/.conf
 var/.admins
 var/.status
+var/input
 var/outbound
 var/ignore.db
 var/bot.pid

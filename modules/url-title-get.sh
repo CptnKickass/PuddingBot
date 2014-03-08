@@ -74,7 +74,7 @@ if echo "$httpResponseCode" | awk '{print $2}' | fgrep -q "200"; then
 	if [ -z "$pageDest" ]; then
 		pageDest="[Unable to determine URL destination]"
 	fi
-	if echo "$pageDest" | egrep -q "^http(s)?://(www\.)?youtube\.com/watch\?v\="; then
+	if echo "$pageDest" | egrep -i -q "^http(s)?://(www\.)?youtube\.com/watch\?v\="; then
 		vidId="${pageDest#*watch?v=}"
 		vidId="${vidId:0:11}"
 		vidInfo="$(curl -A "$nick" -m 5 -k -s -L "http://gdata.youtube.com/feeds/api/videos/${vidId}")"
@@ -94,7 +94,7 @@ if echo "$httpResponseCode" | awk '{print $2}' | fgrep -q "200"; then
 		elif [ "$vidHours" -eq "0" ] && [ "$vidMinutes" -eq "0" ]; then
 			pageTitle="${pageTitle} [0:${vidSeconds}]"
 		fi
-	elif echo "$pageDest" | egrep -q "^http(s)?://(www\.)?newegg\.com/Product/Product.aspx?Item="; then
+	elif echo "$pageDest" | egrep -i -q "^http(s)?://(www\.)?newegg\.com/Product/"; then
 		pageSrc="$(curl -A "$nick" -m 5 -k -s -L "$pageDest")"
 		itemPrice="$(fgrep -m 1 "product_sale_price" <<<"$pageSrc")"
 		itemPrice="${itemPrice#*\'}"
@@ -102,7 +102,8 @@ if echo "$httpResponseCode" | awk '{print $2}' | fgrep -q "200"; then
 		if [ -n "$itemPrice" ]; then
 			pageTitle="${pageTitle} [Price: \$${itemPrice}]"
 		fi
-	elif echo "$pageDest" | egrep -q "^http(s)?://(www\.)?amazon\.com/.+/Product/"; then
+	elif echo "$pageDest" | egrep -i -q "^http(s)?://(www\.)?amazon\.com/.*/Product/"; then
+		echo "URL is Amazon"
 		pageSrc="$(curl -A "$nick" -m 5 -k -s -L "$pageDest")"
 		itemPrice="$(grep -m 1 -A 1 "Price:" <<<"$pageSrc" | egrep -o "\\\$[[:digit:]]+\.[[:digit:]]+")"
 		if [ -n "$itemPrice" ]; then

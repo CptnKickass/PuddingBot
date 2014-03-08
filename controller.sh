@@ -203,6 +203,7 @@ else
 
 		# Check for sanity with the modules
 		echo "Checking for modules"
+		mkdir var/.mods
 		egrep "^loadMod" "pudding.conf" | sort -u | while read mod; do
 			mod="${mod%\"}"
 			mod="${mod#*\"}"
@@ -213,7 +214,7 @@ else
 				# File exists. Check that its dependencies are met.
 				./modules/${mod} --dep-check 2>&1 | head -n 1 | while read line; do
 					if [[ "$line" == "ok" ]]; then
-						echo "${mod}" >> var/.mods
+						cp "modules/${mod}" "var/.mods/${mod}"
 						echo -e "Loaded module:  ${green}${mod}${reset}"
 					else
 						echo -e "Skipped module: ${red}${mod}${reset} (Dependency check failed)"
@@ -224,8 +225,8 @@ else
 		# Start the actual bot
 		echo "Starting bot"
 		#screen -d -m -S pudding ./core/core.sh
-		#./core/core.sh > /dev/null 2>&1 &
-		./core/core.sh
+		./core/core.sh > /dev/null 2>&1 &
+		#./core/core.sh
 	fi
 fi
 }
