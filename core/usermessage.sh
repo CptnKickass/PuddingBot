@@ -345,9 +345,46 @@ case "$com" in
 		fi
 		echo "Uptime: ${days}, ${hours}, ${minutes}, ${seconds}"
 	;;
+	help)
+		# Commented out for development purposes, uncomment for production and remove if true line
+		#if [ "$isPm" -eq "1" ]; then
+		if true; then
+			echo "(login) => Logs you in to the bot"
+			echo "(logout) => Logs you out of the bot"
+			echo "(flogout) => Force logs another user out of the bot"
+			echo "(admins) => Lists the currently logged in admins"
+			echo "(join) => I'll join a channel"
+			echo "(part) => I'll part a channel"
+			echo "(speak|say) => I'll speak a message in a channel"
+			echo "(action|do) => I'll do a /ME in a channel"
+			echo "(nick) => I'll change nicks"
+			echo "(ignore) => I'll ignore a regular expression n!u@h mask"
+			echo "(status) => I'll give a status report"
+			echo "(die|quit|exit) => I'll quit IRC and shut down"
+			echo "(restart) => I'll restart, quitting IRC and joining a new spawn"
+			echo "(uptime) => I'll give you an uptime report"
+			for i in modules/*.sh; do
+				if fgrep -i -q "modHook=\"Prefix\"" "$i"; then
+					file="$(fgrep -i "modForm=" "$i")"
+					file="${file#*(}"
+					file="${file%)}"
+					file="${file//\" \"/|}"
+					file="${file//\"/}"
+				else
+					file="${i#*/}"
+					file="${file%.sh}"
+				fi
+				line="$(fgrep "modHelp" "$i")"
+				line="${line#*\"}"
+				line="${line%\"}"
+				echo "(${file}) => ${line}"
+			done
+		else
+			echo "Please use this command in a private message to prevent unnecessary channel spamming"
+		fi
+	;;
 	*)
-		# We should check for external command hooks from modules here
-		./core/modhook.sh "$message"
+		./core/modhook.sh
 	;;
 esac
 
@@ -360,6 +397,7 @@ while read i; do
 		ignoreUser="1"
 	fi
 done < var/ignore.db
+
 if [ "$ignoreUser" -eq "0" ]; then
 
 isPm="0"

@@ -31,19 +31,6 @@ else
 	exit 1
 fi
 
-# Load modules
-if [ -e "var/.mods" ]; then
-	echo "Loading modules into bot"
-	if [ -d "core/.mods" ]; then
-		rm -rf core/.mods
-		mkdir core/.mods
-	fi
-	<var/.mods | while read line; do
-		cp modules/${line} core/.mods
-	done
-	#source core/modhook.sh --build
-fi
-
 # Setup file for status checks
 if [ -e "var/.status" ]; then
 	rm -f var/.status
