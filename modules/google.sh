@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
 ## Config
-# None
+# goo.gl API key
+googleApi=""
+# Custom Search Engine ID
+googleCid=""
 
 ## Source
 
@@ -37,11 +40,20 @@ if [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
 	echo "This command requires a parameter"
 else
 	searchTerm="$(read -r one two thee four rest <<<"$msg"; echo "$rest")"
-	searchResult="$(curl -s --get --data-urlencode "q=${searchTerm}" http://ajax.googleapis.com/ajax/services/search/web?v=1.0 | sed 's/"unescapedUrl":"\([^"]*\).*/\1/;s/.*GwebSearch",//')"
-	if echo "$searchResult" | fgrep -q "\"responseDetails\": null,"; then
-		echo "No results found"
+	searchResult="$(curl -s --get --data-urlencode "q=${searchTerm}" --data-urlencode "cx=${googleCid}" "https://www.googleapis.com/customsearch/v1?key=${googleApi}&num=1")"
+	results="$(grep -m 1 "totalResults" <<<"$searchResult")"
+	results="${results#*\": \"}"
+	results="${results%%\"*}"
+	if [ "$results" -ne "0" ]; then
+		link="$(grep "\"link\"" <<<"$searchResult" | tail -n 1)"
+		link="${link#*\": \"}"
+		link="${link%%\"*}"
+		title="$(grep "\"title\"" <<<"$searchResult" | tail -n 1)"
+		title="${title#*\": \"}"
+		title="${title%%\"*}"
+		echo "${link} - ${title}"
 	else
-		echo "${searchResult}"
+		echo "No results founds"
 	fi
 fi
 exit 0

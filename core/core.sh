@@ -100,6 +100,7 @@ fi
 }
 
 echo "Creating datafile"
+# This should be done with a pipe, but a flat file is easier to debug
 # Create the file that will be the messages going out to the server
 touch "$output"
 if [ -n "$serverpass" ]; then

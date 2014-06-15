@@ -36,7 +36,7 @@ fi
 modHook="Prefix"
 modForm=("wolf" "wolfram")
 modFormCase=""
-modHelp="This module provides examples on how to write other modules"
+modHelp="Queries wolfram alpha for your question"
 modFlag="m"
 msg="$@"
 # Color character used to start a category: [1;36m

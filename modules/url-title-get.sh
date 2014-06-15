@@ -34,11 +34,11 @@ if [[ "$1" == "--dep-check" ]]; then
 fi
 modHook="Format"
 modForm=("^:.+!.+@.+ PRIVMSG.*http(s?):\/\/[^ \"\(\)\<\>]*")
-modFormCase="No"
+modFormCase="Yes"
 modHelp="Gets a URL's <title> and/or some other useful info"
 modFlag="m"
 message="$@"
-echo "$message" | egrep -o "http(s?):\/\/[^ \"\(\)\<\>]*" | while read url; do
+echo "$message" | egrep -i -o "http(s?):\/\/[^ \"\(\)\<\>]*" | while read url; do
 
 reqFullCurl="0"
 urlCurlContentHeader="$(curl -A "$nick" -m 5 -k -s -L -I "$url")"
@@ -99,13 +99,14 @@ if echo "$httpResponseCode" | awk '{print $2}' | fgrep -q "200"; then
 		itemPrice="$(fgrep -m 1 "product_sale_price" <<<"$pageSrc")"
 		itemPrice="${itemPrice#*\'}"
 		itemPrice="${itemPrice%*\'*}"
-		if [ -n "$itemPrice" ]; then
+		if [ "$(fgrep -c "Discontinued" <<<"$itemPrice")" -eq "1" ]; then
+			pageTitle="${pageTitle} [Item Discontinued]"
+		elif [ -n "$itemPrice" ]; then
 			pageTitle="${pageTitle} [Price: \$${itemPrice}]"
 		fi
-	elif echo "$pageDest" | egrep -i -q "^http(s)?://(www\.)?amazon\.com/.*/Product/"; then
-		echo "URL is Amazon"
+	elif echo "$pageDest" | egrep -i -q "^http(s)?://(www\.)?amazon\.com/.*/"; then
 		pageSrc="$(curl -A "$nick" -m 5 -k -s -L "$pageDest")"
-		itemPrice="$(grep -m 1 -A 1 "Price:" <<<"$pageSrc" | egrep -o "\\\$[[:digit:]]+\.[[:digit:]]+")"
+		itemPrice="$(grep -v "List Price:" <<<"$pageSrc" | grep -m 1 -A 1 "Price:" | egrep -o "\\\$[[:digit:]]+\.[[:digit:]]+")"
 		if [ -n "$itemPrice" ]; then
 			pageTitle="${pageTitle} [Price: ${itemPrice}]"
 		fi

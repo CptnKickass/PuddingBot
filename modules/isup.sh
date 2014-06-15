@@ -44,7 +44,7 @@ if [ -z "$siteToCheck" ]; then
 	echo "This command requires a parameter"
 elif ! echo "$siteToCheck" | egrep -q "(([a-zA-Z](-?[a-zA-Z0-9])*)\.)*[a-zA-Z](-?[a-zA-Z0-9])+\.[a-zA-Z]{2,}"; then
 	echo "The domain ${siteToCheck} does not appear to be a valid domain"
-elif [ "$(egrep -c "http(s)?://(www\.)?(isup\.me|downforeveryoneorjustme\.com)/?" <<<"$siteToCheck")" -eq "1" ]; then
+elif [ "$(egrep -c "(www\.)?(isup\.me|downforeveryoneorjustme\.com)/?" <<<"$siteToCheck")" -eq "1" ]; then
 	echo "Choke on a bowl of dick."
 else
 	siteToCheck="$(echo "$msg" | awk '{print $5}' | sed "s/http:\/\///")"

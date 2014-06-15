@@ -43,11 +43,18 @@ msg="$@"
 if [ -z "${googleApi}" ]; then
 	echo "A Google API key is required"
 elif [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
-	echo "This command requires a parameter"
-elif egrep -q -o "http(s?):\/\/[^ \"\(\)\<\>]*" <<<"$message"; then
+	shortItem="$(fgrep "PRIVMSG" "${input}" | egrep -o "http(s?):\/\/[^ \"\(\)\<\>]*" | tail -n 1)"
+	if [ -n "$shortItem" ]; then
+		echo "Shortening most recently spoken URL (${shortItem})"
+		shortUrl="$(curl -A "$nick" -m 5 -k -s -L -H "Content-Type: application/json" -d "{\"longUrl\": \"${shortItem}\"}" "https://www.googleapis.com/urlshortener/v1/url?key=${googleApi}" | fgrep "\"id\"" | egrep -o "http(s)?://goo.gl/[A-Z|a-z|0-9]+")"
+		echo "Shortened URL: ${shortUrl}"
+	else
+		echo "No URL to shorten provided, and no recently spoken URL's in my memory."
+	fi
+elif ! echo "$msg" | awk '{print $5}' | egrep -q "http(s?):\/\/[^ \"\(\)\<\>]*"; then
 	echo "This does not appear to be a valid URL"
 else
-	shortItem="$(read -r one two three four rest <<<"$msg"; echo "$rest" | egrep -o "http(s?):\/\/[^ \"\(\)\<\>]*")"
+	shortItem="$(echo "$msg" | awk '{print $5}')"
 	shortUrl="$(curl -A "$nick" -m 5 -k -s -L -H "Content-Type: application/json" -d "{\"longUrl\": \"${shortItem}\"}" "https://www.googleapis.com/urlshortener/v1/url?key=${googleApi}" | fgrep "\"id\"" | egrep -o "http(s)?://goo.gl/[A-Z|a-z|0-9]+")"
 	echo "Shortened URL: ${shortUrl}"
 fi

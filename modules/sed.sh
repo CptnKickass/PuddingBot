@@ -35,21 +35,23 @@ if [[ "$1" == "--dep-check" ]]; then
 fi
 
 modHook="Format"
-modForm=("^.*PRIVMSG.*:s/.+/.+/[i|g]?$")
-modFormCase="Yes"
+modForm=("^.*PRIVMSG.*:s/.*/.*/(i|g)?$")
+modFormCase="No"
 modHelp="Provides sed functionality"
 modFlag="m"
 msg="$@"
-echo "You typed !example, your message was ${msg}"
-exit 0
-sedCom="$(echo "$message" | egrep -o -i "s\/.*\/.*\/(i|g|ig)?")"
+target="$(awk '{print $3}' <<<"$msg")"
+sedCom="$(echo "$msg" | egrep -o -i "s/.*/.*/(i|g|ig)?$")"
 sedItem="${sedCom#s/}"
 sedItem="${sedItem%/*/*}"
-prevLine="$(fgrep "PRIVMSG" "${input}" | fgrep "${sedItem}" | tail -n 2 | head -n 1)"
-prevSend="$(echo "$prevLine" | awk '{print $1}' | sed "s/!.*//" | sed "s/^://")"
-line="$(read -r one two three rest <<<"${prevLine}"; echo "$rest" | sed "s/^://")"
-if [ -n "$line" ]; then
-	lineFixed="$(echo "$line" | sed "${sedCom}")"
-	echo "PRIVMSG $senderTarget :[FTFY] <${prevSend}> $lineFixed" >> $output
+if [ -n "$sedItem" ]; then
+	prevLine="$(fgrep "PRIVMSG ${target}" "${input}" | egrep -v "s/.*/.*/(i|g|ig)?$" | egrep "${sedItem}" | tail -n 1)"
+	prevSend="$(echo "$prevLine" | awk '{print $1}' | sed "s/!.*//" | sed "s/^://")"
+	line="$(read -r one two three rest <<<"${prevLine}"; echo "$rest")"
+	line="${line#:}"
+	if [ -n "$line" ]; then
+		lineFixed="$(echo "$line" | sed -E "${sedCom}")"
+		echo "[FTFY] <${prevSend}> $lineFixed"
+	fi
 fi
 exit 0

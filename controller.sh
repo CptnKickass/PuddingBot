@@ -238,6 +238,7 @@ if [ -e "var/bot.pid" ]; then
 	echo "QUIT :Killed from console" >> $output
 	echo "Killing bot PID ($(< var/bot.pid))"
 	kill $(<var/bot.pid)
+	echo "NOTICE! Due to a known bug of unknown origin, the \"tail -f\" PID cannot be killed by this controller. Please kill it manually."
 else
 	echo "Unable to find bot.pid! (Is the bot even running?)"
 fi
@@ -270,6 +271,7 @@ if [ -e "var/bot.pid" ]; then
 	if [ -e "var/.admins" ]; then
 		rm -f "var/.admins"
 	fi
+	echo "NOTICE! Due to a known bug of unknown origin, the \"tail -f\" PID cannot be killed by this controller. Please kill it manually."
 else
 	echo "Unable to find bot.pid! (Is the bot even running?)"
 fi

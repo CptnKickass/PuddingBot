@@ -2,7 +2,7 @@
 
 ## Config
 # Path to search for file
-searchPath="/mnt/storage/goose/public_html/captain-kickass.net"
+searchPath="/home/goose/public_html/captain-kickass.net"
 
 ## Source
 
@@ -38,7 +38,7 @@ if [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
 	echo "This command requires a parameter"
 else
 	searchItem="$(read -r one two three four rest <<<"$msg"; echo "$rest")"
-	results="$(find "${searchPath}" -iname "${searchItem}")"
+	results="$(find "${searchPath}" -not -path "${searchPath}/files/restricted/*" -iname "${searchItem}")"
 	resultsNum="$(echo "$results" | wc -l)"
 	if [  -z "$results" ]; then
 		echo "No results found"
