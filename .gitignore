@@ -1,5 +1,6 @@
 # Runfiles that don't need to be pushed
 *.debug
+users/goose.conf
 var/.mods
 var/.conf
 var/.admins
