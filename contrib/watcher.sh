@@ -8,23 +8,29 @@
 
 ## Config
 # Parse the input as appropriate for you. It should be passed as a full path.
-input="${1#*public_html/}"
+input="${@#*public_html/}"
 # Where to output the message?
 output="/home/goose/PuddingBot/var/outbound"
 # What channel(s) to send the message to?
-chan=("#FoxDen")
+chan=("#goose")
 
 ## Source
 # Ignore swap files
-if echo "$input" | egrep -q "(\.sw(p|x|px)$)"; then
+inputChk="${input##*/}"
+if echo "$inputChk" | egrep -q "(^\.|FRAPSBMP\.TMP$)"; then
 	exit 0
+fi
+
+if echo "${input}" | fgrep -q " "; then
+	mv "/home/goose/public_html/${input}" "/home/goose/public_html/${input// /_}" 
+	input="${input// /_}"
 fi
 
 input="https://${input}"
 
 if [ -e "$output" ]; then
 	for i in "${chan[@]}"; do
-		echo "PRIVMSG ${1} :[WATCHER] File Created: $input" >> "$output"
+		echo "PRIVMSG ${i} :[WATCHER] File Created: $input" >> "$output"
 	done
 fi
 

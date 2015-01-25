@@ -379,6 +379,122 @@ case "$com" in
 			echo "Please use this command in a private message to prevent unnecessary channel spamming"
 		fi
 	;;
+	mod)
+		loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
+		if [ "$loggedIn" -eq "1" ]; then
+			reqFlag="M"
+			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
+				modCom="$(awk '{print $5}' <<<"$message" | tr "[:upper:]" "[:lower:]")"
+				case "$modCom" in
+					status)
+						modComItem="$(awk '{print $6}' <<<"$message")"
+						if ! echo "$modComItem" | egrep -q "\.sh$"; then
+							modComItem="${modComItem}.sh"
+						fi
+						if [ -e "var/.mods/${modComItem}" ]; then
+							echo "${modComItem} is loaded"
+						else
+							echo "${modComItem} is not loaded"
+						fi
+					;;
+					load)
+						modComItem="$(awk '{print $6}' <<<"$message")"
+						if ! echo "$modComItem" | egrep -q "\.sh$"; then
+							modComItem="${modComItem}.sh"
+						fi
+						if [ -e "var/.mods/${modComItem}" ]; then
+							echo "${modComItem} is already loaded. Do you mean reload, or unload?"
+						elif [ -e "modules/${modComItem}" ]; then
+							cp "modules/${modComItem}" "var/.mods/${modComItem}"
+							echo "modules/${modComItem} loaded"
+						elif [ -e "contrib/${modComItem}" ]; then
+							cp "contrib/${modComItem}" "var/.mods/${modComItem}"
+							echo "contrib/${modComItem} loaded"
+						else
+							echo "${modComItem} does not appear to exist in \"modules/\" or \"contrib/\". Remember, on unix based file systems, case sensitivity matters!"
+						fi
+					;;
+					unload)
+						modComItem="$(awk '{print $6}' <<<"$message")"
+						if ! echo "$modComItem" | egrep -q "\.sh$"; then
+							modComItem="${modComItem}.sh"
+						fi
+						if [ -e "var/.mods/${modComItem}" ]; then
+							rm "var/.mods/${modComItem}"
+							if [ -e "var/.mods/${modComItem}" ]; then
+								echo "Unable to unload ${modComItem}!"
+							else
+								echo "${modComItem} unloaded"
+							fi
+						else
+							echo "${modComItem} does not appear to be loaded. Remember, on unix based file systems, case sensitivity matters!"
+						fi
+					;;
+					reload)
+						modComItem="$(awk '{print $6}' <<<"$message")"
+						if ! echo "$modComItem" | egrep -q "\.sh$"; then
+							modComItem="${modComItem}.sh"
+						fi
+						if [ -e "var/.mods/${modComItem}" ]; then
+							rm "var/.mods/${modComItem}"
+							if [ -e "var/.mods/${modComItem}" ]; then
+								echo "Unable to unload ${modComItem}!"
+							else
+								echo "${modComItem} unloaded"
+								if [ -e "modules/${modComItem}" ]; then
+									cp "modules/${modComItem}" "var/.mods/${modComItem}"
+									echo "modules/${modComItem} loaded"
+								elif [ -e "contrib/${modComItem}" ]; then
+									cp "contrib/${modComItem}" "var/.mods/${modComItem}"
+									echo "contrib/${modComItem} loaded"
+								else
+									echo "Unable to load ${modComItem}!"
+								fi
+							fi
+						else
+							echo "${modComItem} does not appear to be loaded. Remember, on unix based file systems, case sensitivity matters!"
+						fi
+					;;
+					reloadall)
+						for modComItem in var/.mods/*.sh; do
+							modComItem="${modComItem##*/}"
+							rm "var/.mods/${modComItem}"
+							if [ -e "var/.mods/${modComItem}" ]; then
+								echo "Unable to unload ${modComItem}!"
+							else
+								echo "${modComItem} unloaded"
+								if [ -e "modules/${modComItem}" ]; then
+									cp "modules/${modComItem}" "var/.mods/${modComItem}"
+									echo "modules/${modComItem} loaded"
+								elif [ -e "contrib/${modComItem}" ]; then
+									cp "contrib/${modComItem}" "var/.mods/${modComItem}"
+									echo "contrib/${modComItem} loaded"
+								else
+									echo "Unable to load ${modComItem}!"
+								fi
+							fi
+						done
+					;;
+					list)
+						unset modArr
+						modLineArr=0
+						while read modLine; do
+							modArr[ $modLineArr ]="${modLine}"
+							(( modLineArr++ ))
+						done < <(ls -1 var/.mods/)
+						echo "${modArr[@]}"
+					;;
+					*)
+						echo "Invalid command. Valid options: Status, Load, Unload, Reload, ReloadAll, List"
+					;;
+				esac
+			else
+				echo "You do not have sufficient permissions for this command"
+			fi
+		else
+			echo "You must be logged in to use this command"
+		fi
+	;;
 	*)
 		for i in var/.mods/*.sh; do
 			if fgrep -i -q "modHook=\"Prefix\"" "$i"; then

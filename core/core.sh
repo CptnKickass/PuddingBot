@@ -10,15 +10,28 @@ for i in "${deps[@]}"; do
 done
 
 # Load admins into the core
-if [ -e "admins.conf" ]; then
-	echo "Loading admins into bot"
-	if [ -e "var/.admins" ]; then
-		rm -f var/.admins
-	fi
-	touch var/.admins
+if [ -d "users" ]; then
+	echo "Located users directory..."
 else
-	echo "Unable to locate bot admins config!"
-	exit 1
+	echo "Unable to locate users directory. Creating..."
+fi
+
+# Check to make sure at least one admin exists
+if find "users" -mindepth 1 -print -quit | grep -q .; then
+	echo "Users exist. Checking for presence of administrator..."
+	if egrep -q "^flags=\"[a-z|B-Z]+?A[a-z|B-Z]+?\"$" users/*.conf; then
+		echo "Administrator exists."
+	else
+		while egrep -q "^flags=\"[a-z|B-Z]+?A[a-z|B-Z]+?\"$" users/*.conf; do
+			echo "No admins exist. Please create an administrator before launching bot for the first time."
+			./bin/createuser.sh
+		done
+	fi
+else
+	while egrep -q "^flags=\"[a-z|B-Z]+?A[a-z|B-Z]+?\"$" users/*.conf; do
+		echo "No admins exist. Please create an administrator before launching bot for the first time."
+		./bin/createuser.sh
+	done
 fi
 
 # Load variables into the core
@@ -121,7 +134,7 @@ do
 	# Remote the ^M control character at the end of each line
 	message="${message%}"
 	echo "$message"
-	echo "$message" >> var/input
+	echo "$message" >> "${input}"
 	# ${msgArr[@]} array will contain all input
 	msgArr+=("${message}")
 	if [ "$logIn" -eq "1" ]; then
@@ -164,8 +177,8 @@ do
 		if [ -e "$output" ]; then
 			rm -f "$output" 
 		fi
-		if [ -e "var/input" ]; then
-			rm -f "var/input"
+		if [ -e "${input}" ]; then
+			rm -f "${input}"
 		fi
 		if [ -e "var/.admins" ]; then
 			rm -f "var/.admins"
@@ -206,8 +219,8 @@ done
 if [ -e "$output" ]; then
 	rm -f "$output" 
 fi
-if [ -e "var/input" ]; then
-	rm -f "var/input"
+if [ -e "${input}" ]; then
+	rm -f "${input}"
 fi
 if [ -e "var/.admins" ]; then
 	rm -f "var/.admins"

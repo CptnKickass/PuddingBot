@@ -158,6 +158,15 @@ checkSanity () {
 	else
 		echo "${botOutput}" >> var/.conf
 	fi
+	botInput="$(egrep -m 1 "^input=" "pudding.conf")"
+	tmpBotInput="${botInput#*\"}"
+	tmpBotInput="${tmpBotInput%\"}"
+	if [ -z "$tmpBotInput" ]; then
+		echo -e "Config option ${red}input${reset} appears to be invalid!"
+		badConf="1"
+	else
+		echo "${botInput}" >> var/.conf
+	fi
 }
 
 startBot () {
@@ -226,7 +235,76 @@ else
 		echo "Starting bot"
 		#screen -d -m -S pudding ./core/core.sh
 		./core/core.sh > /dev/null 2>&1 &
-		#./core/core.sh
+		#bash -x ./core/core.sh
+	fi
+fi
+}
+
+startBotDebug () {
+if [ -e "var/bot.pid" ]; then
+	echo "Bot appears to be running already (Under PID: $(<var/bot.pid))"
+	return 1
+else
+	echo "Initiating PuddingBot v${ver}"
+	echo ""
+	# Check for a sane environment from our variables
+	echo "Checking config for sanity"
+	checkSanity;
+
+	if [ "$badConf" -eq "1" ]; then
+		echo "Please fix above config options prior to start bot."
+		return 1
+	else
+		# Load variables into controller
+		echo "Loading variables into controller"
+		source ./var/.conf
+
+		# If $dataDir does not exist, create it
+		if [ ! -d "$dataDir" ]; then
+			echo "Creating data directory"
+			mkdir "$dataDir"
+		fi
+
+		# If output datafile still exists from last time, remove it
+		if [ -e "$output" ]; then
+			echo "Removing old datafile (Improper shutdown?)"
+			rm -f "$output"
+		fi
+
+		# If logging is enabled
+		if [ "$logIn" -eq "1" ]; then
+			echo "Logging enabled"
+			# If logging directory does not exist, create it
+			if [ ! -d "${dataDir}/logs" ]; then
+				echo "Created log directory"
+				mkdir "${dataDir}/logs"
+			fi
+		fi
+
+		# Check for sanity with the modules
+		echo "Checking for modules"
+		mkdir var/.mods
+		egrep "^loadMod" "pudding.conf" | sort -u | while read mod; do
+			mod="${mod%\"}"
+			mod="${mod#*\"}"
+			if [ ! -e "modules/${mod}" ]; then
+				# No such file exists
+				echo -e "Skipped module: ${red}${mod}${reset} (No such module found)"
+			else
+				# File exists. Check that its dependencies are met.
+				./modules/${mod} --dep-check 2>&1 | head -n 1 | while read line; do
+					if [[ "$line" == "ok" ]]; then
+						cp "modules/${mod}" "var/.mods/${mod}"
+						echo -e "Loaded module:  ${green}${mod}${reset}"
+					else
+						echo -e "Skipped module: ${red}${mod}${reset} (Dependency check failed)"
+					fi
+				done
+			fi
+		done
+		# Start the actual bot
+		echo "Starting bot"
+		./core/core.sh
 	fi
 fi
 }
@@ -284,6 +362,9 @@ if [ -n "${1}" ]; then
 	case "${arg}" in
 		--start)
 			startBot;
+		;;
+		--debug)
+			startBotDebug;
 		;;
 		--stop)
 			stopBot;
