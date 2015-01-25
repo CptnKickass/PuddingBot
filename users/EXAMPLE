@@ -1,0 +1,38 @@
+# This file is for recerence purposes only. New users should be created using the
+# ./bin/createuser.sh file!!!
+#
+#
+# Possible flags:
+# A - Administrator (Be able to kill/quit the bot)
+# a - Access statistics (Things more sensitive than an average user has access to)
+# L - Force logout (Be able to force other users to log out of bot)
+# t - Transverse (Command bot to JOIN/PART channels)
+# s - Speak (Command bot to PRIVMSG/ACTION channels)
+# n - Nick (Command bot to change nick)
+# i - Ignore (Command bot to ignore/unignore n!u@h masks)
+# m - Module access (Be able to use loaded modules)
+# M - Module control (Load, unload, reload modules)
+# f - Access factoids (Be able to interact with the factoids module)
+# F - Modify factoids (Teach new factoids, and modify and delete existing factoids)
+#
+# You can add custom flags (for fine tuning module access) as your own will, assuming
+# they do not conflict with the above flags. Be warned, doing so can have larger than
+# normal consequences, as there is no sanity check to make sure you're not duplicating
+# existing flags.
+#
+# Format should be:
+# user="goose"
+# pass="password-hash"
+# flags="AtsnmMfF"
+# clones="3"
+#
+# "user" is the username that is used for login (case sensitive)
+# "pass" is the hashed password from bin/genpass.sh
+# "flags" is a list of flags the user should have access to, according to the above list
+# "clones" is how many times a user can be logged in simultaneously
+# "meta" is any metadata used by other functions/modules
+
+user="goose"
+pass="PassHashGoesHere"
+flags="AaLtsnimMfF"
+clones="3"
