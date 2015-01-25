@@ -167,6 +167,8 @@ checkSanity () {
 	else
 		echo "${botInput}" >> var/.conf
 	fi
+
+	echo "userDir=\"${dataDir}/users\"" >> var/.conf
 }
 
 startBot () {

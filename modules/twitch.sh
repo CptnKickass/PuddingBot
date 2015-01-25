@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 
 ## Config
-usersDir="/home/goose/PuddingBot/users"
 
 ## Source
+if [ -e "var/.conf" ]; then
+	source var/.conf
+else
+	echo -e "Unable to locate \"${red}\$input${reset}\" file! (Is bot running?) Exiting."
+	exit 1
+fi
 
 # Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
@@ -38,17 +43,17 @@ modFormCase=""
 modHelp="Checks to see who's streaming on twitch.tv"
 modFlag="m"
 
-if [ ! -d "${usersDir}" ]; then
+if [ ! -d "${userDir}" ]; then
 	echo "Users directory in config does not appear to exist."
 	exit 255
 fi
 
 numOnline="0"
-numReg="$(fgrep -c "meta=\"twitchuser=" "${usersDir}"/*.conf)"
+numReg="$(fgrep -c "meta=\"twitchuser=" "${userDir}"/*.conf)"
 if [ "$numReg" -eq "0" ]; then
 	echo "No registered Twitch.tv users online."
 else
-	for match in "$(fgrep "meta=\"twitchuser=" "${usersDir}/"*.conf /dev/null)"; do
+	for match in "$(fgrep "meta=\"twitchuser=" "${userDir}/"*.conf /dev/null)"; do
 		twitchUser="${match#*.conf:meta=\"twitchuser=}"
 		twitchUser="${twitchUser%\"}"
 		puddingUserFile="${match%%:meta=\"twitchuser=*}"
