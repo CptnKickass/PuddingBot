@@ -30,6 +30,7 @@
 # "pass" is the hashed password from bin/genpass.sh
 # "flags" is a list of flags the user should have access to, according to the above list
 # "clones" is how many times a user can be logged in simultaneously
+# "allowedLoginHosts" is a host that can be used as login authentication, rather than a password
 # "meta" is any metadata used by other functions/modules
 
 user="goose"
