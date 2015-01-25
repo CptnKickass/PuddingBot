@@ -42,16 +42,17 @@ echo "$message" | egrep -i -o "http(s?):\/\/[^ \"\(\)\<\>]*" | while read url; d
 
 reqFullCurl="0"
 urlCurlContentHeader="$(curl -A "$nick" -m 5 -k -s -L -I "$url")"
+urlCurlContentHeader="${urlCurlContentHeader///}"
 httpResponseCode="$(egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" <<<"$urlCurlContentHeader" | tail -n 1)"
 if echo "$httpResponseCode" | awk '{print $2}' | fgrep -q "405"; then
 	reqFullCurl="1"
 	urlCurlContentHeader="$(curl -A "$nick" -m 5 -k -s -L -o /dev/null -D - "$url")"
+	urlCurlContentHeader="${urlCurlContentHeader///}"
 	httpResponseCode="$(echo "$urlCurlContentHeader" | egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" | tail -n 1)"
 fi
 # Zero means the location is true, no redirect to the destination
 locationIsTrue="$(grep -c "Location:" <<<"$urlCurlContentHeader")"
 contentType="$(egrep -i "Content[ |-]Type:" <<<"$urlCurlContentHeader" | tail -n 1)"
-contentType="${contentType%}"
 if echo "$httpResponseCode" | awk '{print $2}' | fgrep -q "200"; then
 	if echo "$contentType" | fgrep -q "text/html"; then
 		pageTitle="$(curl -A "$nick" -m 5 -k -s -L "$url" | awk -vRS="</title>" '/<title>/{gsub(/.*<title>|\n+/,"");print;exit}' | sed -e 's/^[ \t]*//' | w3m -dump -T text/html | tr '\n' ' ')"
@@ -59,8 +60,27 @@ if echo "$httpResponseCode" | awk '{print $2}' | fgrep -q "200"; then
 			pageTitle="[Unable to obtain page title]"
 		fi
 	else
-		pageSize="$(fgrep -i "Content-Length" <<<"$urlCurlContentHeader" | tail -n 1 | awk '{print $2}' | awk '{ split( "B KB MB GB TB PB EB ZB YB" , v ); s=1; while( $1>1024 ){ $1/=1024; s++ } print int($1), v[s] }')"
-		pageTitle="${contentType} (${pageSize})"
+		contentMatches="$(fgrep -c "Content-Length" <<<"$urlCurlContentHeader")"
+		if [ "$contentMatches" -eq "0" ]; then
+			pageTitle="${contentType} (Unable to determine size)"
+		elif [ "$contentMatches" -eq "1" ]; then
+			contentLength="$(fgrep -i "Content-Length" <<<"$urlCurlContentHeader" | awk '{print $2}')"
+			pageSize="$(awk '{ split( "B KB MB GB TB PB EB ZB YB" , v ); s=1; while( $1>1024 ){ $1/=1024; s++ } print int($1), v[s] }' <<<"$contentLength")"
+			pageTitle="${contentType} (${pageSize})"
+		else
+			grepNum="1"
+			contentLength="$(fgrep -i "Content-Length" -m ${grepNum} <<<"$urlCurlContentHeader" | awk '{print $2}')"
+			while [ "$contentLength" -eq "0" ] && [ "$grepNum" -ne "$contentMatches" ]; do
+				grepNum="$(( $grepNum + 1 ))"
+				contentLength="$(fgrep -i "Content-Length" -m ${grepNum} <<<"$urlCurlContentHeader" | tail -n 1 | awk '{print $2}')"
+			done
+			if [ "$contentLength" -eq "0" ]; then
+				pageTitle="${contentType} (Unable to determine size)"
+			else
+				pageSize="$(awk '{ split( "B KB MB GB TB PB EB ZB YB" , v ); s=1; while( $1>1024 ){ $1/=1024; s++ } print int($1), v[s] }' <<<"$contentLength")"
+				pageTitle="${contentType} (${pageSize})"
+			fi
+		fi
 	fi
 	if [ "$locationIsTrue" -ne "0" ]; then
 		if [ "$reqFullCurl" -eq "1" ]; then
@@ -87,6 +107,9 @@ if echo "$httpResponseCode" | awk '{print $2}' | fgrep -q "200"; then
 		if echo "$vidSeconds" | egrep -q "^[0-9]$"; then
 			vidSeconds="0${vidSeconds}"
 		fi
+		if [ "$vidHours" -gt "0" ] && echo "$vidMinutes" | egrep -q "^[0-9]$"; then
+			vidMinutes="0${vidMinutes}"
+		fi
 		if [ "$vidHours" -ne "0" ] && [ "$vidMinutes" -ne "0" ]; then
 			pageTitle="${pageTitle} [${vidHours}:${vidMinutes}:${vidSeconds}]"
 		elif [ "$vidHours" -eq "0" ] && [ "$vidMinutes" -ne "0" ]; then
@@ -103,12 +126,6 @@ if echo "$httpResponseCode" | awk '{print $2}' | fgrep -q "200"; then
 			pageTitle="${pageTitle} [Item Discontinued]"
 		elif [ -n "$itemPrice" ]; then
 			pageTitle="${pageTitle} [Price: \$${itemPrice}]"
-		fi
-	elif echo "$pageDest" | egrep -i -q "^http(s)?://(www\.)?amazon\.com/.*/"; then
-		pageSrc="$(curl -A "$nick" -m 5 -k -s -L "$pageDest")"
-		itemPrice="$(grep -v "List Price:" <<<"$pageSrc" | grep -m 1 -A 1 "Price:" | egrep -o "\\\$[[:digit:]]+\.[[:digit:]]+")"
-		if [ -n "$itemPrice" ]; then
-			pageTitle="${pageTitle} [Price: ${itemPrice}]"
 		fi
 	fi
 	if [ "$locationIsTrue" -eq "0" ] && [ -n "$pageTitle" ]; then

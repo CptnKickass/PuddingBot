@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 
+# This will eventually be the working wikipedia module. It's still non-functional right now.
+
 ## Config
-# None
 
 ## Source
 
 # Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
-	deps=("bc")
+	deps=("curl")
 	if [ "${#deps[@]}" -ne "0" ]; then
 		for i in ${deps[@]}; do
 			if ! command -v ${i} > /dev/null 2>&1; then
@@ -27,21 +28,21 @@ if [[ "$1" == "--dep-check" ]]; then
 		exit 0
 	fi
 fi
-
 modHook="Prefix"
-modForm=("calc" "math")
+modForm=("wiki")
 modFormCase=""
-modHelp="Calculates basic arithmetic and returns the result"
+modHelp="Searches wikipedia for a query and returns the first result"
 modFlag="m"
 msg="$@"
 if [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
 	echo "This command requires a parameter"
 else
-	equation="$(read -r one two three four rest <<<"$msg"; echo "$rest")"
-	result="$(echo "scale=3; ${equation}" | bc 2>&1)"
-	if [ "$(echo "${result}" | wc -c)" -gt "50" ]; then
-		result="${result:0:50} (Truncated to first 50 characters)"
+	searchTerm="$(read -r one two thee four rest <<<"$msg"; echo "$rest")"
+	result="$(curl -s --data-urlencode "titles=${searchTerm}" "http://en.wikipedia.org/w/api.php?action=query&prop=extracts&format=json&exsentences=10&rawcontinue=&")"
+	if [ -n "$result" ]; then
+		echo "$result"
+	else
+		echo "No results founds"
 	fi
-	echo "${result}"
 fi
 exit 0

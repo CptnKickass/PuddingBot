@@ -45,13 +45,20 @@ sedCom="$(echo "$msg" | egrep -o -i "s/.*/.*/(i|g|ig)?$")"
 sedItem="${sedCom#s/}"
 sedItem="${sedItem%/*/*}"
 if [ -n "$sedItem" ]; then
-	prevLine="$(fgrep "PRIVMSG ${target}" "${input}" | egrep -v "s/.*/.*/(i|g|ig)?$" | egrep "${sedItem}" | tail -n 1)"
+	sedFlag="${sedCom##*/}"
+	if [[ "$sedFlag" == "i" ]]; then
+		prevLine="$(fgrep "PRIVMSG ${target}" "${input}" | egrep -v "s/.*/.*/(i|g|ig)?$" | egrep -i "${sedItem}" | tail -n 1)"
+	else
+		prevLine="$(fgrep "PRIVMSG ${target}" "${input}" | egrep -v "s/.*/.*/(i|g|ig)?$" | egrep "${sedItem}" | tail -n 1)"
+	fi
 	prevSend="$(echo "$prevLine" | awk '{print $1}' | sed "s/!.*//" | sed "s/^://")"
 	line="$(read -r one two three rest <<<"${prevLine}"; echo "$rest")"
 	line="${line#:}"
 	if [ -n "$line" ]; then
 		lineFixed="$(echo "$line" | sed -E "${sedCom}")"
-		echo "[FTFY] <${prevSend}> $lineFixed"
+		if ! [[ "$lineFixed" == "${line}" ]]; then
+			echo "[FTFY] <${prevSend}> $lineFixed"
+		fi
 	fi
 fi
 exit 0

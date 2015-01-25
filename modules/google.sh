@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ## Config
-# goo.gl API key
+# Google API key
 googleApi=""
 # Custom Search Engine ID
 googleCid=""

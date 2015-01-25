@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 
+# Currently this is just a rip off of the Google search module with site:wikipedia.org added
+# Eventually I'll actually use the wikipedia API, once I figure it out
+
 ## Config
-# None
+# Google API key
+googleApi=""
+# Custom Search Engine ID
+googleCid=""
 
 ## Source
-# I need to fix this module
-echo "THIS MODULE IS BROKEN AND SHOULD NOT BE USED UNTIL UNBROKEN IN A FUTURE UPDATE!"
-exit 255
 
 # Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
@@ -31,20 +34,29 @@ if [[ "$1" == "--dep-check" ]]; then
 	fi
 fi
 modHook="Prefix"
-modForm=("wiki" "wikipedia")
+modForm=("wiki")
 modFormCase=""
-modHelp="Searches Wikipedia for a topic"
+modHelp="Searches wikipedia for a query and returns the first result"
 modFlag="m"
 msg="$@"
 if [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
 	echo "This command requires a parameter"
 else
 	searchTerm="$(read -r one two thee four rest <<<"$msg"; echo "$rest")"
-	searchResult="$(curl -s --get --data-urlencode "q=${searchTerm} site:en.wikipedia.org" http://ajax.googleapis.com/ajax/services/search/web?v=1.0 | sed 's/"unescapedUrl":"\([^"]*\).*/\1/;s/.*GwebSearch",//')"
-	if [ "$(echo "$searchResult" | fgrep -c "\"responseDetails\": null,")" -eq "1" ]; then
-		echo "[Wiki] No results found"
+	searchResult="$(curl -s --get --data-urlencode "q=${searchTerm} site:en.wikipedia.org" --data-urlencode "cx=${googleCid}" "https://www.googleapis.com/customsearch/v1?key=${googleApi}&num=1")"
+	results="$(grep -m 1 "totalResults" <<<"$searchResult")"
+	results="${results#*\": \"}"
+	results="${results%%\"*}"
+	if [ "$results" -ne "0" ]; then
+		link="$(grep "\"link\"" <<<"$searchResult" | tail -n 1)"
+		link="${link#*\": \"}"
+		link="${link%%\"*}"
+		title="$(grep "\"title\"" <<<"$searchResult" | tail -n 1)"
+		title="${title#*\": \"}"
+		title="${title%%\"*}"
+		echo "${link} - ${title}"
 	else
-		echo "[Wiki] ${searchResult}"
+		echo "No results founds"
 	fi
 fi
 exit 0
