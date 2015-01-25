@@ -5,6 +5,7 @@ var/.conf
 var/.admins
 var/.status
 var/input
+var/inbound
 var/outbound
 var/ignore.db
 var/bot.pid
