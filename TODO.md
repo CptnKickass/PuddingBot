@@ -1,7 +1,9 @@
 To do:
-
-- Add factoid support, by flat file or SQL
-- Add "seen" module
-- Add "karma" module
-- Add "Explain to SnoFox he's a faggot" type module
-- Add "Tell SnoFox he's a faggot" type module
+|- Add factoid support, by flat file or SQL
+|- Add "seen" module
+|- Add "karma" module
+|- Fix "wikipedia2.sh" module
+|- Add front-end user support
+|- Store incoming messages in searchable array
+|`- Remove plaintext debug file once this is done
+`- Fix tail not dying on kill
