@@ -106,7 +106,7 @@ case "$com" in
 					fi
 				else
 					# No such user
-					echo "You are not using a recognized host. Please log in via PM."
+					echo "You are not using an authenticated host. Please log in via PM."
 				fi
 			else
 				loggedInUser="$(fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $1}')"
