@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 source var/.conf
 message="$@"
 case "$(awk '{print $2}' <<<"$message")" in

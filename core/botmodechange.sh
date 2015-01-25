@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 source var/.conf
 message="$@"
 if [ "$(awk '{print $2}' <<<"$message" | egrep -c "(MODE|JOIN|PART)")" -eq "0" ]; then

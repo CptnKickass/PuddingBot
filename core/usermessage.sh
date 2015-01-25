@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 source var/.conf
 message="$@"
 senderTarget="$(echo "$message" | awk '{print $3}')"
