@@ -58,7 +58,7 @@ modHelp="This module provides examples on how to write other modules"
 
 # What flag should be required for the user to access this module? No
 # error message will be sent if insufficient privs are found. This is
-# where you can use the custom flags feature of admins.conf
+# where you can use the custom flags feature of a user's privs
 modFlag="m"
 
 # This is where the module source should start
