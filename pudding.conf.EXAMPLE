@@ -1,0 +1,66 @@
+# Bot's nick
+nick="Pudding"
+# Bot's ident
+ident="Pudding"
+# Bot's real name / GECOS
+gecos="#!/usr/bin/env bash"
+# List of channels for bot to join. Format should be:
+# channels=("#chan1" "#chan2" "#chan3")
+channels=("#goose")
+# Where are we connecting? Can be an IP address.
+server="irc.freenode.net"
+# Port of where we're connecting? Currently only plaintext is supported.
+port="6667"
+# Does the server have a password? If not, just leave this empty.
+serverpass=""
+# Bot owner's IRC nickname?
+# (This is purely for info, not for administrative commands.)
+owner="goose"
+# Bot owner's e-mail address?
+# (This is purely for info, not for administrative commands.)
+ownerEmail="goose@captain-kickass.net"
+# Prefix to use for bot commands. Be wary that "!" may interfere with IRC services (ChanServ)
+comPrefix="!"
+# What flags should non logged in users have?
+genFlags="m"
+# NickServ pass? Leave empty if you don't have one.
+nickPass="password"
+# Enable IRC logging? Should be "Yes" or "No"
+logIn="No"
+# IRC operator nick/pass. Leave empty if you don't have one.
+operId=""
+operPass=""
+# Modes to set/unset on the bot upon oper up? Leave empty if none.
+operModes=""
+# Command(s) to run after becoming fully connected? This will be the
+# last autoconnect command run, after NickServ ID, opering up, joining
+# channels, etc. Because this can be anything, you need to enter the
+# actual raw IRC command. Use newlines (Enter) for multiple commands.
+# Use $nick for the bot's nickname
+# Leave blank if you don't need this.
+lastCom=""
+# Where should we keep the bot data files? The base directory needs to exist
+dataDir="${HOME}/PuddingBot"
+# Where should we drop the data file we use to talk to the IRCd?
+# Usually the default values are fine. You can also use $(mktemp)
+output="${dataDir}/var/outbound"
+# Where should we drop the data file we use to talk to the IRCd?
+# Usually the default values are fine. You can also use $(mktemp)
+input="${dataDir}/var/inbound"
+# List of modules to load. These should exist in the modules directory.
+# Add new loadMod= lines for each module.
+loadMod="convert.sh"
+loadMOd="define.sh"
+loadMod="fox.sh"
+loadMod="google.sh"
+loadMod="goo.gl.sh"
+loadMod="host.sh"
+loadMod="isup.sh"
+loadMod="math.sh"
+loadMod="sed.sh"
+loadMod="spellcheck.sh"
+loadMod="url-title-get.sh"
+loadMod="whois.sh"
+loadMod="wikipedia.sh"
+loadMod="ck-extend.sh"
+loadMod="wolfram.sh"
