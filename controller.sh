@@ -176,6 +176,11 @@ if [ -e "var/bot.pid" ]; then
 else
 	echo "Initiating PuddingBot v${ver}"
 	echo ""
+	if [ ! -e "pudding.conf" ]; then
+		echo "You do not appear to have a \"pudding.conf\" file!"
+		echo "Did you not copy your EXAMPLE file?"
+		exit 255
+	fi
 	# Check for a sane environment from our variables
 	echo "Checking config for sanity"
 	checkSanity;
