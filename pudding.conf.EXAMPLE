@@ -40,7 +40,7 @@ operModes=""
 # Leave blank if you don't need this.
 lastCom=""
 # Where should we keep the bot data files? The base directory needs to exist
-dataDir="${HOME}/PuddingBot"
+dataDir="${HOME}/Pudding"
 # Where should we drop the data file we use to talk to the IRCd?
 # Usually the default values are fine. You can also use $(mktemp)
 output="${dataDir}/var/outbound"
@@ -49,18 +49,5 @@ output="${dataDir}/var/outbound"
 input="${dataDir}/var/inbound"
 # List of modules to load. These should exist in the modules directory.
 # Add new loadMod= lines for each module.
-loadMod="convert.sh"
-loadMOd="define.sh"
-loadMod="fox.sh"
-loadMod="google.sh"
-loadMod="goo.gl.sh"
-loadMod="host.sh"
-loadMod="isup.sh"
 loadMod="math.sh"
 loadMod="sed.sh"
-loadMod="spellcheck.sh"
-loadMod="url-title-get.sh"
-loadMod="whois.sh"
-loadMod="wikipedia.sh"
-loadMod="ck-extend.sh"
-loadMod="wolfram.sh"
