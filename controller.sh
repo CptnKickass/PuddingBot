@@ -55,10 +55,19 @@ checkSanity () {
 	# Check to make sure at least one admin exists
 	if [ -d "users" ]; then
 		echo "Users exist. Checking for presence of administrator..."
-		if egrep -q "^flags=\"[a-z|B-Z]+?A[a-z|B-Z]+?\"$" users/*.conf; then
-			echo "Administrator exists."
+		if [ -e users/*.conf ]; then
+			if egrep -q "^flags=\".*A.*\"$" users/*.conf; then
+				echo "Administrator exists."
+			else
+				while ! egrep -q "^flags=\".*A.*\"$" users/*.conf; do
+					echo "No admins exist. Please create an administrator before launching bot for the first time."
+					./bin/createuser.sh
+				done
+			fi
 		else
-			while egrep -q "^flags=\"[a-z|B-Z]+?A[a-z|B-Z]+?\"$" users/*.conf; do
+			echo "No admins exist. Please create an administrator before launching bot for the first time."
+			./bin/createuser.sh
+			while ! egrep -q "^flags=\".*A.*\"$" users/*.conf; do
 				echo "No admins exist. Please create an administrator before launching bot for the first time."
 				./bin/createuser.sh
 			done
@@ -66,7 +75,9 @@ checkSanity () {
 	else
 		echo "Creating Users Directory..."
 		mkdir users
-		while egrep -q "^flags=\"[a-z|B-Z]+?A[a-z|B-Z]+?\"$" users/*.conf; do
+		echo "No admins exist. Please create an administrator before launching bot for the first time."
+		./bin/createuser.sh
+		while ! egrep -q "^flags=\".*A.*\"$" users/*.conf; do
 			echo "No admins exist. Please create an administrator before launching bot for the first time."
 			./bin/createuser.sh
 		done
