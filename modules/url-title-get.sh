@@ -43,17 +43,23 @@ echo "$message" | egrep -i -o "http(s?):\/\/[^ \"\(\)\<\>]*" | while read url; d
 reqFullCurl="0"
 urlCurlContentHeader="$(curl -A "$nick" -m 5 -k -s -L -I "$url")"
 urlCurlContentHeader="${urlCurlContentHeader///}"
-httpResponseCode="$(egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" <<<"$urlCurlContentHeader" | tail -n 1)"
-if echo "$httpResponseCode" | awk '{print $2}' | fgrep -q "405"; then
+httpResponseCode="$(egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" <<<"$urlCurlContentHeader" | tail -n 1 | awk '{print $2}')"
+if [ "$httpResponseCode" -eq "502" ]; then
+	sleep 5
+	urlCurlContentHeader="$(curl -A "$nick" -m 5 -k -s -L -o /dev/null -D - "$url")"
+	urlCurlContentHeader="${urlCurlContentHeader///}"
+	httpResponseCode="$(echo "$urlCurlContentHeader" | egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" | tail -n 1 | awk '{print $2}')"
+fi
+if [ "$httpResponseCode" -ne "200" ]; then
 	reqFullCurl="1"
 	urlCurlContentHeader="$(curl -A "$nick" -m 5 -k -s -L -o /dev/null -D - "$url")"
 	urlCurlContentHeader="${urlCurlContentHeader///}"
-	httpResponseCode="$(echo "$urlCurlContentHeader" | egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" | tail -n 1)"
+	httpResponseCode="$(echo "$urlCurlContentHeader" | egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" | tail -n 1 | awk '{print $2}')"
 fi
 # Zero means the location is true, no redirect to the destination
 locationIsTrue="$(grep -c "Location:" <<<"$urlCurlContentHeader")"
 contentType="$(egrep -i "Content[ |-]Type:" <<<"$urlCurlContentHeader" | tail -n 1)"
-if echo "$httpResponseCode" | awk '{print $2}' | fgrep -q "200"; then
+if [ "$httpResponseCode" -eq "200" ]; then
 	if echo "$contentType" | fgrep -q "text/html"; then
 		pageTitle="$(curl -A "$nick" -m 5 -k -s -L "$url" | awk -vRS="</title>" '/<title>/{gsub(/.*<title>|\n+/,"");print;exit}' | sed -e 's/^[ \t]*//' | w3m -dump -T text/html | tr '\n' ' ')"
 		if [ -z "$pageTitle" ]; then
@@ -136,7 +142,7 @@ if echo "$httpResponseCode" | awk '{print $2}' | fgrep -q "200"; then
 	fi
 else
 	if [ -n "$httpResponseCode" ]; then
-		echo "[URL] Code: $httpResponseCode"
+		echo "[URL] Returned $httpResponseCode"
 	fi
 fi
 echo ""
