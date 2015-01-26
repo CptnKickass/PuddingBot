@@ -13,9 +13,8 @@ done
 echo "Selected username: ${username}"
 echo ""
 read -p "Please enter desired password: " password
-hash="$(echo "${password}" | md5sum | awk '{print $1}')"
-hash2="$(echo "${hash}" | md5sum | awk '{print $1}')"
-passHash="${hash}${hash2}"
+hash="$(echo -n "${password}" | sha256sum | awk '{print $1}')"
+passHash="${hash}"
 echo "Hash of \"${password}\": ${passHash}"
 echo ""
 re='^[0-9]+$'

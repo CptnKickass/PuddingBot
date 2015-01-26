@@ -3,8 +3,7 @@
 echo "Please enter password to hash:"
 read -p "> " pass
 echo ""
-hash="$(echo "${pass}" | md5sum | awk '{print $1}')"
-hash2="$(echo "${hash}" | md5sum | awk '{print $1}')"
-echo "Hash of \"${pass}\": ${hash}${hash2}"
+hash="$(echo -n "${pass}" | sha256sum | awk '{print $1}')"
+echo "Hash of \"${pass}\": ${hash}"
 echo ""
 exit 0
