@@ -3,13 +3,6 @@
 ## Config
 
 ## Source
-if [ -e "var/.conf" ]; then
-	source var/.conf
-else
-	echo -e "Unable to locate \"${red}\$input${reset}\" file! (Is bot running?) Exiting."
-	exit 1
-fi
-
 # Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
@@ -37,10 +30,18 @@ if [[ "$1" == "--dep-check" ]]; then
 	fi
 fi
 
+if [ -e "var/.conf" ]; then
+	source var/.conf
+else
+	echo -e "Unable to locate \"${red}\$input${reset}\" file! (Is bot running?) Exiting."
+	exit 1
+fi
+
+
 modHook="Prefix"
 modForm=("twitch")
 modFormCase=""
-modHelp="Checks to see who's streaming on twitch.tv"
+modHelp="Checks to see who's streaming on twitch.tv. You can register your twitch username to work with this module via the command: set meta twitchuser YOUR-TWITCH-USERNAME-HERE"
 modFlag="m"
 
 if [ ! -d "${userDir}" ]; then
