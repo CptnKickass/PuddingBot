@@ -14,15 +14,200 @@ senderHost="${senderFull#*@}"
 # For simplicities sake, I'll keep all commands in this function
 comExec () {
 case "$com" in
+	register)
+		if [ "$isPm" -eq "1" ]; then
+			loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
+			if [ "$loggedIn" -eq "0" ]; then
+				lUser="$(awk '{print $5}' <<<"$message")"
+				lPass="$(awk '{print $6}' <<<"$message")"
+				lHash="$(echo -n "$lPass" | sha256sum | awk '{print $1}')"
+				if [ -z "${lUser}" ]; then
+					echo "You must provide a username. Format is: \"register USERNAME PASSWORD\" ***Note that this bot is in debug mode. Although your password will be stored as a sha256 hash in the user files, the raw input/output is being logged for debug purposes. Do not use a password you use anywher else!***"
+				elif [ -z "${lPass}" ]; then
+					echo "You must provide a username. Format is: \"register USERNAME PASSWORD\" ***Note that this bot is in debug mode. Although your password will be stored as a sha256 hash in the user files, the raw input/output is being logged for debug purposes. Do not use a password you use anywher else!***"
+				fi
+				if [ -n "${lUser}" ] && [ -n "${lPass}" ]; then
+					if [ -e "${userDir}/${lUser}.conf" ]; then
+						echo "That username has already been taken. Please choose another."
+					else
+						echo "user=\"${lUser}\"" > "${userDir}/${lUser}.conf"
+						echo "pass=\"${lHash}\"" >> "${userDir}/${lUser}.conf"
+						genFlags="$(egrep "^genFlags=" "${dataDir}/pudding.conf")"
+						genFlags="${genFlags/genF/f}"
+						echo "${genFlags}" >> "${userDir}/${lUser}.conf"
+						echo "clones=\"3\"" >> "${userDir}/${lUser}.conf"
+						echo "Successfully registered with username \"${lUser}\" and password \"${lPass}\". Please note that your default alloted clones that can be logged in at once is 3. Please use: \"set clones N\" to change this, where \"N\" is your desired number of clones."
+					fi
+				fi
+			else
+				loggedInUser="$(fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $1}')"
+				echo "You are already logged in as ${loggedInUser}."
+			fi
+		else
+			echo "Registration must be done in PM"
+		fi
+		;;
+	set)
+		loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
+		if [ "$loggedIn" -eq "1" ]; then
+			loggedInUser="$(fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $1}')"
+			arg1="$(awk '{print $5}' <<<"$message")"
+			case "${arg1,,}" in
+				password)
+					lPass="$(awk '{print $6}' <<<"$message")"
+					lHash="$(echo -n "$lPass" | sha256sum | awk '{print $1}')"
+					if [ -z "${lPass}" ]; then
+						echo "You must provide a password. Format is: set PASSWORD"
+					else
+						sed -i "s/pass=\".*\"/pass=\"${lHash}\"/" "${userDir}/${loggedInUser}.conf"
+						echo "Successfully changed password to \"${lPass}\"."
+					fi
+					;;
+				clones)
+					re='^[0-9]+$'
+					lClones="$(awk '{print $6}' <<<"$message")"
+					if [ -z "${lClones}" ]; then
+						echo "You must provide a number of clones. Format is: set CLONES N (Where \"N\" is your desired number of alloted clones)"
+					elif [[ $lClones =~ $re ]]; then
+						sed -i "s/clones=\".*\"/clones=\"${lHash}\"/" "${userDir}/${loggedInUser}.conf"
+						echo "Successfully changed password to \"${lPass}\"."
+					else
+						echo "You must provide a number of clones. Format is: set CLONES N (Where \"N\" is your desired number of alloted clones)"
+					fi
+					;;
+				allowedhost)
+					case "$(awk '{print $6}' <<<"$message")" in
+						list)
+							IFS=$'\r\n' :; hostArr=($(egrep "^allowedLoginHost=\".*\"$" "${userDir}/${loggedInUser}.conf"))
+							if [ "${#hostArr[@]}" -eq "0" ]; then
+								echo "No authenticated login hosts set to ${loggedInUser}"
+							else
+								hostArr=(${hostArr[@]#allowedLoginHost=\"})
+								hostArr=(${hostArr[@]%\"})
+								echo "Authenticated hosts: ${hostArr[@]}"
+							fi
+						;;
+						add)
+							hostToAdd="$(awk '{print $7}' <<<"$message")"
+							if echo "$hostToAdd" | fgrep -q "*"; then
+								echo "Unable to add host; improper formatting (Please use proper \"USER@HOST\" formatting. Wildcards are not accepted.)"
+							elif ! echo "$hostToAdd" | egrep -q ".*@.*"; then
+								echo "Unable to add host; improper formatting (Please use proper \"USER@HOST\" formatting. Wildcards are not accepted.)"
+							elif egrep -q "^allowedLoginHost=\"${hostToAdd}\"$" "${userDir}/${loggedInUser}.conf"; then
+								echo "Unable to add host; already exists."
+							else
+								echo "allowedLoginHost=\"${hostToAdd}\"" >> "${userDir}/${loggedInUser}.conf"
+								echo "Added login host \"${hostToAdd}\" for user ${loggedInUser}"
+							fi
+						;;
+						del|delete|remove)
+							hostToDel="$(awk '{print $7}' <<<"$message")"
+							if fgrep -q "allowedLoginHost=\"${hostToDel}\"" "${userDir}/${loggedInUser}.conf"; then
+								sed -i "/allowedLoginHost=\"${hostToDel}\"/d" "${userDir}/${loggedInUser}.conf"
+								echo "Removed login host \"${hostToDel}\" for user ${loggedInUser}"
+							else
+								echo "Login host \"${hostToDel}\" does not appear to be an allowed host for ${loggedInUser}. Check allowed hosts with command: SET ALLOWEDHOST LIST"
+							fi
+						;;
+						*)
+							echo "Invalid command. Valid SET ALLOWEDHOST commands are: List, Add, Del, Delete, Remove"
+						;;
+					esac
+					;;
+				meta)
+					case "$(awk '{print $6}' <<<"$message")" in
+						list)
+							IFS=$'\r\n' :; metaArr=($(egrep "^meta=\".*\"$" "${userDir}/${loggedInUser}.conf"))
+							if [ "${#metaArr[@]}" -eq "0" ]; then
+								echo "No meta data set for ${loggedInUser}"
+							else
+								metaArr=(${metaArr[@]#meta=\"})
+								metaArr=(${metaArr[@]%\"})
+								echo "Meta data set for ${loggedInUser}: ${metaArr[@]}"
+							fi
+						;;
+						add)
+							metaToAdd="$(awk '{print $7}' <<<"$message")"
+							if [ -z "$metaToAdd" ]; then
+								echo "Unable to add meta; no data input.)"
+							else
+								echo "meta=\"${metaToAdd}\"" >> "${userDir}/${loggedInUser}.conf"
+								echo "Added meta data \"${metaToAdd}\" for user ${loggedInUser}"
+							fi
+						;;
+						del|delete|remove)
+							metaToDel="$(awk '{print $7}' <<<"$message")"
+							if fgrep -q "meta=\"${metaToDel}\"" "${userDir}/${loggedInUser}.conf"; then
+								sed -i "/meta=\"${metaToDel}\"/d" "${userDir}/${loggedInUser}.conf"
+								echo "Removed meta data \"${metaToDel}\" for user ${loggedInUser}"
+							else
+								echo "Meta data \"${metaToDel}\" does not appear to set for ${loggedInUser}. Check set meta data with command: SET META LIST"
+							fi
+						;;
+						*)
+							echo "Invalid command. Valid SET META commands are: List, Add, Del, Delete, Remove"
+						;;
+					esac
+					;;
+				removeacct|removeaccount)
+					if [ -z "$(awk '{print $6}' <<<"$message")" ]; then
+						if egrep -q "^removeKey=\"" "${userDir}/${loggedInUser}.conf"; then
+							removeKey="$(egrep "^removeKey=\"" "${userDir}/${loggedInUser}.conf")"
+							removeKey="${removeKey#removeKey=\"}"
+							removeKey="${removeKey%\"}"
+							echo "Your account (${loggedInUser}) has already been marked for deletion. Please reply \"SET REMOVEACCT ${removeKey}\" to confirm deletion of account."
+						else
+							removeKey="$(dd if=/dev/urandom count=1 2>/dev/null | perl -pe 's/[^[:alpha:]]//g' | cut -b 1-16)"
+							echo "removeKey=\"${removeKey}\"" >> "${userDir}/${loggedInUser}.conf"
+							echo "Your account (${loggedInUser}) has been marked for delition. Please reply \"SET REMOVEACCT ${removeKey}\" to confirm deletion of this account. Reply \"SET REMOVEACCT cancel\" to cancel mark for deletion."
+						fi
+					elif [[ "$(awk '{print $6}' <<<"$message")" =~ "cancel" ]]; then
+						if egrep -q "^removeKey=\"" "${userDir}/${loggedInUser}.conf"; then
+							sed -i "/removeKey=\"/d" "${userDir}/${loggedInUser}.conf"
+							echo "Mark for deletion for your account (${loggedInUser}) has been removed."
+						else
+							echo "Your account (${loggedInUser}) was not marked for deletion."
+						fi
+					elif egrep -q "^removeKey=\"$(awk '{print $6}' <<<"$message")\"$" "${userDir}/${loggedInUser}.conf"; then
+						echo "Deletion for account ${loggedInUser} confirmed. Removing all user data..."
+						rm -f "${userDir}/${loggedInUser}.conf"
+						if [ -e "${userDir}/${loggedInUser}.conf" ]; then
+							echo "Unable to remove user data! Please contact an administrator."
+						else
+							echo "${loggedInUser} purged from data files. Logging ${loggedInUser} out of bot..."
+							sed -i "/^${loggedInUser}/d" "var/.admins"
+							if egrep -q "^${loggedInUser}" "var/.admins"; then
+								echo "Unable to log ${loggedInUser} out! Please contact an administrator."
+							else
+								echo "${loggedInUser} removed from logged in users."
+							fi
+						fi
+					else
+						if egrep -q "^removeKey=\"" "${userDir}/${loggedInUser}.conf"; then
+							removeKey="$(egrep "^removeKey=\"" "${userDir}/${loggedInUser}.conf")"
+							removeKey="${removeKey#removeKey=\"}"
+							removeKey="${removeKey%\"}"
+							echo "Your account (${loggedInUser}) has already been marked for deletion. Please reply \"SET REMOVEACCT ${removeKey}\" to confirm deletion of account."
+						else
+							echo "Invalid command. Reply \"SET REMOVEACCT\" to initiate account removal, or \"SET REMOVEACCT cancel\" to cancel mark for deletion of account."
+						fi
+					fi
+					;;
+				*)
+					echo "Invalid command. Valid SET commands are: Password, Clones, AllowedHost, Meta"
+					;;
+			esac
+		else
+			echo "You must be logged in to use this command"
+		fi
+		;;
 	login)
 		if [ "$isPm" -eq "1" ]; then
 			loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
 			if [ "$loggedIn" -eq "0" ]; then
 				lUser="$(awk '{print $5}' <<<"$message")"
-				lPass="$(echo "$message" | awk '{print $6}')"
-				lPass="$(echo "$lPass" | md5sum | awk '{print $1}')"
-				lPass2="$(echo "$lPass" | md5sum | awk '{print $1}')"
-				lHash="${lPass}${lPass2}"
+				lPass="$(awk '{print $6}' <<<"$message")"
+				lHash="$(echo -n "$lPass" | sha256sum | awk '{print $1}')"
 				if egrep -q "^user=\"${lUser}\"$" ${userDir}/*.conf; then
 					matchFile="$(egrep "^user=\"${lUser}\"$" ${userDir}/*.conf /dev/null)"
 					matchFile="${matchFile%%:*}"
@@ -395,39 +580,171 @@ case "$com" in
 		echo "Uptime: ${days}, ${hours}, ${minutes}, ${seconds}"
 	;;
 	help)
-		if [ "$isPm" -eq "1" ]; then
-			echo "(login) => Logs you in to the bot"
-			echo "(logout) => Logs you out of the bot"
-			echo "(flogout) => Force logs another user out of the bot"
-			echo "(admins) => Lists the currently logged in admins"
-			echo "(join) => I'll join a channel"
-			echo "(part) => I'll part a channel"
-			echo "(speak|say) => I'll speak a message in a channel"
-			echo "(action|do) => I'll do a /ME in a channel"
-			echo "(nick) => I'll change nicks"
-			echo "(ignore) => I'll ignore a regular expression n!u@h mask"
-			echo "(status) => I'll give a status report"
-			echo "(die|quit|exit) => I'll quit IRC and shut down"
-			echo "(restart) => I'll restart, quitting IRC and joining a new spawn"
-			echo "(uptime) => I'll give you an uptime report"
-			for i in var/.mods/*.sh; do
-				if fgrep -i -q "modHook=\"Prefix\"" "$i"; then
-					file="$(fgrep "modForm=" "$i")"
-					file="${file#*(}"
-					file="${file%)}"
-					file="${file//\" \"/|}"
-					file="${file//\"/}"
-				else
-					file="${i##*/}"
-					file="${file%.sh}"
-				fi
-				line="$(fgrep "modHelp" "$i")"
-				line="${line#*\"}"
-				line="${line%\"}"
-				echo "(${file}) => ${line}"
-			done
+		unset helpTopic
+		helpTopic=("(register)" "(set)" "(login)" "(logout)" "(flogout)" "(admins)" "(join)" "(part)" "(speak|say)" "(action|do)" "(nick)" "(ignore)" "(status)" "(die|quit|exit)" "(restart)" "(uptime)")
+		for i in var/.mods/*.sh; do
+			if fgrep -i -q "modHook=\"Prefix\"" "$i"; then
+				file="$(fgrep "modForm=" "$i")"
+				file="${file#*(}"
+				file="${file%)}"
+				file="${file//\" \"/|}"
+				file="${file//\"/}"
+			else
+				file="${i##*/}"
+				file="${file%.sh}"
+			fi
+			helpTopic+=("(${file})")
+		done
+		arg1="$(awk '{print $5}' <<<"$message")"
+		if [ -z "${arg1,,}" ]; then
+			echo "Available Help Topics: ${helpTopic[@]}"
+		elif echo "${helpTopic[@]}" | fgrep -q "${arg1,,}"; then
+			case "${arg1,,}" in
+				login)
+					echo "(${arg1,,}) => Logs you in to the bot"
+					;;
+				logout)
+					echo "(${arg1,,}) => Logs you out of the bot"
+					;;
+				flogout)
+					echo "(${arg1,,}) => Force logs another user out of the bot"
+					;;
+				admins)
+					echo "(${arg1,,}) => Lists the currently logged in admins"
+					;;
+				join)
+					echo "(${arg1,,}) => I'll join a channel"
+					;;
+				part)
+					echo "(${arg1,,}) => I'll part a channel"
+					;;
+				speak|say)
+					echo "(${arg1,,}) => I'll speak a message in a channel"
+					;;
+				action|do)
+					echo "(${arg1,,}) => I'll do a /ME in a channel"
+					;;
+				nick)
+					echo "(${arg1,,}) => I'll change nicks"
+					;;
+				ignore)
+					echo "(${arg1,,}) => I'll ignore a regular expression n!u@h mask"
+					;;
+				status)
+					echo "(${arg1,,}) => I'll give a status report"
+					;;
+				die|quit|exit)
+					echo "(${arg1,,}) => I'll quit IRC and shut down"
+					;;
+				restart)
+					echo "(${arg1,,}) => I'll restart, quitting IRC and joining a new spawn"
+					;;
+				uptime)
+					echo "(${arg1,,}) => I'll give you an uptime report"
+					;;
+				register)
+					echo "(${arg1,,}) => Registers a user into the bot. Format is: \"REGISTER username password\". ***Note that this bot is in debug mode. Although your password will be stored as a sha256 hash in the user files, the raw input/output is being logged for debug purposes. Do not use a password you use anywher else!***"
+					;;
+				set)
+					arg2="$(awk '{print $6}' <<<"$message")"
+					case "${arg2,,}" in
+						password)
+							echo "(${arg1,,})->(${arg2,,}) => Allows you to change your password. Format is: \"SET PASSWORD newpassword\". ***Note that this bot is in debug mode. Although your password will be stored as a sha256 hash in the user files, the raw input/output is being logged for debug purposes. Do not use a password you use anywher else!***"
+							;;
+						clones)
+							echo "(${arg1,,})->(${arg2,,}) => Allows you to set the number of clones you want to allow to simultaneously be logged into your account. Format is: \"SET CLONES n\", where \"n\" is the number of clones you desire."
+							;;
+						allowedhost)
+							arg3="$(awk '{print $7}' <<<"$message")"
+							case "${arg3,,}" in
+								list)
+									echo "(${arg1,,})->(${arg2,,})->(${arg3,,}) => Lists any known white-listed IDENT@HOST masks on your account, which are authorized to be identified simply by their IDENT@HOST masks using the \"!login\" command."
+									;;
+								add)
+									echo "(${arg1,,})->(${arg2,,})->(${arg3,,}) => Adds an IDENT@HOST mask to your account's white list, allowing anyone with that IDENT@HOST command to be identified to your account simply by using the \"!login\" command. Note that wild cards are not accepted, the match must be a full IDENT@HOST mask. Format is: \"SET ALLOWEDHOST ADD ident@host\""
+									;;
+								del|delete|remove)
+									echo "(${arg1,,})->(${arg2,,})->(${arg3,,}) => Remove a whitelisted IDENT@HOST mask from your account, preventing it from being identified to your account simply by using the \"!login\" command. Format is: \"SET ALLOWEDHOST DEL ident@host\""
+									;;
+								*)
+									echo "(${arg1,,})->(${arg2,,}) => Allows you to handle the pre-authenticated IDENT@HOST masks which can be used to identify an account. This means that rather than identifying with a password, you have a white listed IDENT@HOST which can use the \"!login\" command to be identified. Note that wild cards are not accepted, the match must be a full IDENT@HOST mask. Sub-commands are: List, Add, Del, Delete, Remove"
+									;;
+							esac
+							;;
+						meta)
+							arg3="$(awk '{print $7}' <<<"$message")"
+							case "${arg3,,}" in
+								list)
+									echo "(${arg1,,})->(${arg2,,})->(${arg3,,}) => Lists any known meta dat associated with your account."
+									;;
+								add)
+									echo "(${arg1,,})->(${arg2,,})->(${arg3,,}) => Adds a string of meta data to your account. Format is: \"SET META ADD foo=bar\""
+									;;
+								del|delete|remove)
+									echo "(${arg1,,})->(${arg2,,})->(${arg3,,}) => Removes a string of meta data from your account. Note that wild cards are not accepted, the string must be an exact match. Format is: \"SET META DEL foo=bar\""
+									;;
+								*)
+									echo "(${arg1,,})->(${arg2,,}) => Allows you to handle meta data associated with your account. Usually this data is utilized by modules (i.e. the Twitch.tv module [See modules/twitch.sh]). Any applicable modules should tell you the proper format to add meta data with in their help topic."
+									;;
+							esac
+							;;
+						removeacct|removeaccount)
+							echo "(${arg1,,})->(${arg2,,}) => Begins the two-step removal process of a registered account. Format is: \"SET REMOVEACCT\". To cancel an account removal prior to the second step, use: \"SET REMOVEACCT cancel\""
+							;;
+						*)
+							echo "(${arg1,,}) => Allows you to set certain items related to your account. Sub-commands are: Password, Clones, AllowedHost, Meta, RemoveAcct, RemoveAccount"
+							;;
+					esac
+					;;
+				*)
+					if egrep -q "^modForm=(.*\"${arg1,,}\".*)$" var/.mods/*.sh; then
+						helpFile="$(egrep "^modForm=(.*\"${arg1,,}\".*)$" var/.mods/*.sh /dev/null)"
+						helpFile="${helpFile%%:*}"
+						helpLine="$(egrep "^modHelp=\"" "${helpFile}")"
+						helpLine="${helpLine#modHelp=\"}"
+						helpLine="${helpLine%\"}"
+						echo "(${arg1,,}) => ${helpLine} (Provided by ${helpFile##*/} module)"
+					elif -e "var/.mods/${arg1,,}.sh"; then
+						helpFile="var/.mods/${arg1,,}.sh"
+						helpLine="$(egrep "^modHelp=\"" "${helpFile}")"
+						helpLine="${helpLine#modHelp=\"}"
+						helpLine="${helpLine%\"}"
+						echo "(${arg1,,}) => ${helpLine} (Provided by ${helpFile##*/} module)"
+					elif -e "var/.mods/${arg1,,}"; then
+						helpFile="var/.mods/${arg1,,}"
+						helpLine="$(egrep "^modHelp=\"" "${helpFile}")"
+						helpLine="${helpLine#modHelp=\"}"
+						helpLine="${helpLine%\"}"
+						echo "(${arg1,,}) => ${helpLine} (Provided by ${helpFile##*/} module)"
+					else
+						echo "No such help topic available"
+					fi
+					;;
+			esac
 		else
-			echo "Please use this command in a private message to prevent unnecessary channel spamming"
+			# Could it match case insensitive?
+			if egrep -q "^modForm=(.*\"${arg1}\".*)$" var/.mods/*.sh; then
+				helpFile="$(egrep "^modForm=(.*\"${arg1}\".*)$" var/.mods/*.sh /dev/null)"
+				helpFile="${helpFile%%:*}"
+				helpLine="$(egrep "^modHelp=\"" "${helpFile}")"
+				helpLine="${helpLine#modHelp=\"}"
+				helpLine="${helpLine%\"}"
+				echo "(${arg1}) => ${helpLine} (Provided by ${helpFile##*/} module)"
+			elif [ -e "var/.mods/${arg1}.sh" ]; then
+				helpFile="var/.mods/${arg1}.sh"
+				helpLine="$(egrep "^modHelp=\"" "${helpFile}")"
+				helpLine="${helpLine#modHelp=\"}"
+				helpLine="${helpLine%\"}"
+				echo "(${arg1}) => ${helpLine} (Provided by ${helpFile##*/} module)"
+			elif [ -e "var/.mods/${arg1}" ]; then
+				helpFile="var/.mods/${arg1}"
+				helpLine="$(egrep "^modHelp=\"" "${helpFile}")"
+				helpLine="${helpLine#modHelp=\"}"
+				helpLine="${helpLine%\"}"
+				echo "(${arg1}) => ${helpLine} (Provided by ${helpFile##*/} module)"
+			else
+				echo "No such help topic available"
+			fi
 		fi
 	;;
 	mod)
