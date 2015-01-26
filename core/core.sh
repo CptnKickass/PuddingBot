@@ -56,6 +56,12 @@ if [ -e "var/.mods" ]; then
 	done
 fi
 
+# Setup file for user checks
+if [ -e "var/.admins" ]; then
+	rm -f var/.admins
+fi
+touch var/.admins
+
 # Setup file for status checks
 if [ -e "var/.status" ]; then
 	rm -f var/.status
@@ -100,7 +106,7 @@ parseOutput () {
 if [ "${#outArr[@]}" -ne "0" ]; then
 	unset sendArr
 	for line in "${outArr[@]}"; do
-		while IFS= read -rn320 -d '' sendArr[i++]; do :; done <<< "${line}"
+		while IFS= read -rn350 -d '' sendArr[i++]; do :; done <<< "${line}"
 	done
 	unset outArr
 	for line in "${sendArr[@]}"; do
