@@ -203,8 +203,20 @@ else
 
 		# If output datafile still exists from last time, remove it
 		if [ -e "$output" ]; then
-			echo "Removing old datafile (Improper shutdown?)"
+			echo "Removing old datafiles (Improper shutdown?)"
 			rm -f "$output"
+			if [ -e "var/.admins" ]; then
+				rm "var/.admins"
+			fi
+			if [ -d "var/.mods" ]; then
+				rm -rf "var/.mods"
+			fi
+			if [ -e "var/.conf" ]; then
+				rm "var/.conf"
+			fi
+			if [ -e "var/.status" ]; then
+				rm "var/.status"
+			fi
 		fi
 
 		# If logging is enabled
