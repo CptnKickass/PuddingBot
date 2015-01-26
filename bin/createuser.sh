@@ -2,12 +2,12 @@
 echo "-+| Create A User |+-"
 echo ""
 read -p "Please enter desired username: " username
-username="$(tr '[A-Z]' '[a-z]' <<<"$username")"
+username="${username,,}"
 username="${username// /}"
 while egrep -q "^user=\"${username}\"$" users/*.conf; do
 	echo "Username already in use. Please choose a new username."
 	read -p "Please enter desired username: " username
-	username="$(tr '[A-Z]' '[a-z]' <<<"$username")"
+	username="${username,,}"
 	username="${username// /}"
 done
 echo "Selected username: ${username}"

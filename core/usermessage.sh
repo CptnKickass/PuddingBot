@@ -274,8 +274,10 @@ case "$com" in
 				if [ -z "$(awk '{print $5}' <<<"$message")" ]; then
 					echo "This command requires a command parameter"
 				else
-					ignoreHost="$(awk '{print $6}' <<<"$message" | tr "[:upper:]" "[:lower:]")"
-					case "$(awk '{print $5}' <<<"$message" | tr "[:upper:]" "[:lower:]")" in
+					ignoreHost="$(awk '{print $6}' <<<"$message")"
+					ignoreHost="${ignoreHost,,}"
+					caseMsg="$(awk '{print $5}' <<<"$message")"
+					case "${caseMsg,,}" in
 						list)
 							ignoreList="$(<var/ignore.db)"
 							if [ -n "$ignoreList" ]; then
@@ -433,8 +435,8 @@ case "$com" in
 		if [ "$loggedIn" -eq "1" ]; then
 			reqFlag="M"
 			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
-				modCom="$(awk '{print $5}' <<<"$message" | tr "[:upper:]" "[:lower:]")"
-				case "$modCom" in
+				modCom="$(awk '{print $5}' <<<"$message")"
+				case "${modCom,,}" in
 					status)
 						modComItem="$(awk '{print $6}' <<<"$message")"
 						if ! echo "$modComItem" | egrep -q "\.sh$"; then
@@ -589,17 +591,20 @@ case "$(echo "$message" | awk '{print $2}')" in
 		# This is a ${comPrefix} addressed command
 		if [ "$(echo "$message" | awk '{print $4}' | cut -b 2)" == "${comPrefix}" ]; then
 			isCom="1"
-			com="$(awk '{print $4}' <<<"$message" | tr "[:upper:]" "[:lower:]")"
+			com="$(awk '{print $4}' <<<"$message")"
+			com="${com,,}"
 			com="${com:2}"
 		# This is a command beginning with ${nick}: ${nick}; or ${nick},
 		elif [[ "$(awk '{print $4}' <<<"$message")" == ":${nick}"?([:;,]) ]]; then
 			isCom="1"
 			message="$(sed -E "s/:${nick}[:;,]? //" <<<"$message")"
-			com="$(awk '{print $4}' <<<"$message" | tr "[:upper:]" "[:lower:]")"
+			com="$(awk '{print $4}' <<<"$message")"
+			com="${com,,}"
 		# It's a PM
 		elif [ "$isPm" -eq "1" ]; then
 			isCom="1"
-			com="$(awk '{print $4}' <<<"$message" | tr "[:upper:]" "[:lower:]")"
+			com="$(awk '{print $4}' <<<"$message")"
+			com="${com,,}"
 			com="${com:1}"
 		else
 			isCom="0"
