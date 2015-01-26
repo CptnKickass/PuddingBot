@@ -24,7 +24,7 @@ case "$com" in
 				if [ -z "${lUser}" ]; then
 					echo "You must provide a username. Format is: \"register USERNAME PASSWORD\" ***Note that this bot is in debug mode. Although your password will be stored as a sha256 hash in the user files, the raw input/output is being logged for debug purposes. Do not use a password you use anywher else!***"
 				elif [ -z "${lPass}" ]; then
-					echo "You must provide a username. Format is: \"register USERNAME PASSWORD\" ***Note that this bot is in debug mode. Although your password will be stored as a sha256 hash in the user files, the raw input/output is being logged for debug purposes. Do not use a password you use anywher else!***"
+					echo "You must provide a password. Format is: \"register USERNAME PASSWORD\" ***Note that this bot is in debug mode. Although your password will be stored as a sha256 hash in the user files, the raw input/output is being logged for debug purposes. Do not use a password you use anywher else!***"
 				fi
 				if [ -n "${lUser}" ] && [ -n "${lPass}" ]; then
 					if [ -e "${userDir}/${lUser}.conf" ]; then
@@ -753,75 +753,90 @@ case "$com" in
 			reqFlag="M"
 			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
 				modCom="$(awk '{print $5}' <<<"$message")"
+				unset modComItem
 				case "${modCom,,}" in
 					status)
-						modComItem="$(awk '{print $6}' <<<"$message")"
-						if ! echo "$modComItem" | egrep -q "\.sh$"; then
-							modComItem="${modComItem}.sh"
-						fi
-						if [ -e "var/.mods/${modComItem}" ]; then
-							echo "${modComItem} is loaded"
-						else
-							echo "${modComItem} is not loaded"
-						fi
+						modComItem="$(read -r one two three four five rest <<<"$message"; echo "$rest")"
+						modComItem=(${modComItem})
+						for arrItem in ${modComItem[@]}; do
+							if ! echo "$arrItem" | egrep -q "\.sh$"; then
+								arrItem="${arrItem}.sh"
+							fi
+							if [ -z "$arrItem" ]; then
+								echo "This command requires a parameter (module name)"
+							elif [ -e "var/.mods/${arrItem}" ]; then
+								echo "${arrItem} is loaded"
+							else
+								echo "${arrItem} is not loaded"
+							fi
+						done
 					;;
 					load)
-						modComItem="$(awk '{print $6}' <<<"$message")"
-						if ! echo "$modComItem" | egrep -q "\.sh$"; then
-							modComItem="${modComItem}.sh"
-						fi
-						if [ -e "var/.mods/${modComItem}" ]; then
-							echo "${modComItem} is already loaded. Do you mean reload, or unload?"
-						elif [ -e "modules/${modComItem}" ]; then
-							cp "modules/${modComItem}" "var/.mods/${modComItem}"
-							echo "modules/${modComItem} loaded"
-						elif [ -e "contrib/${modComItem}" ]; then
-							cp "contrib/${modComItem}" "var/.mods/${modComItem}"
-							echo "contrib/${modComItem} loaded"
-						else
-							echo "${modComItem} does not appear to exist in \"modules/\" or \"contrib/\". Remember, on unix based file systems, case sensitivity matters!"
-						fi
+						modComItem="$(read -r one two three four five rest <<<"$message"; echo "$rest")"
+						modComItem=(${modComItem})
+						for arrItem in ${modComItem[@]}; do
+							if ! echo "$arrItem" | egrep -q "\.sh$"; then
+								arrItem="${arrItem}.sh"
+							fi
+							if [ -e "var/.mods/${arrItem}" ]; then
+								echo "${arrItem} is already loaded. Do you mean reload, or unload?"
+							elif [ -e "modules/${arrItem}" ]; then
+								cp "modules/${arrItem}" "var/.mods/${arrItem}"
+								echo "modules/${arrItem} loaded"
+							elif [ -e "contrib/${arrItem}" ]; then
+								cp "contrib/${arrItem}" "var/.mods/${arrItem}"
+								echo "contrib/${arrItem} loaded"
+							else
+								echo "${arrItem} does not appear to exist in \"modules/\" or \"contrib/\". Remember, on unix based file systems, case sensitivity matters!"
+							fi
+						done
 					;;
 					unload)
-						modComItem="$(awk '{print $6}' <<<"$message")"
-						if ! echo "$modComItem" | egrep -q "\.sh$"; then
-							modComItem="${modComItem}.sh"
-						fi
-						if [ -e "var/.mods/${modComItem}" ]; then
-							rm "var/.mods/${modComItem}"
-							if [ -e "var/.mods/${modComItem}" ]; then
-								echo "Unable to unload ${modComItem}!"
-							else
-								echo "${modComItem} unloaded"
+						modComItem="$(read -r one two three four five rest <<<"$message"; echo "$rest")"
+						modComItem=(${modComItem})
+						for arrItem in ${modComItem[@]}; do
+							if ! echo "$arrItem" | egrep -q "\.sh$"; then
+								arrItem="${arrItem}.sh"
 							fi
-						else
-							echo "${modComItem} does not appear to be loaded. Remember, on unix based file systems, case sensitivity matters!"
-						fi
+							if [ -e "var/.mods/${arrItem}" ]; then
+								rm "var/.mods/${arrItem}"
+								if [ -e "var/.mods/${arrItem}" ]; then
+									echo "Unable to unload ${arrItem}!"
+								else
+									echo "${arrItem} unloaded"
+								fi
+							else
+								echo "${arrItem} does not appear to be loaded. Remember, on unix based file systems, case sensitivity matters!"
+							fi
+						done
 					;;
 					reload)
-						modComItem="$(awk '{print $6}' <<<"$message")"
-						if ! echo "$modComItem" | egrep -q "\.sh$"; then
-							modComItem="${modComItem}.sh"
-						fi
-						if [ -e "var/.mods/${modComItem}" ]; then
-							rm "var/.mods/${modComItem}"
-							if [ -e "var/.mods/${modComItem}" ]; then
-								echo "Unable to unload ${modComItem}!"
-							else
-								echo "${modComItem} unloaded"
-								if [ -e "modules/${modComItem}" ]; then
-									cp "modules/${modComItem}" "var/.mods/${modComItem}"
-									echo "modules/${modComItem} loaded"
-								elif [ -e "contrib/${modComItem}" ]; then
-									cp "contrib/${modComItem}" "var/.mods/${modComItem}"
-									echo "contrib/${modComItem} loaded"
-								else
-									echo "Unable to load ${modComItem}!"
-								fi
+						modComItem="$(read -r one two three four five rest <<<"$message"; echo "$rest")"
+						modComItem=(${modComItem})
+						for arrItem in ${modComItem[@]}; do
+							if ! echo "$arrItem" | egrep -q "\.sh$"; then
+								arrItem="${arrItem}.sh"
 							fi
-						else
-							echo "${modComItem} does not appear to be loaded. Remember, on unix based file systems, case sensitivity matters!"
-						fi
+							if [ -e "var/.mods/${arrItem}" ]; then
+								rm "var/.mods/${arrItem}"
+								if [ -e "var/.mods/${arrItem}" ]; then
+									echo "Unable to unload ${arrItem}!"
+								else
+									echo "${arrItem} unloaded"
+									if [ -e "modules/${arrItem}" ]; then
+										cp "modules/${arrItem}" "var/.mods/${arrItem}"
+										echo "modules/${arrItem} loaded"
+									elif [ -e "contrib/${arrItem}" ]; then
+										cp "contrib/${arrItem}" "var/.mods/${arrItem}"
+										echo "contrib/${arrItem} loaded"
+									else
+										echo "Unable to load ${arrItem}!"
+									fi
+								fi
+							else
+								echo "${arrItem} does not appear to be loaded. Remember, on unix based file systems, case sensitivity matters!"
+							fi
+						done
 					;;
 					reloadall)
 						for modComItem in var/.mods/*.sh; do
