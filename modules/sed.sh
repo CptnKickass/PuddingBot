@@ -4,13 +4,6 @@
 # None
 
 ## Source
-if [ -e "var/.conf" ]; then
-	source var/.conf
-else
-	echo -e "Unable to locate \"${red}\$input${reset}\" file! (Is bot running?) Exiting."
-	exit 1
-fi
-
 # Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
@@ -33,6 +26,14 @@ if [[ "$1" == "--dep-check" ]]; then
 		exit 0
 	fi
 fi
+
+if [ -e "var/.conf" ]; then
+	source var/.conf
+else
+	echo -e "Unable to locate \"${red}\$input${reset}\" file! (Is bot running?) Exiting."
+	exit 1
+fi
+
 
 modHook="Format"
 modForm=("^.*PRIVMSG.*:s/.*/.*/(i|g)?$")

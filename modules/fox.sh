@@ -30,7 +30,7 @@ fi
 
 modHook="Format"
 modForm=("what does the fox say")
-modFormCase="Yes"
+modFormCase="No"
 modHelp="Spits out a line about what the fox says on demand"
 modFlag="m"
 ((foxResponseNum = RANDOM % 12 + 1))
