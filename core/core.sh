@@ -16,24 +16,6 @@ else
 	echo "Unable to locate users directory. Creating..."
 fi
 
-# Check to make sure at least one admin exists
-if find "users" -mindepth 1 -print -quit | grep -q .; then
-	echo "Users exist. Checking for presence of administrator..."
-	if egrep -q "^flags=\"[a-z|B-Z]+?A[a-z|B-Z]+?\"$" users/*.conf; then
-		echo "Administrator exists."
-	else
-		while egrep -q "^flags=\"[a-z|B-Z]+?A[a-z|B-Z]+?\"$" users/*.conf; do
-			echo "No admins exist. Please create an administrator before launching bot for the first time."
-			./bin/createuser.sh
-		done
-	fi
-else
-	while egrep -q "^flags=\"[a-z|B-Z]+?A[a-z|B-Z]+?\"$" users/*.conf; do
-		echo "No admins exist. Please create an administrator before launching bot for the first time."
-		./bin/createuser.sh
-	done
-fi
-
 # Load variables into the core
 if [ -e "var/.conf" ]; then
 	echo "Loading variables into bot"

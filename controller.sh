@@ -29,7 +29,7 @@
 #                                                                       #
 #########################################################################
 
-## Version 1.0.0
+## Version 1.0.1
 
 ## Source
 
@@ -52,9 +52,30 @@ done
 
 # Define some functions
 checkSanity () {
+	# Check to make sure at least one admin exists
+	if [ -d "users" ]; then
+		echo "Users exist. Checking for presence of administrator..."
+		if egrep -q "^flags=\"[a-z|B-Z]+?A[a-z|B-Z]+?\"$" users/*.conf; then
+			echo "Administrator exists."
+		else
+			while egrep -q "^flags=\"[a-z|B-Z]+?A[a-z|B-Z]+?\"$" users/*.conf; do
+				echo "No admins exist. Please create an administrator before launching bot for the first time."
+				./bin/createuser.sh
+			done
+		fi
+	else
+		echo "Creating Users Directory..."
+		mkdir users
+		while egrep -q "^flags=\"[a-z|B-Z]+?A[a-z|B-Z]+?\"$" users/*.conf; do
+			echo "No admins exist. Please create an administrator before launching bot for the first time."
+			./bin/createuser.sh
+		done
+	fi
+
 	if [ -e "var/.conf" ]; then
 		rm -f "var/.conf"
 	fi
+
 	botNick="$(egrep -m 1 "^nick=" "pudding.conf")"
 	tmpBotNick="${botNick#*\"}"
 	tmpBotNick="${tmpBotNick%\"}"
