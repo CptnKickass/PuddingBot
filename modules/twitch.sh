@@ -41,7 +41,7 @@ fi
 modHook="Prefix"
 modForm=("twitch")
 modFormCase=""
-modHelp="Checks to see who's streaming on twitch.tv. You can register your twitch username to work with this module via the command: set meta twitchuser YOUR-TWITCH-USERNAME-HERE"
+modHelp="Checks to see who's streaming on twitch.tv. You can register your twitch username to work with this module via the command: \"set meta twitchuser=YOUR-TWITCH-USERNAME-HERE\""
 modFlag="m"
 
 if [ ! -d "${userDir}" ]; then
