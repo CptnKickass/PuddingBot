@@ -921,7 +921,7 @@ case "$(echo "$message" | awk '{print $2}')" in
 		;;
 	PRIVMSG)
 		# This is a ${comPrefix} addressed command
-		if [ "$(echo "$message" | awk '{print $4}' | cut -b 2)" == "${comPrefix}" ]; then
+		if [ "$(awk '{print $4}' <<<"$message" | cut -b 2)" == "${comPrefix}" ]; then
 			isCom="1"
 			com="$(awk '{print $4}' <<<"$message")"
 			com="${com,,}"
@@ -934,10 +934,38 @@ case "$(echo "$message" | awk '{print $2}')" in
 			com="${com,,}"
 		# It's a PM
 		elif [ "$isPm" -eq "1" ]; then
-			isCom="1"
-			com="$(awk '{print $4}' <<<"$message")"
-			com="${com,,}"
-			com="${com:1}"
+			# Is it a CTCP?
+			if [ "$(awk '{print $4}' <<<"$message" | egrep -ic ":(PING|VERSION|TIME|DATE)")" -ne "0" ]; then
+				# What kind of CTCP are they requesting?
+				ctcp="$(awk '{print $4}' <<<"$message")"
+				ctcp="${ctcp#:}"
+				ctcp="${ctcp%}"
+				ctcp="${ctcp^^}"
+				case "$ctcp" in
+					PING)
+						ms="$(date +%s)"
+						if [ -z "$(awk '{print $6}' <<<"$message")" ]; then
+							echo "${ctcp} ${ms}" 
+						else
+							ms2=$(($(date +%s%N)/1000000))
+							echo "${ctcp} ${ms} ${ms2:7:6}" 
+						fi
+						;;
+					VERSION)
+						ver="$(fgrep -m 1 "## Version " controller.sh)"
+						ver="${ver#\#\# Version }"
+						echo "${ctcp} PuddingBot v${ver}" 
+						;;
+					TIME|DATE)
+						echo "${ctcp} $(date | head -n 1)" 
+						;;
+				esac
+			else
+				isCom="1"
+				com="$(awk '{print $4}' <<<"$message")"
+				com="${com,,}"
+				com="${com:1}"
+			fi
 		else
 			isCom="0"
 		fi

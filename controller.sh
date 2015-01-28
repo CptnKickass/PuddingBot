@@ -55,7 +55,7 @@ checkSanity () {
 	# Check to make sure at least one admin exists
 	if [ -d "users" ]; then
 		echo "Users exist. Checking for presence of administrator..."
-		if [ -e users/*.conf ]; then
+		if find users -depth -type f -iname "*.conf" > /dev/null 2>&1; then
 			if egrep -q "^flags=\".*A.*\"$" users/*.conf; then
 				echo "Administrator exists."
 			else

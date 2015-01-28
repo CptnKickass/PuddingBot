@@ -85,6 +85,14 @@ done
 }
 
 parseOutput () {
+if [ "$isHelp" -ne "0" ]; then
+	outAct="NOTICE"
+	senderTarget="${senderNick}"
+elif [ "$isCtcp" -ne "0" ]; then
+	outAct="NOTICE"
+else
+	outAct="PRIVMSG"
+fi
 if [ "${#outArr[@]}" -ne "0" ]; then
 	unset sendArr
 	for line in "${outArr[@]}"; do
@@ -93,7 +101,7 @@ if [ "${#outArr[@]}" -ne "0" ]; then
 	unset outArr
 	for line in "${sendArr[@]}"; do
 		if [ -n "$line" ]; then
-			echo "PRIVMSG ${senderTarget} :${line}" >> $output
+			echo "${outAct} ${senderTarget} :${line}" >> $output
 			sleep 0.25
 		fi
 	done
@@ -153,6 +161,8 @@ do
 		senderUser="${senderFull#*!}"
 		senderUser="${senderUser%@*}"
 		senderHost="${senderFull#*@}"
+		isCtcp="$(awk '{print $4}' <<<"$message" | egrep -ic ":(PING|VERSION|TIME|DATE)")" 
+		isHelp="$(awk '{print $4, $5}' <<<"$message" | egrep -ic ":(!)?(${nick}[:;,]?)?help")" 
 		out="$(./core/usermessage.sh "$message")"
 		if [ "$(fgrep -c "$senderTarget" <<< "$nick")" -eq "1" ]; then
 			senderTarget="$senderNick"
@@ -199,6 +209,8 @@ do
 		echo "$(date -R) [${0}] $message" >> $(<var/bot.pid).debug
 	fi
 	parseOutput;
+
+	# Commented out to prevent wiping of output for debug purposes
 	#echo "" > "$output"
 done
 done
