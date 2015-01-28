@@ -8,7 +8,7 @@
 # Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
-	deps=("bc")
+	deps=("bc" "read" "awk")
 	if [ "${#deps[@]}" -ne "0" ]; then
 		for i in ${deps[@]}; do
 			if ! command -v ${i} > /dev/null 2>&1; then
@@ -39,7 +39,7 @@ if [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
 else
 	equation="$(read -r one two three four rest <<<"$msg"; echo "$rest")"
 	result="$(echo "scale=3; ${equation}" | bc 2>&1)"
-	if [ "$(echo "${result}" | wc -c)" -gt "50" ]; then
+	if [ "${#result}" -gt "50" ]; then
 		result="${result:0:50} (Truncated to first 50 characters)"
 	fi
 	echo "${result}"

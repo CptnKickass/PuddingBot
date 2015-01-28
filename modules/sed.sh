@@ -57,8 +57,10 @@ if [ -n "$sedItem" ]; then
 	line="${line#:}"
 	if [ -n "$line" ]; then
 		lineFixed="$(echo "$line" | sed -E "${sedCom}")"
-		if ! [[ "$lineFixed" == "${line}" ]]; then
+		if ! [[ "$lineFixed" == "${line}" ]] && [ "${#lineFixed}" -le "200" ]; then
 			echo "[FTFY] <${prevSend}> $lineFixed"
+		elif ! [[ "$lineFixed" == "${line}" ]] && [ "${#lineFixed}" -gt "200" ]; then
+			echo "sed response not sent due to result being over 200 characters"
 		fi
 	fi
 fi

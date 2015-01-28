@@ -50,16 +50,19 @@ if [ ! -d "${userDir}" ]; then
 fi
 
 numOnline="0"
-numReg="$(fgrep -c "meta=\"twitchuser=" "${userDir}"/*.conf)"
-if [ "$numReg" -eq "0" ]; then
+numReg="0"
+if ! egrep -q "^meta=\"twitchuser=" ${userDir}/*.conf; then
 	echo "No registered Twitch.tv users online."
 else
-	for match in "$(fgrep "meta=\"twitchuser=" "${userDir}/"*.conf /dev/null)"; do
+	for match in $(fgrep "meta=\"twitchuser=" "${userDir}/"*.conf /dev/null); do
+		unset twitchUser
+		unset puddingUserFile
+		unset apiCall
 		twitchUser="${match#*.conf:meta=\"twitchuser=}"
 		twitchUser="${twitchUser%\"}"
 		puddingUserFile="${match%%:meta=\"twitchuser=*}"
 		apiCall="$(curl -s "https://api.twitch.tv/kraken/streams/${twitchUser}")"
-		if [ "$(echo "${apiCall}" | fgrep -c "\"stream\":null")" -ne "1" ]; then
+		if [ "$(fgrep -c "\"stream\":null" <<<"$apiCall")" -ne "1" ]; then
 			numOnline="$(( $numOnline + 1 ))"
 			streamContent="${apiCall#*\"game\":\"}"
 			streamContent="${streamContent%%\"*}"
