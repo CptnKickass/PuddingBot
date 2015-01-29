@@ -267,10 +267,7 @@ else
 		egrep "^loadMod" "pudding.conf" | sort -u | while read mod; do
 			mod="${mod%\"}"
 			mod="${mod#*\"}"
-			if [ ! -e "modules/${mod}" ]; then
-				# No such file exists
-				echo -e "Skipped module: ${red}${mod}${reset} (No such module found)"
-			else
+			if [ -e "modules/${mod}" ]; then
 				# File exists. Check that its dependencies are met.
 				./modules/${mod} --dep-check 2>&1 | head -n 1 | while read line; do
 					if [[ "$line" == "ok" ]]; then
@@ -280,6 +277,19 @@ else
 						echo -e "Skipped module: ${red}${mod}${reset} (Dependency check failed)"
 					fi
 				done
+			elif [ -e "contrib/${mod}" ]; then
+				# File exists. Check that its dependencies are met.
+				./contrib/${mod} --dep-check 2>&1 | head -n 1 | while read line; do
+					if [[ "$line" == "ok" ]]; then
+						cp "contrib/${mod}" "var/.mods/${mod}"
+						echo -e "Loaded module:  ${green}${mod}${reset}"
+					else
+						echo -e "Skipped module: ${red}${mod}${reset} (Dependency check failed)"
+					fi
+				done
+			else
+				# No such file exists
+				echo -e "Skipped module: ${red}${mod}${reset} (No such module found)"
 			fi
 		done
 		# Start the actual bot

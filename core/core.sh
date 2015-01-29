@@ -147,7 +147,7 @@ do
 		echo "PONG${message#PING}" >> $output
 	elif [ "$(echo "$message" | awk '{print $1}')" == ":${nick}" ]; then
 		# The bot is changing modes on itself
-		out="$(./core/botmodechange.sh "$message")"
+		out="$(source ./core/botmodechange.sh "$message")"
 		if [ -n "$out" ]; then
 			mapfile outArr <<<"$out"
 		fi
@@ -163,7 +163,7 @@ do
 		senderHost="${senderFull#*@}"
 		isCtcp="$(awk '{print $4}' <<<"$message" | egrep -ic ":(PING|VERSION|TIME|DATE)")" 
 		isHelp="$(awk '{print $4, $5}' <<<"$message" | egrep -ic ":(!)?(${nick}[:;,]?)?help")" 
-		out="$(./core/usermessage.sh "$message")"
+		out="$(source ./core/usermessage.sh "$message")"
 		if [ "$(fgrep -c "$senderTarget" <<< "$nick")" -eq "1" ]; then
 			senderTarget="$senderNick"
 		fi
@@ -198,7 +198,7 @@ do
 		kill $$
 	elif [ "$(echo "$message" | awk '{print $1}' | egrep -c "^:.*!.*@.*$")" -eq "0" ]; then
 		# The message does not match an n!u@h mask, and should be a server
-		out="$(./core/servermessage.sh "$message")"
+		out="$(source ./core/servermessage.sh "$message")"
 		if [ -n "$out" ]; then
 			senderTarget="${channels[0]}"
 			mapfile <<<"$out" outArr
