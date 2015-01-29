@@ -22,6 +22,7 @@ echo "Please enter desired number of clones allowed"
 read -p "to be logged into this account simultaenously: " clones
 while ! [[ $clones =~ $re ]]; do 
 	echo "Error: Not a number"
+	echo "Please enter desired number of clones allowed"
 	read -p "to be logged into this account simultaenously: " clones
 done
 echo ""
