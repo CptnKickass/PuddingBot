@@ -15,6 +15,11 @@ output="/home/goose/PuddingBot/var/outbound"
 chan=("#goose")
 
 ## Source
+if [[ "$1" == "--dep-check" ]]; then
+	echo "Dependency check failed: This module is not meant to be loaded into the bot!"
+	exit 255
+fi
+
 # Ignore swap files
 inputChk="${input##*/}"
 if echo "$inputChk" | egrep -q "(^\.|FRAPSBMP\.TMP$)"; then
