@@ -8,3 +8,4 @@ To do:
 * Add topic protection type thing for stats, likely a contrib mod
 * Add some kind of structured logging option
 * Re add | and > redirection
+* Add method for changing a user's flags
