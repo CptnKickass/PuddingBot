@@ -22,11 +22,11 @@ fi
 
 # Ignore swap files
 inputChk="${input##*/}"
-if echo "$inputChk" | egrep -q "(^\.|FRAPSBMP\.TMP$)"; then
+if egrep -q "(^\.|FRAPSBMP\.TMP$|4913$)" <<<"${inputChk}"; then
 	exit 0
 fi
 
-if echo "${input}" | fgrep -q " "; then
+if fgrep -q " " <<<"${input}"; then
 	mv "/home/goose/public_html/${input}" "/home/goose/public_html/${input// /_}" 
 	input="${input// /_}"
 fi

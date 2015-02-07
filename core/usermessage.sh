@@ -823,11 +823,19 @@ case "$com" in
 							if [ -e "var/.mods/${arrItem}" ]; then
 								echo "${arrItem} is already loaded. Do you mean reload, or unload?"
 							elif [ -e "modules/${arrItem}" ]; then
-								cp "modules/${arrItem}" "var/.mods/${arrItem}"
-								echo "modules/${arrItem} loaded"
+								if [[ "$(source ./modules/${arrItem} --dep-check)" == "ok" ]]; then
+									cp "modules/${arrItem}" "var/.mods/${arrItem}"
+									echo "modules/${arrItem} loaded"
+								else
+									echo "Unable to load modules/${arrItem}! ($(source ./modules/${arrItem} --dep-check))"
+								fi
 							elif [ -e "contrib/${arrItem}" ]; then
-								cp "contrib/${arrItem}" "var/.mods/${arrItem}"
-								echo "contrib/${arrItem} loaded"
+								if [[ "$(source ./contrib/${arrItem} --dep-check)" == "ok" ]]; then
+									cp "contrib/${arrItem}" "var/.mods/${arrItem}"
+									echo "contrib/${arrItem} loaded"
+								else
+									echo "Unable to load contrib/${arrItem}! ($(source ./contrib/${arrItem} --dep-check))"
+								fi
 							else
 								echo "${arrItem} does not appear to exist in \"modules/\" or \"contrib/\". Remember, on unix based file systems, case sensitivity matters!"
 							fi
@@ -866,11 +874,19 @@ case "$com" in
 								else
 									echo "${arrItem} unloaded"
 									if [ -e "modules/${arrItem}" ]; then
-										cp "modules/${arrItem}" "var/.mods/${arrItem}"
-										echo "modules/${arrItem} loaded"
+										if [[ "$(source ./modules/${arrItem} --dep-check)" == "ok" ]]; then
+											cp "modules/${arrItem}" "var/.mods/${arrItem}"
+											echo "modules/${arrItem} loaded"
+										else
+											echo "Unable to load modules/${arrItem}! ($(source ./modules/${arrItem} --dep-check))"
+										fi
 									elif [ -e "contrib/${arrItem}" ]; then
-										cp "contrib/${arrItem}" "var/.mods/${arrItem}"
-										echo "contrib/${arrItem} loaded"
+										if [[ "$(source ./contrib/${arrItem} --dep-check)" == "ok" ]]; then
+											cp "contrib/${arrItem}" "var/.mods/${arrItem}"
+											echo "contrib/${arrItem} loaded"
+										else
+											echo "Unable to load contrib/${arrItem}! ($(source ./contrib/${arrItem} --dep-check))"
+										fi
 									else
 										echo "Unable to load ${arrItem}!"
 									fi
