@@ -11,6 +11,12 @@ senderUser="${senderFull#*!}"
 senderUser="${senderUser%@*}"
 senderHost="${senderFull#*@}"
 
+# This is only necessary until it's pushed into the config
+sqlDBname="puddingbot"
+sqlTable="users"
+sqlUser="puddingbot"
+sqlPass="test"
+
 # For simplicities sake, I'll keep all commands in this function
 comExec () {
 case "$com" in
@@ -978,8 +984,71 @@ case "$(echo "$message" | awk '{print $2}')" in
 	NOTICE)
 		;;
 	PRIVMSG)
+		# MySQL Stuff
+		if ! [[ "${senderNick}" == "${nick}" ]]; then
+			sqlNuh="${senderFull}"
+			sqlNick="${senderNick}"
+			sqlSeen="$(date +%s)"
+			sqlSeenSaid="$(read -r one two three rest <<<"$message"; echo "${rest}")"
+			sqlSeenSaid="${sqlSeenSaid#:}"
+			# This method is preferred, but pisses off vim's syntax. So I'll use sed for debugging purposes.
+			#sqlSeenSaid="${sqlSeenSaid//\'/''}"
+			sqlSeenSaid="$(sed "s/'/''/g" <<<"${sqlSeenSaid}")"
+			if [ "${isPm}" -eq "1" ]; then
+				sqlSeenSaidIn="PM"
+			else
+				sqlSeenSaidIn="${senderTarget}"
+			fi
+			# Is the user already in the database?
+			sqlUserExists="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM seen WHERE nuh = '${sqlNuh}';")"
+			if [ -z "${sqlUserExists}" ]; then
+				# Returned nothing. User does not exist. Let's add them.
+				mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO seen VALUES ('${sqlNuh}','${sqlNick}','${sqlSeen}','${sqlSeenSaid}','${sqlSeenSaidIn}');" 
+			else
+				# User does exist. Let's update them.
+				mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE seen SET seen = '${sqlSeen}', seensaid = '${sqlSeenSaid}', seensaidin = '${sqlSeenSaidIn}', nuh = '${sqlNuh}' WHERE nick = '${sqlNick}';"
+			fi
+		fi
+		# Now that user's data is updated.
+		# First let's check for karma
+		if egrep -q "^.*:([[:alnum:]]|[[:punct:]])+(\+\+|--)$" <<<"$message"; then
+			karmaTarget="$(awk '{print $4}' <<<"$message")"
+			karmaTarget="${karmaTarget#:}"
+			karmaAction="${karmaTarget:(-2)}"
+			karmaTarget="${karmaTarget%++}"
+			karmaTarget="${karmaTarget%--}"
+			# No changing your own karma
+			if ! [[ "${karmaTarget,,}" == "${senderNick,,}" ]]; then
+				karmaUserExists="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM karma WHERE nick = '${karmaTarget}';")"
+				if [ -z "${karmaUserExists}" ]; then
+					# Returned nothing. User does not exist. Let's add them.
+					if [[ "${karmaAction}" == "++" ]]; then
+						mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO karma VALUES ('${karmaTarget}','1');" 2>&1
+					elif [[ "${karmaAction}" == "++" ]]; then
+						mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO karma VALUES ('${karmaTarget}','-1');" 2>&1
+					fi
+				elif [[ "${karmaAction}" == "++" ]]; then
+					oldKarma="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT value FROM karma WHERE nick = '${karmaTarget}';" | tail -n 1)"
+					newKarma="$(( ${oldKarma} + 1 ))"
+					mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE karma SET value = '${newKarma}' WHERE nick = '${karmaTarget}';" 2>&1
+				elif [[ "${karmaAction}" == "--" ]]; then
+					oldKarma="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT value FROM karma WHERE nick = '${karmaTarget}';" | tail -n 1)"
+					newKarma="$(( ${oldKarma} - 1 ))"
+					mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE karma SET value = '${newKarma}' WHERE nick = '${karmaTarget}';" 2>&1
+				fi
+			else
+				karmaUserExists="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM karma WHERE nick = '${karmaTarget}';")"
+				if [ -z "${karmaUserExists}" ]; then
+					mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO karma VALUES ('${karmaTarget}','-1');" 2>&1
+				else
+					oldKarma="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT value FROM karma WHERE nick = '${karmaTarget}';" | tail -n 1)"
+					newKarma="$(( ${oldKarma} - 1 ))"
+					mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE karma SET value = '${newKarma}' WHERE nick = '${karmaTarget}';" 2>&1
+				fi
+				
+			fi
 		# This is a ${comPrefix} addressed command
-		if [ "$(awk '{print $4}' <<<"$message" | cut -b 2)" == "${comPrefix}" ]; then
+		elif [ "$(awk '{print $4}' <<<"$message" | cut -b 2)" == "${comPrefix}" ]; then
 			isCom="1"
 			com="$(awk '{print $4}' <<<"$message")"
 			com="${com,,}"

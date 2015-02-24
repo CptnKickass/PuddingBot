@@ -13,6 +13,13 @@ server="irc.freenode.net"
 port="6667"
 # Does the server have a password? If not, just leave this empty.
 serverpass=""
+# RUN ./bin/mysql.sh TO GET THE BELOW 3 SQL OPTIONS!!!!!!!!!!!!!!!!!!
+# MySQL Username
+sqlUser=""
+# MySQL password
+sqlPass=""
+# MySQL Database Name. Usually the username is fine.
+sqlDBname=""
 # Bot owner's IRC nickname?
 # (This is purely for info, not for administrative commands.)
 owner="goose"
@@ -24,7 +31,7 @@ comPrefix="!"
 # What flags should non logged in users have?
 genFlags="m"
 # NickServ pass? Leave empty if you don't have one.
-nickPass="password"
+nickPass="NickServ Password Goes Here"
 # Enable IRC logging? Should be "Yes" or "No"
 logIn="No"
 # IRC operator nick/pass. Leave empty if you don't have one.
@@ -40,7 +47,7 @@ operModes=""
 # Leave blank if you don't need this.
 lastCom=""
 # Where should we keep the bot data files? The base directory needs to exist
-dataDir="${HOME}/Pudding"
+dataDir="${HOME}/PuddingBot"
 # Where should we drop the data file we use to talk to the IRCd?
 # Usually the default values are fine. You can also use $(mktemp)
 output="${dataDir}/var/outbound"
@@ -49,5 +56,16 @@ output="${dataDir}/var/outbound"
 input="${dataDir}/var/inbound"
 # List of modules to load. These should exist in the modules directory.
 # Add new loadMod= lines for each module.
+loadMod="convert.sh"
+loadMod="define.sh"
+loadMod="explain.sh"
+loadMod="fox.sh"
+loadMod="google.sh"
+loadMod="host.sh"
+loadMod="isup.sh"
 loadMod="math.sh"
-loadMod="sed.sh"
+loadMod="ping.sh"
+loadMod="pong.sh"
+loadMod="tell.sh"
+loadMod="url-title-get.sh"
+loadMod="whois.sh"
