@@ -7,3 +7,5 @@ To do:
 * Add some kind of structured logging option
 * Re add | and > redirection
 * Add method for changing a user's flags
+* Add check for MySQL support that stops launch if failed.
+* Change MySQL configurations to make SQL optional instead of mandatory, disabling modules that require it
