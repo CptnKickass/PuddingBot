@@ -944,14 +944,17 @@ case "$com" in
 	;;
 	*)
 		for i in var/.mods/*.sh; do
-			if fgrep -i -q "modHook=\"Prefix\"" "$i"; then
-				modArr="$(fgrep "modForm=" "$i")"
+			if egrep -i -q "^modHook=\"Prefix\"" "$i"; then
+				modArr="$(egrep "^modForm=" "$i")"
 				modArr="${modArr#modForm=}"
 				modArr="${modArr#(}"
 				modArr="${modArr%)}"
-				if echo "$modArr" | fgrep -q "\"$com\""; then
-					source ./${i} "$message"
-				fi
+				modArr=("${modArr}")
+				for q in "${modArr[@]}"; do
+					if fgrep -q "\"${com}\"" <<<"${q}"; then
+						source ./${i} "$message"
+					fi
+				done
 			fi
 		done
 	;;
@@ -984,7 +987,7 @@ case "$(echo "$message" | awk '{print $2}')" in
 	NOTICE)
 		;;
 	PRIVMSG)
-		# MySQL Stuff
+		# MySQL Seen Stuff
 		if ! [[ "${senderNick}" == "${nick}" ]]; then
 			sqlNuh="${senderFull}"
 			sqlNick="${senderNick}"
@@ -999,6 +1002,9 @@ case "$(echo "$message" | awk '{print $2}')" in
 			else
 				sqlSeenSaidIn="${senderTarget}"
 			fi
+			if egrep -iq "^(${nick}[:;,] )?login" <<<"${sqlSeenSaid}"; then
+				sqlSeenSaid="[User logged into bot]"
+			fi
 			# Is the user already in the database?
 			sqlUserExists="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM seen WHERE nuh = '${sqlNuh}';")"
 			if [ -z "${sqlUserExists}" ]; then
@@ -1010,7 +1016,7 @@ case "$(echo "$message" | awk '{print $2}')" in
 			fi
 		fi
 		# Now that user's data is updated.
-		# First let's check for karma
+		# Let's check for karma
 		if egrep -q "^.*:([[:alnum:]]|[[:punct:]])+(\+\+|--)$" <<<"$message"; then
 			karmaTarget="$(awk '{print $4}' <<<"$message")"
 			karmaTarget="${karmaTarget#:}"
@@ -1023,27 +1029,27 @@ case "$(echo "$message" | awk '{print $2}')" in
 				if [ -z "${karmaUserExists}" ]; then
 					# Returned nothing. User does not exist. Let's add them.
 					if [[ "${karmaAction}" == "++" ]]; then
-						mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO karma VALUES ('${karmaTarget}','1');" 2>&1
-					elif [[ "${karmaAction}" == "++" ]]; then
-						mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO karma VALUES ('${karmaTarget}','-1');" 2>&1
+						mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO karma VALUES ('${karmaTarget}','1');"
+					elif [[ "${karmaAction}" == "--" ]]; then
+						mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO karma VALUES ('${karmaTarget}','-1');"
 					fi
 				elif [[ "${karmaAction}" == "++" ]]; then
 					oldKarma="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT value FROM karma WHERE nick = '${karmaTarget}';" | tail -n 1)"
 					newKarma="$(( ${oldKarma} + 1 ))"
-					mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE karma SET value = '${newKarma}' WHERE nick = '${karmaTarget}';" 2>&1
+					mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE karma SET value = '${newKarma}' WHERE nick = '${karmaTarget}';"
 				elif [[ "${karmaAction}" == "--" ]]; then
 					oldKarma="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT value FROM karma WHERE nick = '${karmaTarget}';" | tail -n 1)"
 					newKarma="$(( ${oldKarma} - 1 ))"
-					mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE karma SET value = '${newKarma}' WHERE nick = '${karmaTarget}';" 2>&1
+					mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE karma SET value = '${newKarma}' WHERE nick = '${karmaTarget}';"
 				fi
 			else
 				karmaUserExists="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM karma WHERE nick = '${karmaTarget}';")"
 				if [ -z "${karmaUserExists}" ]; then
-					mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO karma VALUES ('${karmaTarget}','-1');" 2>&1
+					mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO karma VALUES ('${karmaTarget}','-1');"
 				else
 					oldKarma="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT value FROM karma WHERE nick = '${karmaTarget}';" | tail -n 1)"
 					newKarma="$(( ${oldKarma} - 1 ))"
-					mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE karma SET value = '${newKarma}' WHERE nick = '${karmaTarget}';" 2>&1
+					mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE karma SET value = '${newKarma}' WHERE nick = '${karmaTarget}';"
 				fi
 				
 			fi
@@ -1099,27 +1105,33 @@ case "$(echo "$message" | awk '{print $2}')" in
 		if [ "$isCom" -eq "1" ]; then
 			comExec;
 		else	
+			modMatch="0"
 			for i in var/.mods/*.sh; do
-				if fgrep -i -q "modHook=\"Format\"" "$i"; then
-					pattern="$(fgrep "modForm=" "$i")"
-					pattern="${pattern#modForm=}"
-					pattern="${pattern#(\"}"
-					pattern="${pattern%\")}"
-					caseSensitive="$(fgrep "modFormCase=" "$i")"
-					caseSensitive="${caseSensitive#modFormCase=}"
-					caseSensitive="${caseSensitive#\"}"
-					caseSensitive="${caseSensitive%\"}"
-					if echo "$caseSensitive" | grep -i -q "Yes"; then
-						if echo "$message" | egrep -q "$pattern"; then
-							source ./${i} "$message"
+				if egrep -i -q "^modHook=\"Format\"" "$i"; then
+					modArr="$(egrep "^modForm=" "$i")"
+					modArr="${modArr#modForm=}"
+					modArr="${modArr#(}"
+					modArr="${modArr%)}"
+					modArr=("${modArr}")
+					for q in "${modArr[@]}"; do
+						if egrep -q -i "^modFromCase=\"Yes\"" "${i}"; then
+							if fgrep -q "\"${com}\"" <<<"${q}"; then
+								modMatch="1"
+								source ./${i} "$message"
+							fi
+						else
+							if fgrep -i -q "\"${com}\"" <<<"${q}"; then
+								modMatch="1"
+								source ./${i} "$message"
+							fi
 						fi
-					else
-						if echo "$message" | egrep -i -q "$pattern"; then
-							source ./${i} "$message"
-						fi
-					fi
+					done
 				fi
 			done
+			if [ "$modMatch" -eq "0" ]; then
+				# No module was run. Let's check it for a factoid."
+				echo "Place holder for factoids" > /dev/null
+			fi
 		fi
 		;;
 	QUIT)

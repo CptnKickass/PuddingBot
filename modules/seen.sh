@@ -42,6 +42,9 @@ seenTarget="$(awk '{print $5}' <<<"$msg")"
 if [[ "${seenTarget,,}" == "${senderNick}" ]]; then
 	echo "Eat a dick ${senderNick}"
 	exit 0
+elif [[ "${seenTarget,,}" == "${nick,,}" ]]; then
+	echo "Eat a buffet of dicks ${senderNick}"
+	exit 0
 fi
 # This method is preferred, but pisses off vim's syntax. So I'll use sed for debugging purposes.
 #seenTarget="${seenTarget//\'/''}"
@@ -52,11 +55,10 @@ if [ -z "${sqlUserExists}" ]; then
 	echo "I have no such record of anyone by the nick ${seenTarget}"
 else
 	# User does exist.
-	lastSeenNuh="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT nuh FROM seen WHERE nick = '${seenTarget}';")"
-	lastSeenTime="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT seen FROM seen WHERE nick = '${seenTarget}';")"
-	lastSeenSaid="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT seensaid FROM seen WHERE nick = '${seenTarget}';")"
-	lastSeenSaidIn="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT seensaidin FROM seen WHERE nick = '${seenTarget}';")"
-
+	lastSeenNuh="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT nuh FROM seen WHERE nick = '${seenTarget}';" | tail -n 1)"
+	lastSeenTime="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT seen FROM seen WHERE nick = '${seenTarget}';" | tail -n 1)"
+	lastSeenSaid="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT seensaid FROM seen WHERE nick = '${seenTarget}';" | tail -n 1)"
+	lastSeenSaidIn="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT seensaidin FROM seen WHERE nick = '${seenTarget}';" | tail -n 1)"
 	timeDiff="$(( $(date +%s) - ${lastSeenTime} ))"
 	days="$((timeDiff/60/60/24))"
 	if [ "$days" -eq "1" ]; then
@@ -91,6 +93,6 @@ else
 	else
 		seenAgo="${seconds}"
 	fi
-	echo "${seenTarget} last seen ${seenAgo} ago (\"${lastSeenNuh#*!}\"), saying \"${lastSeenSaid}\" in ${lastSeenSaidIn}"
+	echo "${seenTarget} last seen ${seenAgo} ago (from \"${lastSeenNuh#*!}\"), saying \"${lastSeenSaid}\" in ${lastSeenSaidIn}"
 fi
 exit 0

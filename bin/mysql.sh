@@ -133,6 +133,7 @@ fi
 echo "Attempting to create tables..."
 mysql -u ${sqlRootUser} -p${sqlRootPass} -e "USE ${sqlDBname}; CREATE TABLE seen (nuh VARCHAR(255), nick VARCHAR(255), seen INT(255), seensaid VARCHAR(255), seensaidin VARCHAR(255));"
 mysql -u ${sqlRootUser} -p${sqlRootPass} -e "USE ${sqlDBname}; CREATE TABLE karma (nick VARCHAR(255), value INT(255));"
+mysql -u ${sqlRootUser} -p${sqlRootPass} -e "USE ${sqlDBname}; CREATE TABLE factoids (id VARCHAR(255), value VARCHAR(255), locked INT(255), created VARCHAR(255), createdon INT(255), updated VARCHAR(255), updatedon INT(255));"
 if [ "${?}" -eq "0" ]; then
 	echo "Tables created. Continuing..."
 else

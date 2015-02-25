@@ -39,16 +39,32 @@ modHelp="Checks a user's karma"
 modFlag="m"
 msg="$@"
 seenTarget="$(awk '{print $5}' <<<"$msg")"
+if [ -z "${seenTarget}" ]; then
+	seenTarget="${senderNick}"
+fi
 # This method is preferred, but pisses off vim's syntax. So I'll use sed for debugging purposes.
 #seenTarget="${seenTarget//\'/''}"
 seenTarget="$(sed "s/'/''/g" <<<"${seenTarget}")"
 sqlUserExists="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM karma WHERE nick = '${seenTarget}';")"
 if [ -z "${sqlUserExists}" ]; then
 	# Returned nothing. User does not exist.
-	echo "I have no such record of anyone by the nick ${seenTarget}"
+	echo "${seenTarget} has no karma"
 else
 	# User does exist.
 	karma="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT value FROM karma WHERE nick = '${seenTarget}';" | tail -n 1)"
-	echo "${seenTarget} has a karma of ${karma}"
+	if [[ "${seenTarget,,}" == "${nick,,}" ]]; then
+		if [ "${karma}" -eq "0" ]; then
+			echo "I have no karma"
+			exit 0
+		else
+			echo "I have a karma of ${karma}"
+			exit 0
+		fi
+	fi
+	if [ "${karma}" -eq "0" ]; then
+		echo "${seenTarget} has no karma"
+	else
+		echo "${seenTarget} has a karma of ${karma}"
+	fi
 fi
 exit 0

@@ -93,6 +93,14 @@ elif [ "$isCtcp" -ne "0" ]; then
 else
 	outAct="PRIVMSG"
 fi
+if [[ "$(awk '{print $2}' <<<"${message}")" == "PRIVMSG" ]]; then
+	msgInArr=(${message})
+	if [[ "${msgInArr[@]:(-2):1}" == ">" ]]; then
+		senderTarget="${msgInArr[@]:(-1):1}"
+	elif [[ "${msgInArr[@]:(-2):1}" == "|" ]]; then
+		outArr=("${msgInArr[@]:(-1):1}: ${outArr}")
+	fi
+fi
 if [ "${#outArr[@]}" -ne "0" ]; then
 	unset sendArr
 	for line in "${outArr[@]}"; do
@@ -135,7 +143,7 @@ do
 	msgArr+=("${message}")
 	if [ "$logIn" -eq "1" ]; then
 		# This is where messages should be parsed for logging
-		echo "Place holder"
+		echo "Place holder" > /dev/null
 	fi
 	# The incoming messages should be in one of the following formats:
 	# :${nick} (Bot setting modes on itself)
