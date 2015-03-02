@@ -1,19 +1,7 @@
 #!/usr/bin/env bash
 
-source var/.conf
-message="$@"
-senderTarget="$(echo "$message" | awk '{print $3}')"
-senderAction="$(echo "$message" | awk '{print $2}')"
-senderFull="$(echo "$message" | awk '{print $1}')"
-senderFull="${senderFull#:}"
-senderNick="${senderFull%!*}"
-senderUser="${senderFull#*!}"
-senderUser="${senderUser%@*}"
-senderHost="${senderFull#*@}"
-
 # This is only necessary until it's pushed into the config
 sqlDBname="puddingbot"
-sqlTable="users"
 sqlUser="puddingbot"
 sqlPass="test"
 
@@ -24,8 +12,8 @@ case "$com" in
 		if [ "$isPm" -eq "1" ]; then
 			loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
 			if [ "$loggedIn" -eq "0" ]; then
-				lUser="$(awk '{print $5}' <<<"$message")"
-				lPass="$(awk '{print $6}' <<<"$message")"
+				lUser="$(awk '{print $5}' <<<"${message}")"
+				lPass="$(awk '{print $6}' <<<"${message}")"
 				lHash="$(echo -n "$lPass" | sha256sum | awk '{print $1}')"
 				if [ -z "${lUser}" ]; then
 					echo "You must provide a username. Format is: \"register USERNAME PASSWORD\" ***Note that this bot is in debug mode. Although your password will be stored as a sha256 hash in the user files, the raw input/output is being logged for debug purposes. Do not use a password you use anywher else!***"
@@ -58,10 +46,10 @@ case "$com" in
 		loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
 		if [ "$loggedIn" -eq "1" ]; then
 			loggedInUser="$(fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $1}')"
-			arg1="$(awk '{print $5}' <<<"$message")"
+			arg1="$(awk '{print $5}' <<<"${message}")"
 			case "${arg1,,}" in
 				password)
-					lPass="$(awk '{print $6}' <<<"$message")"
+					lPass="$(awk '{print $6}' <<<"${message}")"
 					lHash="$(echo -n "$lPass" | sha256sum | awk '{print $1}')"
 					if [ -z "${lPass}" ]; then
 						echo "You must provide a password. Format is: set PASSWORD"
@@ -72,7 +60,7 @@ case "$com" in
 					;;
 				clones)
 					re='^[0-9]+$'
-					lClones="$(awk '{print $6}' <<<"$message")"
+					lClones="$(awk '{print $6}' <<<"${message}")"
 					if [ -z "${lClones}" ]; then
 						echo "You must provide a number of clones. Format is: set CLONES N (Where \"N\" is your desired number of alloted clones)"
 					elif [[ $lClones =~ $re ]]; then
@@ -83,7 +71,7 @@ case "$com" in
 					fi
 					;;
 				allowedhost)
-					case "$(awk '{print $6}' <<<"$message")" in
+					case "$(awk '{print $6}' <<<"${message}")" in
 						list)
 							IFS=$'\r\n' :; hostArr=($(egrep "^allowedLoginHost=\".*\"$" "${userDir}/${loggedInUser}.conf"))
 							if [ "${#hostArr[@]}" -eq "0" ]; then
@@ -95,10 +83,10 @@ case "$com" in
 							fi
 						;;
 						add)
-							hostToAdd="$(awk '{print $7}' <<<"$message")"
-							if echo "$hostToAdd" | fgrep -q "*"; then
+							hostToAdd="$(awk '{print $7}' <<<"${message}")"
+							if fgrep -q "*"<<<"${hostToAdd}"; then
 								echo "Unable to add host; improper formatting (Please use proper \"USER@HOST\" formatting. Wildcards are not accepted.)"
-							elif ! echo "$hostToAdd" | egrep -q ".*@.*"; then
+							elif ! egrep -q ".*@.*" <<<"${hostToAdd}"; then
 								echo "Unable to add host; improper formatting (Please use proper \"USER@HOST\" formatting. Wildcards are not accepted.)"
 							elif egrep -q "^allowedLoginHost=\"${hostToAdd}\"$" "${userDir}/${loggedInUser}.conf"; then
 								echo "Unable to add host; already exists."
@@ -108,7 +96,7 @@ case "$com" in
 							fi
 						;;
 						del|delete|remove)
-							hostToDel="$(awk '{print $7}' <<<"$message")"
+							hostToDel="$(awk '{print $7}' <<<"${message}")"
 							if fgrep -q "allowedLoginHost=\"${hostToDel}\"" "${userDir}/${loggedInUser}.conf"; then
 								sed -i "/allowedLoginHost=\"${hostToDel}\"/d" "${userDir}/${loggedInUser}.conf"
 								echo "Removed login host \"${hostToDel}\" for user ${loggedInUser}"
@@ -122,7 +110,7 @@ case "$com" in
 					esac
 					;;
 				meta)
-					case "$(awk '{print $6}' <<<"$message")" in
+					case "$(awk '{print $6}' <<<"${message}")" in
 						list)
 							IFS=$'\r\n' :; metaArr=($(egrep "^meta=\".*\"$" "${userDir}/${loggedInUser}.conf"))
 							if [ "${#metaArr[@]}" -eq "0" ]; then
@@ -134,7 +122,7 @@ case "$com" in
 							fi
 						;;
 						add)
-							metaToAdd="$(awk '{print $7}' <<<"$message")"
+							metaToAdd="$(awk '{print $7}' <<<"${message}")"
 							if [ -z "$metaToAdd" ]; then
 								echo "Unable to add meta; no data input.)"
 							else
@@ -143,7 +131,7 @@ case "$com" in
 							fi
 						;;
 						del|delete|remove)
-							metaToDel="$(awk '{print $7}' <<<"$message")"
+							metaToDel="$(awk '{print $7}' <<<"${message}")"
 							if fgrep -q "meta=\"${metaToDel}\"" "${userDir}/${loggedInUser}.conf"; then
 								sed -i "/meta=\"${metaToDel}\"/d" "${userDir}/${loggedInUser}.conf"
 								echo "Removed meta data \"${metaToDel}\" for user ${loggedInUser}"
@@ -157,7 +145,7 @@ case "$com" in
 					esac
 					;;
 				removeacct|removeaccount)
-					if [ -z "$(awk '{print $6}' <<<"$message")" ]; then
+					if [ -z "$(awk '{print $6}' <<<"${message}")" ]; then
 						if egrep -q "^removeKey=\"" "${userDir}/${loggedInUser}.conf"; then
 							removeKey="$(egrep "^removeKey=\"" "${userDir}/${loggedInUser}.conf")"
 							removeKey="${removeKey#removeKey=\"}"
@@ -168,14 +156,14 @@ case "$com" in
 							echo "removeKey=\"${removeKey}\"" >> "${userDir}/${loggedInUser}.conf"
 							echo "Your account (${loggedInUser}) has been marked for delition. Please reply \"SET REMOVEACCT ${removeKey}\" to confirm deletion of this account. Reply \"SET REMOVEACCT cancel\" to cancel mark for deletion."
 						fi
-					elif [[ "$(awk '{print $6}' <<<"$message")" =~ "cancel" ]]; then
+					elif [[ "$(awk '{print $6}' <<<"${message}")" =~ "cancel" ]]; then
 						if egrep -q "^removeKey=\"" "${userDir}/${loggedInUser}.conf"; then
 							sed -i "/removeKey=\"/d" "${userDir}/${loggedInUser}.conf"
 							echo "Mark for deletion for your account (${loggedInUser}) has been removed."
 						else
 							echo "Your account (${loggedInUser}) was not marked for deletion."
 						fi
-					elif egrep -q "^removeKey=\"$(awk '{print $6}' <<<"$message")\"$" "${userDir}/${loggedInUser}.conf"; then
+					elif egrep -q "^removeKey=\"$(awk '{print $6}' <<<"${message}")\"$" "${userDir}/${loggedInUser}.conf"; then
 						echo "Deletion for account ${loggedInUser} confirmed. Removing all user data..."
 						rm -f "${userDir}/${loggedInUser}.conf"
 						if [ -e "${userDir}/${loggedInUser}.conf" ]; then
@@ -212,8 +200,8 @@ case "$com" in
 		if [ "$isPm" -eq "1" ]; then
 			loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
 			if [ "$loggedIn" -eq "0" ]; then
-				lUser="$(awk '{print $5}' <<<"$message")"
-				lPass="$(awk '{print $6}' <<<"$message")"
+				lUser="$(awk '{print $5}' <<<"${message}")"
+				lPass="$(awk '{print $6}' <<<"${message}")"
 				lHash="$(echo -n "$lPass" | sha256sum | awk '{print $1}')"
 				if [ -n "$lUser" ]; then
 					if egrep -q "^user=\"${lUser}\"$" ${userDir}/*.conf; then
@@ -368,7 +356,7 @@ case "$com" in
 		if [ "$loggedIn" -eq "1" ]; then
 			reqFlag="L"
 			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
-				target="$(awk '{print $5}' <<<"$message")"
+				target="$(awk '{print $5}' <<<"${message}")"
 				if [ -n "$target" ]; then
 					loggedIn="$(egrep -c "^${target}" var/.admins)"
 					if [ "$loggedIn" -eq "0" ]; then
@@ -409,12 +397,12 @@ case "$com" in
 		if [ "$loggedIn" -eq "1" ]; then
 			reqFlag="t"
 			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
-				if [ -z "$(awk '{print $5}' <<<"$message")" ]; then
+				if [ -z "$(awk '{print $5}' <<<"${message}")" ]; then
 					echo "This command requires a parameter"
-				elif [ "$(awk '{print $5}' <<<"$message" | egrep -c "^(#|&)")" -eq "0" ]; then
-					echo "$(awk '{print $5}' <<<"$message") does not appear to be a valid channel"
+				elif [ "$(awk '{print $5}' <<<"${message}" | egrep -c "^(#|&)")" -eq "0" ]; then
+					echo "$(awk '{print $5}' <<<"${message}") does not appear to be a valid channel"
 				else
-					echo "JOIN $(awk '{print $5}' <<<"$message")" >> $output
+					echo "JOIN $(awk '{print $5}' <<<"${message}")" >> $output
 				fi
 			else
 				echo "You do not have sufficient permissions for this command"
@@ -428,12 +416,12 @@ case "$com" in
 		if [ "$loggedIn" -eq "1" ]; then
 			reqFlag="t"
 			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
-				if [ -z "$(awk '{print $5}' <<<"$message")" ]; then
+				if [ -z "$(awk '{print $5}' <<<"${message}")" ]; then
 					echo "This command requires a parameter"
-				elif [ "$(awk '{print $5}' <<<"$message" | egrep -c "^(#|&)")" -eq "0" ]; then
-					echo "$(awk '{print $5}' <<<"$message") does not appear to be a valid channel"
+				elif [ "$(awk '{print $5}' <<<"${message}" | egrep -c "^(#|&)")" -eq "0" ]; then
+					echo "$(awk '{print $5}' <<<"${message}") does not appear to be a valid channel"
 				else
-					echo "PART $(awk '{print $5}' <<<"$message") :Leaving channel per ${senderNick}" >> $output
+					echo "PART $(awk '{print $5}' <<<"${message}") :Leaving channel per ${senderNick}" >> $output
 				fi
 			else
 				echo "You do not have sufficient permissions for this command"
@@ -447,13 +435,13 @@ case "$com" in
 		if [ "$loggedIn" -eq "1" ]; then
 			reqFlag="s"
 			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
-				if [ -z "$(awk '{print $5}' <<<"$message")" ]; then
+				if [ -z "$(awk '{print $5}' <<<"${message}")" ]; then
 					echo "This command requires a parameter"
-				elif [ "$(awk '{print $5}' <<<"$message" | egrep -c "^(#|&)")" -eq "0" ]; then
-					echo "$(awk '{print $5}' <<<"$message") does not appear to be a valid channel"
+				elif [ "$(awk '{print $5}' <<<"${message}" | egrep -c "^(#|&)")" -eq "0" ]; then
+					echo "$(awk '{print $5}' <<<"${message}") does not appear to be a valid channel"
 				else
-					sayMsg="$(read -r one two three four five rest <<<"$message"; echo "$rest")"
-					echo "PRIVMSG $(awk '{print $5}' <<<"$message") :${sayMsg}" >> $output
+					sayMsg="$(read -r one two three four five rest <<<"${message}"; echo "$rest")"
+					echo "PRIVMSG $(awk '{print $5}' <<<"${message}") :${sayMsg}" >> $output
 				fi
 			else
 				echo "You do not have sufficient permissions for this command"
@@ -467,13 +455,13 @@ case "$com" in
 		if [ "$loggedIn" -eq "1" ]; then
 			reqFlag="s"
 			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
-				if [ -z "$(awk '{print $5}' <<<"$message")" ]; then
+				if [ -z "$(awk '{print $5}' <<<"${message}")" ]; then
 					echo "This command requires a parameter"
-				elif [ "$(awk '{print $5}' <<<"$message" | egrep -c "^(#|&)")" -eq "0" ]; then
-					echo "$(awk '{print $5}' <<<"$message") does not appear to be a valid channel"
+				elif [ "$(awk '{print $5}' <<<"${message}" | egrep -c "^(#|&)")" -eq "0" ]; then
+					echo "$(awk '{print $5}' <<<"${message}") does not appear to be a valid channel"
 				else
-					sayMsg="$(read -r one two three four five rest <<<"$message"; echo "$rest")"
-					echo "PRIVMSG $(awk '{print $5}' <<<"$message") :ACTION ${sayMsg}" >> $output
+					sayMsg="$(read -r one two three four five rest <<<"${message}"; echo "$rest")"
+					echo "PRIVMSG $(awk '{print $5}' <<<"${message}") :ACTION ${sayMsg}" >> $output
 				fi
 			else
 				echo "You do not have sufficient permissions for this command"
@@ -487,10 +475,10 @@ case "$com" in
 		if [ "$loggedIn" -eq "1" ]; then
 			reqFlag="s"
 			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
-				if [ -z "$(awk '{print $5}' <<<"$message")" ]; then
+				if [ -z "$(awk '{print $5}' <<<"${message}")" ]; then
 					echo "This command requires a parameter"
 				else
-					echo "NICK $(awk '{print $5}' <<<"$message")" >> $output
+					echo "NICK $(awk '{print $5}' <<<"${message}")" >> $output
 				fi
 			else
 				echo "You do not have sufficient permissions for this command"
@@ -504,12 +492,12 @@ case "$com" in
 		if [ "$loggedIn" -eq "1" ]; then
 			reqFlag="i"
 			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
-				if [ -z "$(awk '{print $5}' <<<"$message")" ]; then
+				if [ -z "$(awk '{print $5}' <<<"${message}")" ]; then
 					echo "This command requires a command parameter"
 				else
-					ignoreHost="$(awk '{print $6}' <<<"$message")"
+					ignoreHost="$(awk '{print $6}' <<<"${message}")"
 					ignoreHost="${ignoreHost,,}"
-					caseMsg="$(awk '{print $5}' <<<"$message")"
+					caseMsg="$(awk '{print $5}' <<<"${message}")"
 					case "${caseMsg,,}" in
 						list)
 							ignoreList="$(<var/ignore.db)"
@@ -520,7 +508,7 @@ case "$com" in
 							fi
 							;;
 						add)
-							if [ -z "$(awk '{print $6}' <<<"$message")" ]; then
+							if [ -z "$(awk '{print $6}' <<<"${message}")" ]; then
 								echo "This command requires a host parameter"
 							# It's important to check for patterns with fgrep instead of
 							# egrep, because we don't want a pattern we've already set
@@ -533,7 +521,7 @@ case "$com" in
 							fi
 							;;
 						del)
-							if [ -z "$(awk '{print $6}' <<<"$message")" ]; then
+							if [ -z "$(awk '{print $6}' <<<"${message}")" ]; then
 								echo "This command requires a host parameter"
 							elif fgrep -q "${ignoreHost}" var/ignore.db; then
 								escapedHost="${ignoreHost//\*/\\*}"
@@ -643,10 +631,10 @@ case "$com" in
 			fi
 			helpTopic+=("(${file})")
 		done
-		arg1="$(awk '{print $5}' <<<"$message")"
+		arg1="$(awk '{print $5}' <<<"${message}")"
 		if [ -z "${arg1,,}" ]; then
 			echo "Available Help Topics: ${helpTopic[@]}"
-		elif echo "${helpTopic[@]}" | fgrep -q "${arg1,,}"; then
+		elif fgrep -q "${arg1,,}" <<<"${helpTopic[@]}"; then
 			case "${arg1,,}" in
 				login)
 					echo "(${arg1,,}) => Logs you in to the bot"
@@ -694,7 +682,7 @@ case "$com" in
 					echo "(${arg1,,}) => Registers a user into the bot. Format is: \"REGISTER username password\". ***Note that this bot is in debug mode. Although your password will be stored as a sha256 hash in the user files, the raw input/output is being logged for debug purposes. Do not use a password you use anywher else!***"
 					;;
 				set)
-					arg2="$(awk '{print $6}' <<<"$message")"
+					arg2="$(awk '{print $6}' <<<"${message}")"
 					case "${arg2,,}" in
 						password)
 							echo "(${arg1,,})->(${arg2,,}) => Allows you to change your password. Format is: \"SET PASSWORD newpassword\". ***Note that this bot is in debug mode. Although your password will be stored as a sha256 hash in the user files, the raw input/output is being logged for debug purposes. Do not use a password you use anywher else!***"
@@ -703,7 +691,7 @@ case "$com" in
 							echo "(${arg1,,})->(${arg2,,}) => Allows you to set the number of clones you want to allow to simultaneously be logged into your account. Format is: \"SET CLONES n\", where \"n\" is the number of clones you desire."
 							;;
 						allowedhost)
-							arg3="$(awk '{print $7}' <<<"$message")"
+							arg3="$(awk '{print $7}' <<<"${message}")"
 							case "${arg3,,}" in
 								list)
 									echo "(${arg1,,})->(${arg2,,})->(${arg3,,}) => Lists any known white-listed IDENT@HOST masks on your account, which are authorized to be identified simply by their IDENT@HOST masks using the \"!login\" command."
@@ -720,7 +708,7 @@ case "$com" in
 							esac
 							;;
 						meta)
-							arg3="$(awk '{print $7}' <<<"$message")"
+							arg3="$(awk '{print $7}' <<<"${message}")"
 							case "${arg3,,}" in
 								list)
 									echo "(${arg1,,})->(${arg2,,})->(${arg3,,}) => Lists any known meta dat associated with your account."
@@ -800,14 +788,14 @@ case "$com" in
 		if [ "$loggedIn" -eq "1" ]; then
 			reqFlag="M"
 			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
-				modCom="$(awk '{print $5}' <<<"$message")"
+				modCom="$(awk '{print $5}' <<<"${message}")"
 				unset modComItem
 				case "${modCom,,}" in
 					status)
-						modComItem="$(read -r one two three four five rest <<<"$message"; echo "$rest")"
+						modComItem="$(read -r one two three four five rest <<<"${message}"; echo "$rest")"
 						modComItem=(${modComItem})
 						for arrItem in ${modComItem[@]}; do
-							if ! echo "$arrItem" | egrep -q "\.sh$"; then
+							if ! egrep -q "\.sh$" <<<"${arrItem}"; then
 								arrItem="${arrItem}.sh"
 							fi
 							if [ -z "$arrItem" ]; then
@@ -820,10 +808,10 @@ case "$com" in
 						done
 					;;
 					load)
-						modComItem="$(read -r one two three four five rest <<<"$message"; echo "$rest")"
+						modComItem="$(read -r one two three four five rest <<<"${message}"; echo "$rest")"
 						modComItem=(${modComItem})
 						for arrItem in ${modComItem[@]}; do
-							if ! echo "$arrItem" | egrep -q "\.sh$"; then
+							if ! egrep -q "\.sh$" <<<"${arrItem}"; then
 								arrItem="${arrItem}.sh"
 							fi
 							if [ -e "var/.mods/${arrItem}" ]; then
@@ -848,10 +836,10 @@ case "$com" in
 						done
 					;;
 					unload)
-						modComItem="$(read -r one two three four five rest <<<"$message"; echo "$rest")"
+						modComItem="$(read -r one two three four five rest <<<"${message}"; echo "$rest")"
 						modComItem=(${modComItem})
 						for arrItem in ${modComItem[@]}; do
-							if ! echo "$arrItem" | egrep -q "\.sh$"; then
+							if ! egrep -q "\.sh$" <<<"${arrItem}"; then
 								arrItem="${arrItem}.sh"
 							fi
 							if [ -e "var/.mods/${arrItem}" ]; then
@@ -867,10 +855,10 @@ case "$com" in
 						done
 					;;
 					reload)
-						modComItem="$(read -r one two three four five rest <<<"$message"; echo "$rest")"
+						modComItem="$(read -r one two three four five rest <<<"${message}"; echo "$rest")"
 						modComItem=(${modComItem})
 						for arrItem in ${modComItem[@]}; do
-							if ! echo "$arrItem" | egrep -q "\.sh$"; then
+							if ! egrep -q "\.sh$" <<<"${arrItem}"; then
 								arrItem="${arrItem}.sh"
 							fi
 							if [ -e "var/.mods/${arrItem}" ]; then
@@ -903,24 +891,27 @@ case "$com" in
 						done
 					;;
 					reloadall)
+						unset modOutArr
 						for modComItem in var/.mods/*.sh; do
 							modComItem="${modComItem##*/}"
 							rm "var/.mods/${modComItem}"
 							if [ -e "var/.mods/${modComItem}" ]; then
-								echo "Unable to unload ${modComItem}!"
+								modOutArr+=("Unable to unload ${modComItem} ->")
 							else
-								echo "${modComItem} unloaded"
+								modOutArr+=("${modComItem} unloaded ->")
 								if [ -e "modules/${modComItem}" ]; then
 									cp "modules/${modComItem}" "var/.mods/${modComItem}"
-									echo "modules/${modComItem} loaded"
+									modOutArr+=("modules/${modComItem} loaded |")
 								elif [ -e "contrib/${modComItem}" ]; then
 									cp "contrib/${modComItem}" "var/.mods/${modComItem}"
-									echo "contrib/${modComItem} loaded"
+									modOutArr+=("contrib/${modComItem} loaded |")
 								else
-									echo "Unable to load ${modComItem}!"
+									modOutArr+=("Unable to load ${modComItem} |")
 								fi
 							fi
 						done
+						modOutLine="${modOutArr[@]}"
+						echo "${modOutLine% |*}"
 					;;
 					list)
 						unset modArr
@@ -952,7 +943,7 @@ case "$com" in
 				modArr=("${modArr}")
 				for q in "${modArr[@]}"; do
 					if fgrep -q "\"${com}\"" <<<"${q}"; then
-						source ./${i} "$message"
+						source ./${i} "${message}"
 					fi
 				done
 			fi
@@ -979,8 +970,30 @@ if [ "$(fgrep -c "$senderTarget" <<< "$nick")" -eq "1" ]; then
 	isPm="1"
 fi
 
-case "$(echo "$message" | awk '{print $2}')" in
+case "${msgArr[1]}" in
 	JOIN) 
+		# MySQL Seen Stuff
+		if ! [[ "${senderNick}" == "${nick}" ]]; then
+			# Escape the data
+			unset sqlMsgArr
+			sqlMsg="$(sed "s/'/''/g" <<<"${message}")"
+			sqlMsg="$(sed 's/\\/\\\\/g' <<<"${sqlMsg}")"
+			sqlMsgArr=(${sqlMsg})
+			sqlNuh="${senderFull}"
+			sqlNick="${senderNick}"
+			sqlSeen="$(date +%s)"
+			sqlSeenSaid="JOIN"
+			sqlSeenSaidIn="${sqlMsgArr[2]}" 
+			# Is the user already in the database?
+			sqlUserExists="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM seen WHERE nick = '${sqlNick}';")"
+			if [ -z "${sqlUserExists}" ]; then
+				# Returned nothing. User does not exist. Let's add them.
+				mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO seen VALUES ('${sqlNuh}','${sqlNick}','${sqlSeen}','${sqlSeenSaid}','${sqlSeenSaidIn}');" 
+			else
+				# User does exist. Let's update them.
+				mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE seen SET seen = '${sqlSeen}', seensaid = '${sqlSeenSaid}', seensaidin = '${sqlSeenSaidIn}', nuh = '${sqlNuh}' WHERE nick = '${sqlNick}';"
+			fi
+		fi
 		;;
 	KICK)
 		;;
@@ -989,14 +1002,17 @@ case "$(echo "$message" | awk '{print $2}')" in
 	PRIVMSG)
 		# MySQL Seen Stuff
 		if ! [[ "${senderNick}" == "${nick}" ]]; then
+			# Escape the data
+			unset sqlMsgArr
+			sqlMsg="$(sed "s/'/''/g" <<<"${message}")"
+			sqlMsg="$(sed 's/\\/\\\\/g' <<<"${sqlMsg}")"
+			sqlMsgArr=(${sqlMsg})
 			sqlNuh="${senderFull}"
 			sqlNick="${senderNick}"
 			sqlSeen="$(date +%s)"
-			sqlSeenSaid="$(read -r one two three rest <<<"$message"; echo "${rest}")"
+			sqlSeenSaid="${sqlMsgArr[@]:3}"
 			sqlSeenSaid="${sqlSeenSaid#:}"
-			# This method is preferred, but pisses off vim's syntax. So I'll use sed for debugging purposes.
-			#sqlSeenSaid="${sqlSeenSaid//\'/''}"
-			sqlSeenSaid="$(sed "s/'/''/g" <<<"${sqlSeenSaid}")"
+			sqlSeenSaidIn="${sqlMsgArr[2]}"
 			if [ "${isPm}" -eq "1" ]; then
 				sqlSeenSaidIn="PM"
 			else
@@ -1006,78 +1022,83 @@ case "$(echo "$message" | awk '{print $2}')" in
 				sqlSeenSaid="[User logged into bot]"
 			fi
 			# Is the user already in the database?
-			sqlUserExists="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM seen WHERE nuh = '${sqlNuh}';")"
+			sqlUserExists="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM seen WHERE nick = '${sqlNick}';")"
 			if [ -z "${sqlUserExists}" ]; then
 				# Returned nothing. User does not exist. Let's add them.
-				mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO seen VALUES ('${sqlNuh}','${sqlNick}','${sqlSeen}','${sqlSeenSaid}','${sqlSeenSaidIn}');" 
+				mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO seen VALUES ('${sqlNuh}','${sqlNick}','${sqlSeen}','${sqlSeenSaid}','${sqlSeenSaidIn}');" 
 			else
 				# User does exist. Let's update them.
-				mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE seen SET seen = '${sqlSeen}', seensaid = '${sqlSeenSaid}', seensaidin = '${sqlSeenSaidIn}', nuh = '${sqlNuh}' WHERE nick = '${sqlNick}';"
+				mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE seen SET seen = '${sqlSeen}', seensaid = '${sqlSeenSaid}', seensaidin = '${sqlSeenSaidIn}', nuh = '${sqlNuh}' WHERE nick = '${sqlNick}';"
 			fi
 		fi
 		# Now that user's data is updated.
 		# Let's check for karma
-		if egrep -q "^.*:([[:alnum:]]|[[:punct:]])+(\+\+|--)$" <<<"$message"; then
-			karmaTarget="$(awk '{print $4}' <<<"$message")"
+		if egrep -q "^.*:([[:alnum:]]|[[:punct:]])+(\+\+|--)$" <<<"${message}"; then
+			# Escape the data
+			unset sqlMsgArr
+			sqlMsg="$(sed "s/'/''/g" <<<"${message}")"
+			sqlMsgArr=(${sqlMsg})
+			karmaTarget="${sqlMsgArr[3]}"
 			karmaTarget="${karmaTarget#:}"
 			karmaAction="${karmaTarget:(-2)}"
 			karmaTarget="${karmaTarget%++}"
 			karmaTarget="${karmaTarget%--}"
 			# No changing your own karma
 			if ! [[ "${karmaTarget,,}" == "${senderNick,,}" ]]; then
-				karmaUserExists="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM karma WHERE nick = '${karmaTarget}';")"
+				karmaUserExists="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM karma WHERE nick = '${karmaTarget}';")"
 				if [ -z "${karmaUserExists}" ]; then
 					# Returned nothing. User does not exist. Let's add them.
 					if [[ "${karmaAction}" == "++" ]]; then
-						mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO karma VALUES ('${karmaTarget}','1');"
+						mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO karma VALUES ('${karmaTarget}','1');"
 					elif [[ "${karmaAction}" == "--" ]]; then
-						mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO karma VALUES ('${karmaTarget}','-1');"
+						mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO karma VALUES ('${karmaTarget}','-1');"
 					fi
 				elif [[ "${karmaAction}" == "++" ]]; then
-					oldKarma="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT value FROM karma WHERE nick = '${karmaTarget}';" | tail -n 1)"
+					oldKarma="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT value FROM karma WHERE nick = '${karmaTarget}';")"
 					newKarma="$(( ${oldKarma} + 1 ))"
-					mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE karma SET value = '${newKarma}' WHERE nick = '${karmaTarget}';"
+					mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE karma SET value = '${newKarma}' WHERE nick = '${karmaTarget}';"
 				elif [[ "${karmaAction}" == "--" ]]; then
-					oldKarma="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT value FROM karma WHERE nick = '${karmaTarget}';" | tail -n 1)"
+					oldKarma="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT value FROM karma WHERE nick = '${karmaTarget}';")"
 					newKarma="$(( ${oldKarma} - 1 ))"
-					mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE karma SET value = '${newKarma}' WHERE nick = '${karmaTarget}';"
+					mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE karma SET value = '${newKarma}' WHERE nick = '${karmaTarget}';"
 				fi
 			else
-				karmaUserExists="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM karma WHERE nick = '${karmaTarget}';")"
+				karmaUserExists="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM karma WHERE nick = '${karmaTarget}';")"
 				if [ -z "${karmaUserExists}" ]; then
-					mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO karma VALUES ('${karmaTarget}','-1');"
+					mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO karma VALUES ('${karmaTarget}','-1');"
 				else
-					oldKarma="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT value FROM karma WHERE nick = '${karmaTarget}';" | tail -n 1)"
+					oldKarma="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT value FROM karma WHERE nick = '${karmaTarget}';")"
 					newKarma="$(( ${oldKarma} - 1 ))"
-					mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE karma SET value = '${newKarma}' WHERE nick = '${karmaTarget}';"
+					mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE karma SET value = '${newKarma}' WHERE nick = '${karmaTarget}';"
 				fi
 				
 			fi
 		# This is a ${comPrefix} addressed command
-		elif [ "$(awk '{print $4}' <<<"$message" | cut -b 2)" == "${comPrefix}" ]; then
+		elif [ "$(awk '{print $4}' <<<"${message}" | cut -b 2)" == "${comPrefix}" ]; then
 			isCom="1"
-			com="$(awk '{print $4}' <<<"$message")"
+			com="$(awk '{print $4}' <<<"${message}")"
 			com="${com,,}"
 			com="${com:2}"
 		# This is a command beginning with ${nick}: ${nick}; or ${nick},
-		elif [[ "$(awk '{print $4}' <<<"$message")" == ":${nick}"?([:;,]) ]]; then
+		elif [[ "$(awk '{print $4}' <<<"${message}")" == ":${nick}"?([:;,]) ]]; then
+			source ./core/factoid.sh "${message}"
 			isCom="1"
-			message="$(sed -E "s/:${nick}[:;,]? //" <<<"$message")"
-			com="$(awk '{print $4}' <<<"$message")"
+			message="$(sed -E "s/:${nick}[:;,]? //" <<<"${message}")"
+			com="$(awk '{print $4}' <<<"${message}")"
 			com="${com,,}"
 		# It's a PM
 		elif [ "$isPm" -eq "1" ]; then
 			# Is it a CTCP?
-			if [ "$(awk '{print $4}' <<<"$message" | egrep -ic ":(PING|VERSION|TIME|DATE)")" -ne "0" ]; then
+			if [ "$(awk '{print $4}' <<<"${message}" | egrep -ic ":(PING|VERSION|TIME|DATE)")" -ne "0" ]; then
 				# What kind of CTCP are they requesting?
-				ctcp="$(awk '{print $4}' <<<"$message")"
+				ctcp="$(awk '{print $4}' <<<"${message}")"
 				ctcp="${ctcp#:}"
 				ctcp="${ctcp%}"
 				ctcp="${ctcp^^}"
 				case "$ctcp" in
 					PING)
 						ms="$(date +%s)"
-						if [ -z "$(awk '{print $6}' <<<"$message")" ]; then
+						if [ -z "$(awk '{print $6}' <<<"${message}")" ]; then
 							echo "${ctcp} ${ms}" 
 						else
 							ms2=$(($(date +%s%N)/1000000))
@@ -1095,7 +1116,7 @@ case "$(echo "$message" | awk '{print $2}')" in
 				esac
 			else
 				isCom="1"
-				com="$(awk '{print $4}' <<<"$message")"
+				com="$(awk '{print $4}' <<<"${message}")"
 				com="${com,,}"
 				com="${com:1}"
 			fi
@@ -1114,23 +1135,26 @@ case "$(echo "$message" | awk '{print $2}')" in
 					modArr="${modArr%)}"
 					modArr=("${modArr}")
 					for q in "${modArr[@]}"; do
+						q="${q#\"}"
+						q="${q%\"}"
 						if egrep -q -i "^modFromCase=\"Yes\"" "${i}"; then
-							if fgrep -q "\"${com}\"" <<<"${q}"; then
+							if egrep -q "\"${q}\"" <<<"${message}"; then
 								modMatch="1"
-								source ./${i} "$message"
+								source ./${i} "${message}"
 							fi
 						else
-							if fgrep -i -q "\"${com}\"" <<<"${q}"; then
+							if egrep -i -q "${q}" <<<"${message}"; then
 								modMatch="1"
-								source ./${i} "$message"
+								source ./${i} "${message}"
 							fi
 						fi
 					done
 				fi
 			done
 			if [ "$modMatch" -eq "0" ]; then
-				# No module was run. Let's check it for a factoid."
-				echo "Place holder for factoids" > /dev/null
+				# No module was run. Let's check it for a factoid.
+				#echo "Place holder for factoids" > /dev/null
+				source ./core/factoid.sh "${message}"
 			fi
 		fi
 		;;
@@ -1139,10 +1163,61 @@ case "$(echo "$message" | awk '{print $2}')" in
 		if [ "$loggedIn" -eq "1" ]; then
 			sed -i "/${senderUser}@${senderHost}/d" var/.admins
 		fi
+		# MySQL Seen Stuff
+		if ! [[ "${senderNick}" == "${nick}" ]]; then
+			# Escape the data
+			unset sqlMsgArr
+			sqlMsg="$(sed "s/'/''/g" <<<"${message}")"
+			sqlMsg="$(sed 's/\\/\\\\/g' <<<"${sqlMsg}")"
+			sqlMsgArr=(${sqlMsg})
+			sqlNuh="${senderFull}"
+			sqlNick="${senderNick}"
+			sqlSeen="$(date +%s)"
+			sqlSeenQuit="${sqlMsgArr[@]:2}"
+			sqlSeenQuit="${sqlSeenQuit#:}"
+			sqlSeenSaid="QUIT: ${sqlSeenQuit}"
+			sqlSeenSaidIn="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT seensaidin FROM seen WHERE nick = '${sqlNick}';")"
+			if [ -z "${sqlSeenSaidIn}" ]; then
+				sqlSeenSaidIn="[Unknown]"
+			fi
+			# Is the user already in the database?
+			sqlUserExists="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM seen WHERE nick = '${sqlNick}';")"
+			if [ -z "${sqlUserExists}" ]; then
+				# Returned nothing. User does not exist. Let's add them.
+				mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO seen VALUES ('${sqlNuh}','${sqlNick}','${sqlSeen}','${sqlSeenSaid}','${sqlSeenSaidIn}');" 
+			else
+				# User does exist. Let's update them.
+				mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE seen SET seen = '${sqlSeen}', seensaid = '${sqlSeenSaid}', seensaidin = '${sqlSeenSaidIn}', nuh = '${sqlNuh}' WHERE nick = '${sqlNick}';"
+			fi
+		fi
 		;;
 	MODE)
 		;;
 	PART) 
+		# MySQL Seen Stuff
+		if ! [[ "${senderNick}" == "${nick}" ]]; then
+			# Escape the data
+			unset sqlMsgArr
+			sqlMsg="$(sed "s/'/''/g" <<<"${message}")"
+			sqlMsg="$(sed 's/\\/\\\\/g' <<<"${sqlMsg}")"
+			sqlMsgArr=(${sqlMsg})
+			sqlNuh="${senderFull}"
+			sqlNick="${senderNick}"
+			sqlSeen="$(date +%s)"
+			sqlSeenPart="${sqlMsgArr[@]:3}"
+			sqlSeenPart="${sqlSeenPart#:}"
+			sqlSeenSaid="PART ${sqlSeenPart}"
+			sqlSeenSaidIn="${sqlMsgArr[2]}" 
+			# Is the user already in the database?
+			sqlUserExists="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM seen WHERE nick = '${sqlNick}';")"
+			if [ -z "${sqlUserExists}" ]; then
+				# Returned nothing. User does not exist. Let's add them.
+				mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO seen VALUES ('${sqlNuh}','${sqlNick}','${sqlSeen}','${sqlSeenSaid}','${sqlSeenSaidIn}');" 
+			else
+				# User does exist. Let's update them.
+				mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE seen SET seen = '${sqlSeen}', seensaid = '${sqlSeenSaid}', seensaidin = '${sqlSeenSaidIn}', nuh = '${sqlNuh}' WHERE nick = '${sqlNick}';"
+			fi
+		fi
 		;;
 	NICK)
 		;;

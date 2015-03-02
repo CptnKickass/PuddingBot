@@ -37,10 +37,11 @@ modFlag="m"
 # The whole IRC message will be passed to the script using $@
 message="$@"
 isCk="0"
-isCk="$(echo "$message" | egrep -c "(http(s?):\/\/)?(ck|sf).net[^ \"\(\)\<\>]*")"
+isCk="$(egrep -c "(http(s?):\/\/)?(ck|sf).net[^ \"\(\)\<\>]*" <<<"${message}")"
 if [ "$isCk" -ge "1" ]; then
-	echo "$message" | egrep -o "(http(s?):\/\/)?(ck|sf).net[^ \"\(\)\<\>]*" | while read ckUrl; do
-		fixedUrl="$(echo "$ckUrl" | sed "s/.*ck\.net/https:\/\/captain-kickass\.net/i" | sed "s/.*sf\.net/http:\/\/snofox\.net/i")"
+	egrep -o "(http(s?):\/\/)?(ck|sf).net[^ \"\(\)\<\>]*" <<<"${message}" | while read ckUrl; do
+		fixedUrl="$(sed "s/.*ck\.net/https:\/\/captain-kickass\.net/i" <<<"${ckUrl}")"
+		fixedUrl="$(sed "s/.*sf\.net/http:\/\/snofox\.net/i" <<<"${ckUrl}")"
 		echo "[Expanded URL] $fixedUrl"
 	done
 fi

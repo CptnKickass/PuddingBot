@@ -7,7 +7,7 @@ case "$(awk '{print $2}' <<<"$message")" in
 	001)
 	fullCon="1"
 	networkName="${message#*Welcome to the }"
-	if echo "$networkName" | fgrep -q " Internet Relay Chat Network"; then
+	if fgrep -q " Internet Relay Chat Network" <<<"$networkName"; then
 		networkName="${networkName% Internet Relay Chat Network*}"
 	else
 		networkName="${networkName% IRC Network*}"

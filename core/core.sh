@@ -59,11 +59,8 @@ echo "$$" > var/bot.pid
 
 # We need these to be boolean instead of blank
 fullCon="0"
-readMemo="0"
 nickPassSent="0"
 inArr="0"
-# Convert some variables to boolean
-
 # So we can know what our uptime is
 echo "startTime=\"$(date +%s)\"" >> var/.status
 
@@ -108,7 +105,7 @@ if [ "${#outArr[@]}" -ne "0" ]; then
 	done
 	unset outArr
 	for line in "${sendArr[@]}"; do
-		if [ -n "$line" ]; then
+		if [ -n "$line" ] && ! [[ "${line}" == " " ]] && ! [[ "${line}" == "" ]]; then
 			echo "${outAct} ${senderTarget} :${line}" >> $output
 			sleep 0.25
 		fi
@@ -137,10 +134,13 @@ do
 	unset out
 	# Remote the ^M control character at the end of each line
 	message="${message%}"
-	echo "$message"
-	echo "$message" >> "${input}"
-	# ${msgArr[@]} array will contain all input
-	msgArr+=("${message}")
+	# msgArr will contain just the current line in a message
+	unset msgArr
+	msgArr=(${message})
+
+	echo "${msgArr[@]}" >> "${input}"
+	# ${allMsgArr[@]} array will contain all input
+	allMsgArr+=("${message}")
 	if [ "$logIn" -eq "1" ]; then
 		# This is where messages should be parsed for logging
 		echo "Place holder" > /dev/null
@@ -150,36 +150,36 @@ do
 	# :n!u@h (Another client)
 	# :${server} (The IRCd server)
 	# PING (PING's from the IRCd server)
-	if [[ "$message" == "PING"* ]]; then
+	if [[ "${msgArr[0]}" == "PING" ]]; then
 		# The message is a PING
-		echo "PONG${message#PING}" >> $output
-	elif [ "$(echo "$message" | awk '{print $1}')" == ":${nick}" ]; then
+		echo "PONG ${msgArr[1]}" >> $output
+	elif [[ "${msgArr[0]}" == ":${nick}" ]]; then
 		# The bot is changing modes on itself
-		out="$(source ./core/botmodechange.sh "$message")"
+		out="$(source ./core/botmodechange.sh "${msgArr[@]}")"
 		if [ -n "$out" ]; then
 			mapfile outArr <<<"$out"
 		fi
-	elif [ "$(echo "$message" | awk '{print $1}' | egrep -c "^:.*!.*@.*$")" -eq "1" ]; then
+	elif egrep -q "^:.*!.*@.*$" <<<"${msgArr[0]}"; then
 		# The message matches an n!u@h mask
-		senderTarget="$(echo "$message" | awk '{print $3}')"
-		senderAction="$(echo "$message" | awk '{print $2}')"
-		senderFull="$(echo "$message" | awk '{print $1}')"
+		senderTarget="${msgArr[2]}"
+		senderAction="${msgArr[1]}"
+		senderFull="${msgArr[0]}"
 		senderFull="${senderFull#:}"
 		senderNick="${senderFull%!*}"
 		senderUser="${senderFull#*!}"
 		senderUser="${senderUser%@*}"
 		senderHost="${senderFull#*@}"
-		isCtcp="$(awk '{print $4}' <<<"$message" | egrep -ic ":(PING|VERSION|TIME|DATE)")" 
-		isHelp="$(awk '{print $4, $5}' <<<"$message" | egrep -ic ":(!)?(${nick}[:;,]?)?help")" 
-		out="$(source ./core/usermessage.sh "$message")"
+		isCtcp="$(egrep -ic ":(PING|VERSION|TIME|DATE)" <<<"${msgArr[3]}")" 
+		isHelp="$(egrep -ic ":(!)?(${nick}[:;,]?)?help" <<<"${msgArr[@]:(3):2}")" 
+		out="$(source ./core/usermessage.sh "${msgArr[@]}")"
 		if [ "$(fgrep -c "$senderTarget" <<< "$nick")" -eq "1" ]; then
 			senderTarget="$senderNick"
 		fi
 		if [ -n "$out" ]; then
 			mapfile <<<"$out" outArr
 		fi
-	elif [ "$(awk '{print $1}' <<<"$message")" == "ERROR" ]; then
-		echo "Received error message: $message"
+	elif [[ "${msgArr[0]}" == "ERROR" ]]; then
+		echo "Received error message: ${msgArr[@]}"
 		if [ -e "$output" ]; then
 			rm -f "$output" 
 		fi
@@ -204,17 +204,17 @@ do
 		
 		#exit 0
 		kill $$
-	elif [ "$(echo "$message" | awk '{print $1}' | egrep -c "^:.*!.*@.*$")" -eq "0" ]; then
+	elif ! egrep -q "^:.*!.*@.*$" <<<"${msgArr[0]}"; then
 		# The message does not match an n!u@h mask, and should be a server
-		out="$(source ./core/servermessage.sh "$message")"
+		out="$(source ./core/servermessage.sh "${msgArr[@]}")"
 		if [ -n "$out" ]; then
 			senderTarget="${channels[0]}"
 			mapfile <<<"$out" outArr
 		fi
 	else
 		# This should never be reached, but exists for debug purposes
-		mapfile <<<"[DEBUG - ${0}] $message" outArr
-		echo "$(date -R) [${0}] $message" >> $(<var/bot.pid).debug
+		mapfile <<<"[DEBUG - ${0}] ${msgArr[@]}" outArr
+		echo "$(date -R) [${0}] ${msgArr[@]}" >> $(<var/bot.pid).debug
 	fi
 	parseOutput;
 
@@ -248,7 +248,3 @@ fi
 
 #exit 0
 kill $$
-
-# This is the CTCP character, commented out for copy/paste use as needed.
-# PRIVMSG goose :VERSION
-

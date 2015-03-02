@@ -34,18 +34,17 @@ modFormCase=""
 modHelp="Searches for files in a path and modifies them to a valid URL"
 modFlag="m"
 msg="$@"
-if [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
+if [ -z "$(awk '{print $5}' <<<"${msg}")" ]; then
 	echo "This command requires a parameter"
 else
 	searchItem="$(read -r one two three four rest <<<"$msg"; echo "$rest")"
-	results="$(find "${searchPath}" -not -path "${searchPath}/files/restricted/*" -iname "${searchItem}")"
-	resultsNum="$(echo "$results" | wc -l)"
-	if [  -z "$results" ]; then
+	readarray -t results <<<"$(find "${searchPath}" -not -path "${searchPath}/files/restricted/*" -iname "${searchItem}")" 
+	if [ -z "${results[*]}" ]; then
 		echo "No results found"
-	elif [ "$resultsNum" -gt "10" ]; then
+	elif [ "${#results[@]}" -gt "10" ]; then
 		echo "More than 10 results returned. Not printing to prevent spam."
 	else
-		echo "$results" | while read line; do
+		for line in "${results[@]}"; do
 			item="${line#*public_html/}"
 			item="https://${item}"
 			echo "${item}"
