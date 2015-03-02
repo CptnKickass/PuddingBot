@@ -8,3 +8,5 @@ To do:
 * Change MySQL configurations to make SQL optional instead of mandatory, disabling modules that require it
 * Decide what to add to SQL and what to keep in flat file support
 * Add nick tracking of some kind, as far as channel ops/voice/etc
+* Add documentation of how factoids work
+* Add a way to modify/delete one reply value of a factoid with multiple reply values, rather than having to delete the entire factoid
