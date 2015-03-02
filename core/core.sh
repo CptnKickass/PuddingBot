@@ -96,7 +96,8 @@ if [[ "$(awk '{print $2}' <<<"${message}")" == "PRIVMSG" ]]; then
 	if [[ "${msgInArr[@]:(-2):1}" == ">" ]]; then
 		if ! egrep -q "^(#|&)" <<<"${msgInArr[@]:(-1):1}"; then
 			senderTarget="${msgInArr[@]:(-1):1}"
-			outArr=("${senderNick}" "wants" "you" "to" "know:" "${outArr[@]}")
+			outA="${senderNick} wants you to know: ${outArr[@]}"
+			outArr=("${outA}")
 		fi
 	elif [[ "${msgInArr[@]:(-2):1}" == "|" ]]; then
 		directOut="2"
