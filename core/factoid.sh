@@ -1,31 +1,36 @@
 #!/usr/bin/env bash
+sqlDBname="puddingbot"
+sqlUser="puddingbot"
+sqlPass="test"
+nick="Pudding"
+comPrefix="!"
 
 learnFact () {
-sqlFactExists="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM factoids WHERE id = '${factTrig}';")"
+sqlFactExists="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM factoids WHERE id = '${factTrig}';")"
 if [ -z "${sqlFactExists}" ]; then
 	# Returned nothing. Factoid does not exist. Let's add it.
-	mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO factoids VALUES ('${factTrig}','${factType} ${factVal}','0','${senderFull}','$(date +%s)','${senderFull}','$(date +%s)','0','');" 
-	echo "Ok, I'll remember ${factTrig} is ${factType} ${factVal}"
+	mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO factoids VALUES ('${factTrig}','${factType} ${factVal}','0','${senderFull}','$(date +%s)','${senderFull}','$(date +%s)','0','');" 
+	echo "Ok, I'll remember ${factTrig} is ${factType} ${factValOrig}"
 else
 	# Factoid does exist.
 	unset eFR
-	readarray -t eFR <<<"$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT fact FROM factoids WHERE id = '${factTrig}';")"
+	readarray -t eFR <<<"$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT fact FROM factoids WHERE id = '${factTrig}';")"
 	echo "But ${factTrig} is already ${eFR[@]}"
 fi
 }
 
 learnAddtlFact () {
-sqlFactExists="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM factoids WHERE id = '${factTrig}';")"
+sqlFactExists="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM factoids WHERE id = '${factTrig}';")"
 if [ -z "${sqlFactExists}" ]; then
 	# Returned nothing. Factoid does not exist. Let's add it.
 	echo "But I don't have any factoids for ${factTrig}"
 else
-	isLocked="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT locked FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
+	isLocked="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT locked FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
 	# Factoid does exist.
 	if [ "${isLocked}" -eq "0" ]; then
 		# Factoid does exist.
 		unset eFR
-		readarray -t eFR <<<"$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT fact FROM factoids WHERE id = '${factTrig}';")"
+		readarray -t eFR <<<"$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT fact FROM factoids WHERE id = '${factTrig}';")"
 		factValMatches="0"
 		for i in "${eFR[@]}"; do
 			if [[ "${factType,,} ${factVal,,}" == "${i,,}" ]]; then
@@ -33,12 +38,12 @@ else
 			fi
 		done
 		if [ "${factValMatches}" -eq "0" ]; then
-			factNo="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT callno FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
-			factCall="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT calledby FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
-			mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO factoids VALUES ('${factTrig}','${factType} ${factVal}','0','${senderFull}','$(date +%s)','${senderFull}','$(date +%s)','${factNo}','${factCall}');" 
-			echo "Ok, I'll remember ${factTrig} is also ${factType} ${factVal}"
+			factNo="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT callno FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
+			factCall="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT calledby FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
+			mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO factoids VALUES ('${factTrig}','${factType} ${factVal}','0','${senderFull}','$(date +%s)','${senderFull}','$(date +%s)','${factNo}','${factCall}');" 
+			echo "Ok, I'll remember ${factTrig} is also ${factType} ${factValOrig}"
 		else
-			echo "But I already knew that ${factTrig} is ${factType} ${factVal}"
+			echo "But I already knew that ${factTrig} is ${factType} ${factValOrig}"
 		fi
 	else
 		echo "I can't forget ${factTrig}, it's locked!"
@@ -47,39 +52,39 @@ fi
 }
 
 lockFact () {
-sqlFactExists="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM factoids WHERE id = '${factTrig}';")"
+sqlFactExists="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM factoids WHERE id = '${factTrig}';")"
 if [ -z "${sqlFactExists}" ]; then
 	# Returned nothing. Factoid does not exist. Let's add it.
 	echo "But I don't have any factoids for ${factTrig}"
 else
 	# Factoid does exist.
-	mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE factoids SET locked = '1' WHERE id = '${factTrig}';"
+	mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE factoids SET locked = '1' WHERE id = '${factTrig}';"
 	echo "Ok, I locked factoid ${factTrig}"
 fi
 }
 
 unlockFact () {
-sqlFactExists="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM factoids WHERE id = '${factTrig}';")"
+sqlFactExists="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM factoids WHERE id = '${factTrig}';")"
 if [ -z "${sqlFactExists}" ]; then
 	# Returned nothing. Factoid does not exist. Let's add it.
 	echo "But I don't have any factoids for ${factTrig}"
 else
 	# Factoid does exist.
-	mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE factoids SET locked = '0' WHERE id = '${factTrig}';"
+	mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE factoids SET locked = '0' WHERE id = '${factTrig}';"
 	echo "Ok, I unlocked factoid ${factTrig}"
 fi
 }
 
 forgetFact () {
-sqlFactExists="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM factoids WHERE id = '${factTrig}';")"
+sqlFactExists="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM factoids WHERE id = '${factTrig}';")"
 if [ -z "${sqlFactExists}" ]; then
 	# Returned nothing. Factoid does not exist. Let's add it.
 	echo "But I don't have any factoids for ${factTrig}"
 else
-	isLocked="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT locked FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
+	isLocked="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT locked FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
 	# Factoid does exist.
 	if [ "${isLocked}" -eq "0" ]; then
-		mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; DELETE FROM factoids WHERE id = '${factTrig}';"
+		mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; DELETE FROM factoids WHERE id = '${factTrig}';"
 		echo "Ok, I forgot ${factTrig}"
 	else
 		echo "I can't forget ${factTrig}, it's locked!"
@@ -88,30 +93,30 @@ fi
 }
 
 getFactInfo () {
-sqlFactExists="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM factoids WHERE id = '${factTrig}';")"
+sqlFactExists="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM factoids WHERE id = '${factTrig}';")"
 if [ -z "${sqlFactExists}" ]; then
 	# Returned nothing. Factoid does not exist. Let's add it.
 	echo "But I don't have any factoids for ${factTrig}"
 else
-	factNum="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT fact FROM factoids WHERE id = '${factTrig}';" | wc -l)"
-	factLocked="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT locked FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
-	factMade="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT createdon FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
-	factMadeBy="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT created FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
-	factMod="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT updatedon FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
-	factModBy="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT updated FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
-	factCalled="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT callno FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
-	factCalledBy="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT calledby FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
+	factNum="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT fact FROM factoids WHERE id = '${factTrig}';" | wc -l)"
+	factLocked="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT locked FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
+	factMade="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT createdon FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
+	factMadeBy="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT created FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
+	factMod="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT updatedon FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
+	factModBy="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT updated FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
+	factCalled="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT callno FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
+	factCalledBy="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT calledby FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
 	echo "${factTrig} was created on $(date -d @${factMade}) by ${factMadeBy%%!*} (${factMadeBy#*!}). It was last modified on $(date -d @${factMod}) by ${factModBy%%!*} (${factModBy#*!}). It was last called ${factCalled} times, most recently by ${factCalledBy%%!*} (${factCalledBy#*!}). It has ${factNum} possible replies."
 fi
 }
 
 getLiteral () {
-sqlFactExists="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM factoids WHERE id = '${factTrig}';")"
+sqlFactExists="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM factoids WHERE id = '${factTrig}';")"
 if [ -z "${sqlFactExists}" ]; then
 	# Returned nothing. Factoid does not exist. Let's add it.
 	echo "But I don't have any factoids for ${factTrig}"
 else
-	factVal="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT fact FROM factoids WHERE id = '${factTrig}';")"
+	factVal="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT fact FROM factoids WHERE id = '${factTrig}';")"
 	unset factVals
 	readarray -t factVals <<<"${factVal}"
 	echo "${factTrig} is literally ${factVals[@]}"
@@ -124,7 +129,7 @@ if [[ "${factTrig:(-1)}" == "!" ]]; then
 elif [[ "${factTrig:(-1)}" == "?" ]]; then
 	factTrig="$(sed -E "s/[[:punct:]]+$//" <<<"${factTrig}")"
 fi
-factVal="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT fact FROM factoids WHERE id = '${factTrig}';")"
+factVal="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT fact FROM factoids WHERE id = '${factTrig}';")"
 unset factVals
 readarray -t factVals <<<"${factVal}"
 if [ "${#factVals[@]}" -ne "0" ]; then
@@ -140,10 +145,10 @@ if [ "${#factVals[@]}" -ne "0" ]; then
 		echo "ACTION ${factOut#*> }"
 		;;
 	esac
-	factCalled="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT callno FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
+	factCalled="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT callno FROM factoids WHERE id = '${factTrig}';" | tail -n 1)"
 	factCalled="$(( ${factCalled} + 1 ))"
-	mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE factoids SET callno = '${factCalled}' WHERE id = '${factTrig}';"
-	mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE factoids SET calledby = '${senderFull}' WHERE id = '${factTrig}';"
+	mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE factoids SET callno = '${factCalled}' WHERE id = '${factTrig}';"
+	mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; UPDATE factoids SET calledby = '${senderFull}' WHERE id = '${factTrig}';"
 fi
 }
 
@@ -167,8 +172,6 @@ msgTrim="$(sed "s/IS/is/i" <<<"${msgTrim}")"
 msgTrim="$(sed "s/IS ALSO/is also/i" <<<"${msgTrim}")"
 msgTrim="$(sed "s/<REPLY>/<reply>/i" <<<"${msgTrim}")"
 msgTrim="$(sed "s/<ACTION>/<action>/i" <<<"${msgTrim}")"
-msgTrim="$(sed "s/'/''/g" <<<"${msgTrim}")"
-msgTrim="$(sed 's/\\/\\\\/g' <<<"${msgTrim}")"
 
 msgArr=(${msgTrim})
 wasAddressed="0"
@@ -184,8 +187,13 @@ msgTrim="${msgArr[@]}"
 if egrep -iq ".*is <(reply|action)>.*" <<<"${msgTrim}"; then
 	# We're learning a new factoid!
 	factTrig="${msgTrim%% is <*}"
+	factTrig="$(sed "s/'/''/g" <<<"${factTrig}")"
+	factTrig="$(sed 's/\\/\\\\/g' <<<"${factTrig}")"
 	factVal="${msgTrim#*>}"
 	factVal="${factVal# }"
+	factValOrig="${factVal}"
+	factVal="$(sed "s/'/''/g" <<<"${factVal}")"
+	factVal="$(sed 's/\\/\\\\/g' <<<"${factVal}")"
 	factType="${msgTrim#*<}"
 	factType="${factType%%>*}"
 	factType="<${factType,,}>"
@@ -193,8 +201,13 @@ if egrep -iq ".*is <(reply|action)>.*" <<<"${msgTrim}"; then
 elif egrep -iq ".*is also <(reply|action)>.*" <<<"${msgTrim}"; then 
 	# We're appending an existing factoid!
 	factTrig="${msgTrim%% is also <*}"
+	factTrig="$(sed "s/'/''/g" <<<"${factTrig}")"
+	factTrig="$(sed 's/\\/\\\\/g' <<<"${factTrig}")"
 	factVal="${msgTrim#*>}"
 	factVal="${factVal# }"
+	factValOrig="${factVal}"
+	factVal="$(sed "s/'/''/g" <<<"${factVal}")"
+	factVal="$(sed 's/\\/\\\\/g' <<<"${factVal}")"
 	factType="${msgTrim#*<}"
 	factType="${factType%%>*}"
 	factType="<${factType,,}>"

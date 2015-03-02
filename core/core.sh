@@ -91,10 +91,15 @@ else
 	outAct="PRIVMSG"
 fi
 if [[ "$(awk '{print $2}' <<<"${message}")" == "PRIVMSG" ]]; then
+	directOut="0"
 	msgInArr=(${message})
 	if [[ "${msgInArr[@]:(-2):1}" == ">" ]]; then
-		senderTarget="${msgInArr[@]:(-1):1}"
+		if ! egrep -q "^(#|&)" <<<"${msgInArr[@]:(-1):1}"; then
+			senderTarget="${msgInArr[@]:(-1):1}"
+			outArr=("${senderNick}" "wants" "you" "to" "know:" "${outArr[@]}")
+		fi
 	elif [[ "${msgInArr[@]:(-2):1}" == "|" ]]; then
+		directOut="2"
 		outArr=("${msgInArr[@]:(-1):1}: ${outArr}")
 	fi
 fi
