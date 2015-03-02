@@ -1020,6 +1020,9 @@ case "${msgArr[1]}" in
 			fi
 			if egrep -iq "^(${nick}[:;,] )?login" <<<"${sqlSeenSaid}"; then
 				sqlSeenSaid="[User logged into bot]"
+			elif egrep -iq "^ACTION" <<<"${sqlSeenSaid}"; then
+				sqlSeenSaid="${sqlSeenSaid#ACTION }"
+				sqlSeenSaid="/ME ${sqlSeenSaid%}"
 			fi
 			# Is the user already in the database?
 			sqlUserExists="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM seen WHERE nick = '${sqlNick}';")"

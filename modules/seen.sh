@@ -55,10 +55,10 @@ if [ -z "${sqlUserExists}" ]; then
 	echo "I have no such record of anyone by the nick ${seenTarget}"
 else
 	# User does exist.
-	lastSeenNuh="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT nuh FROM seen WHERE nick = '${seenTarget}';" | tail -n 1)"
-	lastSeenTime="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT seen FROM seen WHERE nick = '${seenTarget}';" | tail -n 1)"
-	lastSeenSaid="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT seensaid FROM seen WHERE nick = '${seenTarget}';" | tail -n 1)"
-	lastSeenSaidIn="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT seensaidin FROM seen WHERE nick = '${seenTarget}';" | tail -n 1)"
+	lastSeenNuh="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT nuh FROM seen WHERE nick = '${seenTarget}' LIMIT 1;")"
+	lastSeenTime="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT seen FROM seen WHERE nick = '${seenTarget}' LIMIT 1;")"
+	lastSeenSaid="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT seensaid FROM seen WHERE nick = '${seenTarget}' LIMIT 1;")"
+	lastSeenSaidIn="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT seensaidin FROM seen WHERE nick = '${seenTarget}' LIMIT 1;")"
 	timeDiff="$(( $(date +%s) - ${lastSeenTime} ))"
 	days="$((timeDiff/60/60/24))"
 	if [ "$days" -eq "1" ]; then
