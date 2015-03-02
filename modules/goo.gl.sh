@@ -42,7 +42,7 @@ modFlag="m"
 msg="$@"
 if [ -z "${googleApi}" ]; then
 	echo "A Google API key is required"
-elif [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
+elif [ -z "$(awk '{print $5}' <<<"${msg}")" ]; then
 	shortItem="$(fgrep "PRIVMSG" "${input}" | egrep -o "http(s?):\/\/[^ \"\(\)\<\>]*" | tail -n 1)"
 	if [ -n "$shortItem" ]; then
 		echo "Shortening most recently spoken URL (${shortItem})"
@@ -51,10 +51,10 @@ elif [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
 	else
 		echo "No URL to shorten provided, and no recently spoken URL's in my memory."
 	fi
-elif ! echo "$msg" | awk '{print $5}' | egrep -q "http(s?):\/\/[^ \"\(\)\<\>]*"; then
+elif ! awk '{print $5}' <<<"${msg}" | egrep -q "http(s?):\/\/[^ \"\(\)\<\>]*"; then
 	echo "This does not appear to be a valid URL"
 else
-	shortItem="$(echo "$msg" | awk '{print $5}')"
+	shortItem="$(awk '{print $5}' <<<"${msg}")"
 	shortUrl="$(curl -A "$nick" -m 5 -k -s -L -H "Content-Type: application/json" -d "{\"longUrl\": \"${shortItem}\"}" "https://www.googleapis.com/urlshortener/v1/url?key=${googleApi}" | fgrep "\"id\"" | egrep -o "http(s)?://goo.gl/[A-Z|a-z|0-9]+")"
 	echo "Shortened URL: ${shortUrl}"
 fi

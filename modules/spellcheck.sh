@@ -34,12 +34,12 @@ modFormCase=""
 modHelp="Provides spell check functionality via ispell"
 modFlag="m"
 msg="$@"
-if [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
+if [ -z "$(awk '{print $5}' <<<"${msg}")" ]; then
 	echo "This command requires a parameter"
-elif [ -n "$(echo "$msg" | awk '{print $5}')" ] && [ -n "$(echo "$msg" | awk '{print $6}')" ]; then
+elif [ -n "$(awk '{print $5, $6}' <<<"${msg}")" ] && [ -n "$(awk '{print $6}' <<<"${msg}")" ]; then
 	echo "Too many parameters for command"
 else
-	spellResult="$(echo "$msg" | awk '{print $5}' | ispell | head -n 2 | tail -n 1)"
+	spellResult="$(awk '{print $5}' <<<"${msg}" | ispell | head -n 2 | tail -n 1)"
 	spellResultParsed="$(read -r one rest <<<"$spellResult"; echo "$rest")"
 	echo "${spellResultParsed}"
 fi

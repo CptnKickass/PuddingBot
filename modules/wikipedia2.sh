@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# This will eventually be the working wikipedia module. It's still non-functional right now.
-
 ## Config
 
 ## Source
@@ -34,7 +32,7 @@ modFormCase=""
 modHelp="Searches wikipedia for a query and returns the first result"
 modFlag="m"
 msg="$@"
-if [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
+if [ -z "$(awk '{print $5}' <<<"${msg}")" ]; then
 	echo "This command requires a parameter"
 else
 	searchTerm="$(read -r one two thee four rest <<<"$msg"; echo "$rest")"

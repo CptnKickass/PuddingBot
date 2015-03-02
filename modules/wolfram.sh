@@ -43,22 +43,22 @@ msg="$@"
 # Color character used to end a category: [0m
 if [ -z "${wolfApi}" ]; then
 	echo "A Wolfram Alpha API key is required"
-elif [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
+elif [ -z "$(awk '{print $5}')" <<<"${msg}" ]; then
 	echo "This command requires a parameter"
 else
 	unset wolfArr
 	wolfQ="$(read -r one two three four rest <<<"$msg"; echo "$rest")"
 	# properly encode query
-	wolfQ="$(echo "${wolfQ}" | sed 's/+/%2B/g' | tr '\ ' '\+')"
+	wolfQ="$(sed 's/+/%2B/g' <<<"${wolfQ}" | tr '\ ' '\+')"
 	# fetch and parse result
 	result=$(curl -s "http://api.wolframalpha.com/v2/query?input=${wolfQ}&appid=${wolfApi}&format=plaintext")
 	echo "Wolfram Alpha Results:"
 	echo -e ${result} | tr '\n' '\t' | sed -e 's/<plaintext>/\'$'\n<plaintext>/g' | grep -oE "<plaintext>.*</plaintext>|<pod title=.[^\']*" | sed 's!<plaintext>!!g; s!</plaintext>!!g;  s!<pod title=.*!\\\x1b[1;36m&\\\x1b[0m!g; s!<pod title=.!!g; s!\&amp;!\&!' | tr '\t' '\n' | sed  '/^$/d; s/\ \ */\ /g' | while read line; do
-		if [ "$(echo "$line" | egrep -c "$(echo -e "\e\[1;36m")")" -eq "1" ]; then
+		if [ "$(egrep -c "$(echo -e "\e\[1;36m")" <<<"${line}")" -eq "1" ]; then
 			# It's a category
 			echo "${wolfArr[@]}"
 			unset wolfArr
-			line="$(echo "$line" | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g")"
+			line="$(sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" <<<"${line}")"
 			echo "${line}"
 			sleep 1
 		else

@@ -38,7 +38,7 @@ modFormCase="Yes"
 modHelp="Gets a URL's <title> and/or some other useful info"
 modFlag="m"
 message="$@"
-echo "$message" | egrep -i -o "http(s?):\/\/[^ \"\(\)\<\>]*" | while read url; do
+egrep -i -o "http(s?):\/\/[^ \"\(\)\<\>]*" <<<"${message}" | while read url; do
 
 reqFullCurl="0"
 urlCurlContentHeader="$(curl -A "$nick" -m 5 -k -s -L -I "$url")"
@@ -48,20 +48,23 @@ if [ "$httpResponseCode" -eq "502" ]; then
 	sleep 5
 	urlCurlContentHeader="$(curl -A "$nick" -m 5 -k -s -L -o /dev/null -D - "$url")"
 	urlCurlContentHeader="${urlCurlContentHeader///}"
-	httpResponseCode="$(echo "$urlCurlContentHeader" | egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" | tail -n 1 | awk '{print $2}')"
+	httpResponseCode="$(egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" <<<"${urlCurlContentHeader}" | tail -n 1 | awk '{print $2}')"
 fi
 if [ "$httpResponseCode" -ne "200" ]; then
 	reqFullCurl="1"
 	urlCurlContentHeader="$(curl -A "$nick" -m 5 -k -s -L -o /dev/null -D - "$url")"
 	urlCurlContentHeader="${urlCurlContentHeader///}"
-	httpResponseCode="$(echo "$urlCurlContentHeader" | egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" | tail -n 1 | awk '{print $2}')"
+	httpResponseCode="$(egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" <<<"${urlCurlContentHeader}" | tail -n 1 | awk '{print $2}')"
 fi
 # Zero means the location is true, no redirect to the destination
 locationIsTrue="$(grep -c "Location:" <<<"$urlCurlContentHeader")"
 contentType="$(egrep -i "Content[ |-]Type:" <<<"$urlCurlContentHeader" | tail -n 1)"
 if [ "$httpResponseCode" -eq "200" ]; then
-	if echo "$contentType" | fgrep -q "text/html"; then
-		pageTitle="$(curl -A "$nick" -m 5 -k -s -L "$url" | awk -vRS="</title>" '/<title>/{gsub(/.*<title>|\n+/,"");print;exit}' | sed -e 's/^[ \t]*//' | w3m -dump -T text/html | tr '\n' ' ')"
+	if fgrep -q "text/html" <<<"${contentType}"; then
+		pageTitle="$(curl -A "$nick" -m 5 -k -s -L "$url" | fgrep -m 1 "<title")"
+		pageTitle="${pageTitle%%</title>*}"
+		pageTitle="${pageTitle##*>}"
+		pageTitle="$(sed -e 's/^[ \t]*//' <<<"${pageTitle}" | w3m -dump -T text/html | tr '\n' ' ')"
 		if [ -z "$pageTitle" ]; then
 			pageTitle="[Unable to obtain page title]"
 		fi
@@ -100,20 +103,20 @@ if [ "$httpResponseCode" -eq "200" ]; then
 	if [ -z "$pageDest" ]; then
 		pageDest="[Unable to determine URL destination]"
 	fi
-	if echo "$pageDest" | egrep -i -q "^http(s)?://(www\.)?youtube\.com/watch\?v\="; then
+	if egrep -i -q "^http(s)?://(www\.)?youtube\.com/watch\?v\=" <<<"${pageDest}"; then
 		vidId="${pageDest#*watch?v=}"
 		vidId="${vidId:0:11}"
 		vidInfo="$(curl -A "$nick" -m 5 -k -s -L "http://gdata.youtube.com/feeds/api/videos/${vidId}")"
-		vidSecs="$(echo "$vidInfo" | fgrep "yt:duration")"
+		vidSecs="$(fgrep "yt:duration" <<<"${vidInfo}")"
 		vidSecs="${vidSecs#*yt:duration seconds=\'}"
 		vidSecs="${vidSecs%%\'*}"
 		vidHours=$((vidSecs/60/60%24))
 		vidMinutes=$((vidSecs/60%60))
 		vidSeconds=$((vidSecs%60))
-		if echo "$vidSeconds" | egrep -q "^[0-9]$"; then
+		if egrep -q "^[0-9]$" <<<"${vidSeconds}"; then
 			vidSeconds="0${vidSeconds}"
 		fi
-		if [ "$vidHours" -gt "0" ] && echo "$vidMinutes" | egrep -q "^[0-9]$"; then
+		if [ "$vidHours" -gt "0" ] && egrep -q "^[0-9]$" <<<"${vidMinutes}"; then
 			vidMinutes="0${vidMinutes}"
 		fi
 		if [ "$vidHours" -ne "0" ] && [ "$vidMinutes" -ne "0" ]; then
@@ -123,7 +126,7 @@ if [ "$httpResponseCode" -eq "200" ]; then
 		elif [ "$vidHours" -eq "0" ] && [ "$vidMinutes" -eq "0" ]; then
 			pageTitle="${pageTitle} [0:${vidSeconds}]"
 		fi
-	elif echo "$pageDest" | egrep -i -q "^http(s)?://(www\.)?newegg\.com/Product/"; then
+	elif egrep -i -q "^http(s)?://(www\.)?newegg\.com/Product/" <<<"${pageDest}"; then
 		pageSrc="$(curl -A "$nick" -m 5 -k -s -L "$pageDest")"
 		itemPrice="$(fgrep -m 1 "product_sale_price" <<<"$pageSrc")"
 		itemPrice="${itemPrice#*\'}"
@@ -132,6 +135,15 @@ if [ "$httpResponseCode" -eq "200" ]; then
 			pageTitle="${pageTitle} [Item Discontinued]"
 		elif [ -n "$itemPrice" ]; then
 			pageTitle="${pageTitle} [Price: \$${itemPrice}]"
+		fi
+	elif egrep -i -q "^http(s)?://(www\.|smile\.)?amazon\.com/(g|d)p/" <<<"${pageDest}"; then
+		pageSrc="$(curl -A "$nick" -m 5 -k -s -L "${url}")"
+		itemAvailable="$(fgrep -ci "Currently unavailable" <<<"${pageSrc}")"
+		if [ "${itemAvailable}" -eq "0" ]; then
+			itemPrice="$(egrep -o -m 1 "\\\$([0-9]|,)+\.[0-9][0-9]" <<<"${pageSrc}")"
+			pageTitle="${pageTitle} [Price: ${itemPrice}]"
+		else
+			pageTitle="${pageTitle} [Item not currently available]"
 		fi
 	fi
 	if [ "$locationIsTrue" -eq "0" ] && [ -n "$pageTitle" ]; then
@@ -145,7 +157,6 @@ else
 		echo "[URL] Returned $httpResponseCode"
 	fi
 fi
-echo ""
 
 done
 exit 0

@@ -39,13 +39,13 @@ modHelp="Checks to see the last time a user was seen"
 modFlag="m"
 msg="$@"
 seenTarget="$(awk '{print $5}' <<<"$msg")"
-if [[ "${seenTarget,,}" == "${senderNick}" ]]; then
-	echo "Eat a dick ${senderNick}"
-	exit 0
-elif [[ "${seenTarget,,}" == "${nick,,}" ]]; then
-	echo "Eat a buffet of dicks ${senderNick}"
-	exit 0
-fi
+#if [[ "${seenTarget,,}" == "${senderNick}" ]]; then
+#	echo "Eat a dick ${senderNick}"
+#	exit 0
+#elif [[ "${seenTarget,,}" == "${nick,,}" ]]; then
+#	echo "Eat a buffet of dicks ${senderNick}"
+#	exit 0
+#fi
 # This method is preferred, but pisses off vim's syntax. So I'll use sed for debugging purposes.
 #seenTarget="${seenTarget//\'/''}"
 seenTarget="$(sed "s/'/''/g" <<<"${seenTarget}")"

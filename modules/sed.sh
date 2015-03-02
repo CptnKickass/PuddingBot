@@ -42,7 +42,7 @@ modHelp="Provides sed functionality"
 modFlag="m"
 msg="$@"
 target="$(awk '{print $3}' <<<"$msg")"
-sedCom="$(echo "$msg" | egrep -o -i "s/.*/.*/(i|g|ig)?$")"
+sedCom="$(egrep -o -i "s/.*/.*/(i|g|ig)?$" <<<"${msg}")"
 sedItem="${sedCom#s/}"
 sedItem="${sedItem%/*/*}"
 if [ -n "$sedItem" ]; then
@@ -52,11 +52,11 @@ if [ -n "$sedItem" ]; then
 	else
 		prevLine="$(fgrep "PRIVMSG ${target}" "${input}" | egrep -v "s/.*/.*/(i|g|ig)?$" | egrep "${sedItem}" | tail -n 1)"
 	fi
-	prevSend="$(echo "$prevLine" | awk '{print $1}' | sed "s/!.*//" | sed "s/^://")"
+	prevSend="$(awk '{print $1}' <<<"${prevLine}" | sed "s/!.*//" | sed "s/^://")"
 	line="$(read -r one two three rest <<<"${prevLine}"; echo "$rest")"
 	line="${line#:}"
 	if [ -n "$line" ]; then
-		lineFixed="$(echo "$line" | sed -E "${sedCom}")"
+		lineFixed="$(sed -E "${sedCom}" <<<"${line}")"
 		if ! [[ "$lineFixed" == "${line}" ]] && [ "${#lineFixed}" -le "200" ]; then
 			echo "[FTFY] <${prevSend}> $lineFixed"
 		elif ! [[ "$lineFixed" == "${line}" ]] && [ "${#lineFixed}" -gt "200" ]; then

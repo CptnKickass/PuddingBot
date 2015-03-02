@@ -34,7 +34,7 @@ modFormCase=""
 modHelp="Calculates basic arithmetic and returns the result"
 modFlag="m"
 msg="$@"
-if [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
+if [ -z "$(awk '{print $5}' <<<"${msg}")" ]; then
 	echo "This command requires a parameter"
 else
 	equation="$(read -r one two three four rest <<<"$msg"; echo "$rest")"

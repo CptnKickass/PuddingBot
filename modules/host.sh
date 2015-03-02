@@ -34,18 +34,18 @@ modFormCase=""
 modHelp="Checks DNS records for a domain"
 modFlag="m"
 msg="$@"
-hostToLookup="$(echo "$msg" | awk '{print $5}')"
+hostToLookup="$(awk '{print $5}' <<<"${msg}")"
 if [ -z "$hostToLookup" ]; then
 	echo "This command requires a parameter."
-elif ! echo "$hostToLookup" | egrep -q "(([a-zA-Z](-?[a-zA-Z0-9])*)\.)*[a-zA-Z](-?[a-zA-Z0-9])+\.[a-zA-Z]{2,}"; then
+elif ! egrep -q "(([a-zA-Z](-?[a-zA-Z0-9])*)\.)*[a-zA-Z](-?[a-zA-Z0-9])+\.[a-zA-Z]{2,}" <<<"${hostToLookup}"; then
 	echo "The domain ${hostToLookup} does not appear to be a valid domain"
 else
 	hostReply="$(host "$hostToLookup")"
-	cname="$(echo "$hostReply" | grep "is an alias for" | awk '{print $6}' | sed -E "s/\.$//")" 
-	rdns="$(echo "$hostReply" | grep "domain name pointer" | awk '{print $5}' | sed -E "s/\.$//")"
-	v4hosts="$(echo "$hostReply" | grep "has address" | awk '{print $4}' | tr '\n' ' ' && echo "")" 
-	v6hosts="$(echo "$hostReply" | grep "has IPv6 address" | awk '{print $5}' | tr '\n' ' ' && echo "")"
-	mailHosts="$(echo "$hostReply" | grep "mail is handled by" | awk '{print $7}' | tr '\n' ' ' && echo "")"
+	cname="$(grep "is an alias for" <<<"${hostReply}" | awk '{print $6}' | sed -E "s/\.$//")" 
+	rdns="$(grep "domain name pointer" <<<"${hostReply}" | awk '{print $5}' | sed -E "s/\.$//")"
+	v4hosts="$(grep "has address" <<<"${hostReply}" | awk '{print $4}' | tr '\n' ' ' && echo "")" 
+	v6hosts="$(grep "has IPv6 address" <<<"${hostReply}" | awk '{print $5}' | tr '\n' ' ' && echo "")"
+	mailHosts="$(grep "mail is handled by" <<<"${hostReply}" | awk '{print $7}' | tr '\n' ' ' && echo "")"
 	echo "$hostToLookup DNS Report:"
 	if [ -n "$cname" ]; then
 		echo "${hostToLookup} is a CNAME for $cname"

@@ -45,13 +45,13 @@ fi
 # This method is preferred, but pisses off vim's syntax. So I'll use sed for debugging purposes.
 #seenTarget="${seenTarget//\'/''}"
 seenTarget="$(sed "s/'/''/g" <<<"${seenTarget}")"
-sqlUserExists="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM karma WHERE nick = '${seenTarget}';")"
+sqlUserExists="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM karma WHERE nick = '${seenTarget}';")"
 if [ -z "${sqlUserExists}" ]; then
 	# Returned nothing. User does not exist.
 	echo "${seenTarget} has no karma"
 else
 	# User does exist.
-	karma="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT value FROM karma WHERE nick = '${seenTarget}';" | tail -n 1)"
+	karma="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT value FROM karma WHERE nick = '${seenTarget}';")"
 	if [[ "${seenTarget,,}" == "${nick,,}" ]]; then
 		if [ "${karma}" -eq "0" ]; then
 			echo "I have no karma"

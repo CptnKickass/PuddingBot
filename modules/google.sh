@@ -36,7 +36,7 @@ modFormCase=""
 modHelp="Searches google for a query and returns the first result"
 modFlag="m"
 msg="$@"
-if [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
+if [ -z "$(awk '{print $5}' <<<"${msg}")" ]; then
 	echo "This command requires a parameter"
 else
 	searchTerm="$(read -r one two thee four rest <<<"$msg"; echo "$rest")"

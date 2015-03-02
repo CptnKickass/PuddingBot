@@ -43,7 +43,7 @@ if [ -z "$defUid" ]; then
 	echo "A definitions.net API user ID is required"
 elif [ -z "$defTid" ]; then
 	echo "A definitions.net developer token ID is required"
-elif [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
+elif [ -z "$(awk '{print $5}' <<<"${msg}")" ]; then
 	echo "This command requires a parameter"
 else
 	searchTerm="$(read -r one two thee four rest <<<"$msg"; echo "$rest")"
