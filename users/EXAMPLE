@@ -14,6 +14,7 @@
 # M - Module control (Load, unload, reload modules)
 # f - Access factoids (Be able to interact with the factoids module)
 # F - Modify factoids (Teach new factoids, and modify and delete existing factoids)
+# l - Lock and unlock factoids
 #
 # You can add custom flags (for fine tuning module access) as your own will, assuming
 # they do not conflict with the above flags. Be warned, doing so can have larger than
@@ -35,5 +36,5 @@
 
 user="goose"
 pass="PassHashGoesHere"
-flags="AaLtsnimMfF"
+flags="AaLtsnimMfFl"
 clones="3"
