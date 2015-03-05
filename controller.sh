@@ -40,18 +40,33 @@ green='\E[0;32m'
 yellow='\E[1;33m'
 reset="\033[1m\033[0m"
 badConf="0"
+confFile="pudding.conf"
 
 # Check dependencies for the controller script
-deps=("read" "fgrep" "egrep" "echo" "cut" "sed" "ps" "awk")
-for i in ${deps[@]}; do
-	if ! command -v ${i} > /dev/null 2>&1; then
-		echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
-		exit 1 
-	fi
-done
-
 # Define some functions
 checkSanity () {
+	deps=("bash" "read" "fgrep" "egrep" "echo" "cut" "sed" "ps" "awk" "nc" "touch" "mktemp")
+	for i in ${deps[@]}; do
+		echo -n "Checking for dependency ${i}..."
+		if ! command -v ${i} > /dev/null 2>&1; then
+			echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
+			exit 1 
+		else
+			echo "Found."
+		fi
+	done
+	echo ""
+	echo "-----"
+	echo ""
+
+	if ! [ -d "var" ]; then
+		mkdir var
+	fi
+
+	if [ -e "var/.conf" ]; then
+		rm -f "var/.conf"
+	fi
+
 	# Check to make sure at least one admin exists
 	if [ -d "users" ]; then
 		echo "Users exist. Checking for presence of administrator..."
@@ -61,146 +76,86 @@ checkSanity () {
 			else
 				while ! egrep -q "^flags=\".*A.*\"$" users/*.conf; do
 					echo "No admins exist. Please create an administrator before launching bot for the first time."
-					./bin/createuser.sh
+					./utils/createuser.sh
 				done
 			fi
 		else
 			echo "No admins exist. Please create an administrator before launching bot for the first time."
-			./bin/createuser.sh
+			./utils/createuser.sh
 			while ! egrep -q "^flags=\".*A.*\"$" users/*.conf; do
 				echo "No admins exist. Please create an administrator before launching bot for the first time."
-				./bin/createuser.sh
+				./utils/createuser.sh
 			done
 		fi
 	else
 		echo "Creating Users Directory..."
 		mkdir users
 		echo "No admins exist. Please create an administrator before launching bot for the first time."
-		./bin/createuser.sh
+		./utils/createuser.sh
 		while ! egrep -q "^flags=\".*A.*\"$" users/*.conf; do
 			echo "No admins exist. Please create an administrator before launching bot for the first time."
-			./bin/createuser.sh
+			./utils/createuser.sh
 		done
 	fi
 
-	if [ -e "var/.conf" ]; then
-		rm -f "var/.conf"
+	confReq=("nick" "ident" "gecos" "server" "port" "owner" "ownerEmail" "comPrefix" "genFlags" "logIn" "dataDir" "output" "input")
+	for i in "${confReq[@]}"; do
+		testVar="$(egrep -m 1 "^${i}=\"" "${confFile}")"
+		testVar="${testVar#${i}=\"}"
+		testVar="${testVar%\"}"
+		if [ -z "${testVar}" ]; then
+			echo -e "Config option ${red}${i}${reset} appears to be invalid!"
+			badConf="1"
+		fi
+	done
+
+	sqlUser="$(egrep -m 1 "^sqlUser=\"" "${confFile}")"
+	sqlUser="${sqlUser#sqlUser=\"}"
+	sqlUser="${sqlUser%\"}"
+	if [ -z "${sqlUser}" ]; then
+		echo "No SQL Username defined. Disabling SQL support..."
+		sqlSupport="0"
+	else
+		sqlPass="$(egrep -m 1 "^sqlPass=\"" "${confFile}")"
+		sqlPass="${sqlPass#sqlPass=\"}"
+		sqlPass="${sqlPass%\"}"
+		if [ -z "${sqlPass}" ]; then
+			echo "No SQL Password defined. Disabling SQL support..."
+			sqlSupport="0"
+		else
+			sqlDB="$(egrep -m 1 "^sqlDBname=\"" "${confFile}")"
+			sqlDB="${sqlDB#sqlDBname=\"}"
+			sqlDB="${sqlDB%\"}"
+			if [ -z "${sqlDB}" ]; then
+				echo "No SQL Database name defined. Disabling SQL support..."
+				sqlSupport="0"
+			else
+				mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDB};" > /dev/null 2>&1
+				if [ "${?}" -eq "0" ]; then
+					echo "Valid SQL username, password, and database name found. Enabling SQL support."
+					sqlSupport="1"
+				else
+					echo "Invalid SQL username, password, and database name entered (Access test failed). Disabling SQL support."
+					sqlSupport="0"
+				fi
+			fi
+		fi
 	fi
 
-	botNick="$(egrep -m 1 "^nick=" "pudding.conf")"
-	tmpBotNick="${botNick#*\"}"
-	tmpBotNick="${tmpBotNick%\"}"
-	if [ -z "$tmpBotNick" ]; then
-		echo -e "Config option ${red}nick${reset} appears to be invalid!"
-		badConf="1"
-	else
-		echo "${botNick}" >> var/.conf
-	fi
-	botIdent="$(egrep -m 1 "^ident=" "pudding.conf")"
-	tmpBotIdent="${botIdent#*\"}"
-	tmpBotIdent="${tmpBotIdent%\"}"
-	if [ -z "$tmpBotIdent" ]; then
-		echo -e "Config option ${red}ident${reset} appears to be invalid!"
-		badConf="1"
-	else
-		echo "${botIdent}" >> var/.conf
-	fi
-	botGecos="$(egrep -m 1 "^gecos=" "pudding.conf")"
-	tmpBotGecos="${botGecos#*\"}"
-	tmpBotGecos="${tmpBotGecos%\"}"
-	if [ -z "$tmpBotGecos" ]; then
-		echo -e "Config option ${red}gecos${reset} appears to be invalid!"
-		badConf="1"
-	else
-		echo "${botGecos}" >> var/.conf
-	fi
-	egrep -m 1 "^channels=" "pudding.conf" >> var/.conf
-	botServer="$(egrep -m 1 "^server=" "pudding.conf")"
-	tmpBotServer="${botServer#*\"}"
-	tmpBotServer="${tmpBotServer%\"}"
-	if [ -z "$tmpBotServer" ]; then
-		echo -e "Config option ${red}server${reset} appears to be invalid!"
-		badConf="1"
-	else
-		echo "${botServer}" >> var/.conf
-	fi
-	botPort="$(egrep -m 1 "^port=" "pudding.conf")"
-	tmpBotPort="${botPort#*\"}"
-	tmpBotPort="${tmpBotPort%\"}"
-	if [ -z "$tmpBotPort" ]; then
-		echo -e "Config option ${red}port${reset} appears to be invalid!"
-		badConf="1"
-	else
-		echo "${botPort}" >> var/.conf
-	fi
-	botOwner="$(egrep -m 1 "^owner=" "pudding.conf")"
-	tmpBotOwner="${botOwner#*\"}"
-	tmpBotOwner="${tmpBotOwner%\"}"
-	if [ -z "$tmpBotOwner" ]; then
-		echo -e "Config option ${red}owner${reset} appears to be invalid!"
-		badConf="1"
-	else
-		echo "${botOwner}" >> var/.conf
-	fi
-	botOwnerEmail="$(egrep -m 1 "^ownerEmail=" "pudding.conf")"
-	tmpBotOwnerEmail="${botOwnerEmail#*\"}"
-	tmpBotOwnerEmail="${tmpBotOwnerEmail%\"}"
-	if [ -z "$tmpBotOwnerEmail" ]; then
-		echo -e "Config option ${red}ownerEmail${reset} appears to be invalid!"
-		badConf="1"
-	else
-		echo "${botOwnerEmail}" >> var/.conf
-	fi
-	botPrefix="$(egrep -m 1 "^comPrefix=" "pudding.conf")"
-	tmpBotPrefix="${botPrefix#*\"}"
-	tmpBotPrefix="${tmpBotPrefix%\"}"
-	if [ -z "$tmpBotPrefix" ]; then
-		echo -e "Config option ${red}comPrefix${reset} appears to be invalid!"
-		badConf="1"
-	else
-		echo "${botPrefix}" >> var/.conf
-	fi
-	egrep -m 1 "^nickPass=" "pudding.conf" >> var/.conf
-	botLog="$(egrep -m 1 "^logIn=" "pudding.conf")"
-	tmpBotLog="${botLog#*\"}"
-	tmpBotLog="${tmpBotLog%\"}"
-	tmpBotLog="$(echo "$tmpBotLog" | cut -b 1 | sed "s/y/1/i" | sed "s/n/0/i")"
-	if [ "$tmpBotLog" -ne "0" ] && [ "$tmpBotLog" -ne "1" ]; then
-		echo -e "Config option ${red}logIn${reset} appears to be invalid!"
-		badConf="1"
-	else
-		echo "logIn=\"${tmpBotLog}\"" >> var/.conf
-	fi
-	botData="$(egrep -m 1 "^dataDir=" "pudding.conf")"
-	tmpBotData="${botData#*\"}"
-	tmpBotData="${tmpBotData%\"}"
-	tmpBotData="${tmpBotData%/}"
-	if [ -z "$tmpBotData" ]; then
-		echo -e "Config option ${red}dataDir${reset} appears to be invalid!"
-		badConf="1"
-	else
-		echo "dataDir=\"${tmpBotData}\"" >> var/.conf
-	fi
-	botOutput="$(egrep -m 1 "^output=" "pudding.conf")"
-	tmpBotOutput="${botOutput#*\"}"
-	tmpBotOutput="${tmpBotOutput%\"}"
-	if [ -z "$tmpBotOutput" ]; then
-		echo -e "Config option ${red}output${reset} appears to be invalid!"
-		badConf="1"
-	else
-		echo "${botOutput}" >> var/.conf
-	fi
-	botInput="$(egrep -m 1 "^input=" "pudding.conf")"
-	tmpBotInput="${botInput#*\"}"
-	tmpBotInput="${tmpBotInput%\"}"
-	if [ -z "$tmpBotInput" ]; then
-		echo -e "Config option ${red}input${reset} appears to be invalid!"
-		badConf="1"
-	else
-		echo "${botInput}" >> var/.conf
-	fi
-
-	echo "userDir=\"\${dataDir}/users\"" >> var/.conf
+	egrep -v "^#" "${confFile}" | egrep -v "^loadMod=\"" | while read i; do
+		testVar="${i}"
+		testVar="${testVar#*=\"}"
+		testVar="${testVar%\"}"
+		if [[ "${i%%=\"*}" == "logIn" ]]; then
+			case "${testVar,,}" in
+				yes)
+				i="logIn=\"1\"";;
+				no)
+				i="logIn=\"0\"";;
+			esac
+		fi
+		echo "${i}" >> var/.conf
+	done
 }
 
 startBot () {
@@ -210,18 +165,36 @@ if [ -e "var/bot.pid" ]; then
 else
 	echo "Initiating PuddingBot v${ver}"
 	echo ""
-	if [ ! -e "pudding.conf" ]; then
-		echo "You do not appear to have a \"pudding.conf\" file!"
+	if [ ! -e "${confFile}" ]; then
+		echo "You do not appear to have a \"${confFile}\" file!"
 		echo "Did you not copy your EXAMPLE file?"
 		exit 255
 	fi
+	# If output datafile still exists from last time, remove it
+	if [ -e "$output" ]; then
+		echo "Removing old datafiles (Improper shutdown?)"
+		rm -f "$output"
+		if [ -e "var/.admins" ]; then
+			rm "var/.admins"
+		fi
+		if [ -d "var/.mods" ]; then
+			rm -rf "var/.mods"
+		fi
+		if [ -e "var/.conf" ]; then
+			rm "var/.conf"
+		fi
+		if [ -e "var/.status" ]; then
+			rm "var/.status"
+		fi
+	fi
+
 	# Check for a sane environment from our variables
 	echo "Checking config for sanity"
 	checkSanity;
 
 	if [ "$badConf" -eq "1" ]; then
 		echo "Please fix above config options prior to start bot."
-		return 1
+		exit 255
 	else
 		# Load variables into controller
 		echo "Loading variables into controller"
@@ -231,24 +204,6 @@ else
 		if [ ! -d "$dataDir" ]; then
 			echo "Creating data directory"
 			mkdir "$dataDir"
-		fi
-
-		# If output datafile still exists from last time, remove it
-		if [ -e "$output" ]; then
-			echo "Removing old datafiles (Improper shutdown?)"
-			rm -f "$output"
-			if [ -e "var/.admins" ]; then
-				rm "var/.admins"
-			fi
-			if [ -d "var/.mods" ]; then
-				rm -rf "var/.mods"
-			fi
-			if [ -e "var/.conf" ]; then
-				rm "var/.conf"
-			fi
-			if [ -e "var/.status" ]; then
-				rm "var/.status"
-			fi
 		fi
 
 		# If logging is enabled
@@ -264,7 +219,7 @@ else
 		# Check for sanity with the modules
 		echo "Checking for modules"
 		mkdir var/.mods
-		egrep "^loadMod" "pudding.conf" | sort -u | while read mod; do
+		egrep "^loadMod" "${confFile}" | sort -u | while read mod; do
 			mod="${mod%\"}"
 			mod="${mod#*\"}"
 			if [ -e "modules/${mod}" ]; then
@@ -295,8 +250,8 @@ else
 		# Start the actual bot
 		echo "Starting bot"
 		#screen -d -m -S pudding ./core/core.sh
-		./core/core.sh > /dev/null 2>&1 &
-		#bash -x ./core/core.sh
+		./bin/core/core.sh > /dev/null 2>&1 &
+		#./bin/core/core.sh
 	fi
 fi
 }
@@ -345,7 +300,7 @@ else
 		# Check for sanity with the modules
 		echo "Checking for modules"
 		mkdir var/.mods
-		egrep "^loadMod" "pudding.conf" | sort -u | while read mod; do
+		egrep "^loadMod" "${confFile}" | sort -u | while read mod; do
 			mod="${mod%\"}"
 			mod="${mod#*\"}"
 			if [ ! -e "modules/${mod}" ]; then
@@ -365,7 +320,7 @@ else
 		done
 		# Start the actual bot
 		echo "Starting bot"
-		./core/core.sh
+		./bin/core/core.sh
 	fi
 fi
 }

@@ -1,18 +1,16 @@
 #!/usr/bin/env bash
 
-source var/.conf
-message="$@"
-case "$(awk '{print $2}' <<<"$message")" in
+case "${msgArr[1]}" in
 	# 001 is WELCOME
 	001)
 	fullCon="1"
 	networkName="${message#*Welcome to the }"
-	if fgrep -q " Internet Relay Chat Network" <<<"$networkName"; then
+	if fgrep -q " Internet Relay Chat Network" <<<"${networkName}"; then
 		networkName="${networkName% Internet Relay Chat Network*}"
 	else
 		networkName="${networkName% IRC Network*}"
 	fi
-	actualServer="$(awk '{print $1}' <<<"$message")"
+	actualServer="$(awk '{print $1}' <<<"${msgArr[@]}")"
 	actualServer="${actualServer#:}"
 	echo "networkName=\"${networkName}\"" >> var/.status
 	echo "actualServer=\"${actualServer}\"" >> var/.status
@@ -550,21 +548,21 @@ case "$(awk '{print $2}' <<<"$message")" in
 	;;
 	# 375 is MOTDSTART
 	375)
-	if [ -n "$operId" ] && [ -n "$operPass" ]; then
-		echo "OPER $operId $operPass"
-		if [ -n "$operModes" ]; then
-			echo "MODE $nick $operModes" >> $output
+	if [ -n "${operId}" ] && [ -n "${operPass}" ]; then
+		echo "OPER ${operId} ${operPass}"
+		if [ -n "${operModes}" ]; then
+			echo "MODE ${nick} ${operModes}" >> ${output}
 		fi
 	fi
-	if [ -n "$nickPass" ]; then
-		echo "PRIVMSG NickServ :identify $nickPass" >> $output
+	if [ -n "${nickPass}" ]; then
+		echo "PRIVMSG NickServ :identify ${nickPass}" >> ${output}
 		nickPassSent="1"
 	fi
 	for item in ${channels[*]}; do
-		echo "JOIN $item" >> $output
+		echo "JOIN ${item}" >> ${output}
 	done
-	if [ -n "$lastCom" ]; then
-		echo "$lastCom" >> $output
+	if [ -n "${lastCom}" ]; then
+		echo "${lastCom}" >> ${output}
 	fi
 	;;
 	# 376 is ENDOFMOTD
@@ -1244,7 +1242,6 @@ case "$(awk '{print $2}' <<<"$message")" in
 	PRIVMSG)
 		;;
 	*)
-		echo "[DEBUG - ${0}] $message"
-		echo "$(date -R) [${0}] $message" >> $(<var/bot.pid).debug
+		echo "$(date -R) [${0}] ${msgArr[@]}" >> $(<var/bot.pid).debug
 		;;
 esac

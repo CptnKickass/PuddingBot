@@ -1,9 +1,4 @@
 #!/usr/bin/env bash
-sqlDBname="puddingbot"
-sqlUser="puddingbot"
-sqlPass="test"
-nick="Pudding"
-comPrefix="!"
 
 learnFact () {
 sqlFactExists="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM factoids WHERE id = '${factTrig}';")"
@@ -133,7 +128,7 @@ factVal="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname};
 unset factVals
 readarray -t factVals <<<"${factVal}"
 if [ "${#factVals[@]}" -ne "0" ]; then
-	factOut="${factVals[$RANDOM % ${#factVals[@]} ] }"
+	factOut="${factVals[${RANDOM} % ${#factVals[@]} ] }"
 	repAct="$(awk '{print $1}' <<<"${factOut,,}")"
 	repAct="${repAct#<}"
 	repAct="${repAct%>}"
@@ -152,7 +147,7 @@ if [ "${#factVals[@]}" -ne "0" ]; then
 fi
 }
 
-inArr=(${@})
+inArr=(${factMessage})
 
 # Let's trim the first three useless items.
 inArr=(${inArr[@]:3})
@@ -222,12 +217,12 @@ elif [ "${wasAddressed}" -eq "1" ]; then
 	factTrig="${msgTrim,,}"
 	case "${msgArr[0],,}" in
 		lock)
-		loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
-		if [ "$loggedIn" -eq "1" ]; then
+		loggedIn="$(fgrep -c "${senderUser}@${senderHost}" "var/.admins")"
+		if [ "${loggedIn}" -eq "1" ]; then
 			reqFlag="l"
-			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
-				target="$(awk '{print $5}' <<<"${message}")"
-				if [ -n "$target" ]; then
+			if fgrep "${senderUser}@${senderHost}" "var/.admins" | awk '{print $3}' | fgrep -q "${reqFlag}"; then
+				target="${msgArr[4]}"
+				if [ -n "${target}" ]; then
 					factTrig="${factTrig#*lock }"
 					lockFact;
 				else
@@ -241,12 +236,12 @@ elif [ "${wasAddressed}" -eq "1" ]; then
 		fi
 		;;
 		unlock)
-		loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
-		if [ "$loggedIn" -eq "1" ]; then
+		loggedIn="$(fgrep -c "${senderUser}@${senderHost}" "var/.admins")"
+		if [ "${loggedIn}" -eq "1" ]; then
 			reqFlag="l"
-			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${reqFlag}"; then
-				target="$(awk '{print $5}' <<<"${message}")"
-				if [ -n "$target" ]; then
+			if fgrep "${senderUser}@${senderHost}" "var/.admins" | awk '{print $3}' | fgrep -q "${reqFlag}"; then
+				target="${msgArr[4]}"
+				if [ -n "${target}" ]; then
 					factTrig="${factTrig#*unlock }"
 					unlockFact;
 				else
