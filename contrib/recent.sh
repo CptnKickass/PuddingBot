@@ -29,7 +29,7 @@ if [[ "$1" == "--dep-check" ]]; then
 	fi
 fi
 modHook="Prefix"
-modForm=("recent")
+modForm=("recent" "reshare")
 modFormCase=""
 modHelp="Displays the most recently updated file at captain-kickass.net"
 modFlag="m"

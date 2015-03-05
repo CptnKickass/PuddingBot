@@ -28,12 +28,10 @@ if [[ "$1" == "--dep-check" ]]; then
 	fi
 fi
 
-modHook="prefix"
-modForm=("eatadick" "eatdick")
-modFormCase=""
+modHook="format"
+modForm=("^.*!.*@.* PRIVMSG (#|&).*:.*eat (a )?dick.*$" "^.*!.*@.* PRIVMSG (#|&).*:${comPrefix}eat(a)?dick")
+modFormCase="No"
 modHelp="Handles dickery"
 modFlag="m"
-sender="${@%%!*}"
-sender="${sender#:}"
-echo "No, you eat a dick ${sender}"
+echo "No, you eat a dick ${senderNick}"
 exit 0

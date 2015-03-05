@@ -10,7 +10,7 @@ case "${msgArr[1]}" in
 	else
 		networkName="${networkName% IRC Network*}"
 	fi
-	actualServer="$(awk '{print $1}' <<<"${msgArr[@]}")"
+	actualServer="${msgArr[0]}"
 	actualServer="${actualServer#:}"
 	echo "networkName=\"${networkName}\"" >> var/.status
 	echo "actualServer=\"${actualServer}\"" >> var/.status

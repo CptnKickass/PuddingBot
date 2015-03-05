@@ -68,7 +68,7 @@ case "${com}" in
 				for q in "${modArr[@]}"; do
 					if fgrep -q "\"${com}\"" <<<"${q}"; then
 						modMatch="1"
-						source ./${i} "${msgArr[@]}"
+						source ./${i} 
 					fi
 				done
 			fi
@@ -122,11 +122,14 @@ case "${msgArr[1]^^}" in
 			com="${com,,}"
 			com="${com:2}"
 		# This is a command beginning with ${nick}: ${nick}; or ${nick},
-		elif [[ ${msgArr[3],,} =~ ^"${nick,,}"[[:punct:]]?$ ]]; then
+		elif [[ ${msgArr[3],,} =~ ^":${nick,,}"[[:punct:]]?$ ]]; then
 			isCom="1"
-			msgArr=(${msgArr[@]:1})
+			msgStr="${msgArr[@]}"
+			msgStr="${msgStr/${msgArr[3]} /:${comPrefix}}"
+			msgArr=(${msgStr})
 			com="${msgArr[3]}"
 			com="${com,,}"
+			com="${com:2}"
 		# It's a PM
 		elif [ "${isPm}" -eq "1" ]; then
 			# Is it a CTCP?
@@ -152,19 +155,25 @@ case "${msgArr[1]^^}" in
 					modArr="${modArr#modForm=}"
 					modArr="${modArr#(}"
 					modArr="${modArr%)}"
-					modArr=("${modArr}")
+					tmp="$(mktemp)"
+					sed -E 's/" "/\n/g' <<<"${modArr}" > "${tmp}"
+					sed -i "s/^\"//g" "${tmp}"
+					sed -i "s/\"$//g" "${tmp}"
+					unset modArr
+					readarray -t modArr < "${tmp}"
+					rm "${tmp}"
 					for q in "${modArr[@]}"; do
 						q="${q#\"}"
 						q="${q%\"}"
 						if egrep -q -i "^modFromCase=\"Yes\"" "${i}"; then
 							if egrep -q "\"${q}\"" <<<"${msgArr[@]}"; then
 								modMatch="1"
-								source ./${i} "${msgArr[@]}"
+								source ./${i} 
 							fi
 						else
 							if egrep -i -q "${q}" <<<"${msgArr[@]}"; then
 								modMatch="1"
-								source ./${i} "${msgArr[@]}"
+								source ./${i}
 							fi
 						fi
 					done
