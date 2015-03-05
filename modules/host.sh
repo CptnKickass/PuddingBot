@@ -33,8 +33,7 @@ modForm=("host" "dns")
 modFormCase=""
 modHelp="Checks DNS records for a domain"
 modFlag="m"
-msg="$@"
-hostToLookup="$(awk '{print $5}' <<<"${msg}")"
+hostToLookup="${msgArr[4]}"
 if [ -z "$hostToLookup" ]; then
 	echo "This command requires a parameter."
 elif ! egrep -q "(([a-zA-Z](-?[a-zA-Z0-9])*)\.)*[a-zA-Z](-?[a-zA-Z0-9])+\.[a-zA-Z]{2,}" <<<"${hostToLookup}"; then

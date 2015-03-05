@@ -4,9 +4,7 @@
 # None
 
 ## Source
-if [ -e "var/.conf" ]; then
-	source var/.conf
-else
+if ! [ -e "var/.conf" ]; then
 	nick="Null"
 fi
 
@@ -37,8 +35,7 @@ modForm=("^:.+!.+@.+ PRIVMSG.*http(s?):\/\/[^ \"\(\)\<\>]*")
 modFormCase="Yes"
 modHelp="Gets a URL's <title> and/or some other useful info"
 modFlag="m"
-message="$@"
-egrep -i -o "http(s?):\/\/[^ \"\(\)\<\>]*" <<<"${message}" | while read url; do
+egrep -i -o "http(s?):\/\/[^ \"\(\)\<\>]*" <<<"${msgArr[@]}" | while read url; do
 
 reqFullCurl="0"
 urlCurlContentHeader="$(curl -A "$nick" -m 5 -k -s -L -I "$url")"

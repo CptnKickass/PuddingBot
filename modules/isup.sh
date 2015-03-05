@@ -38,16 +38,16 @@ modForm=("isup")
 modFormCase=""
 modHelp="Checks a site for up/down status via http://isup.me/"
 modFlag="m"
-msg="$@"
-siteToCheck="$(awk '{print $5}' <<<"$msg")"
+siteToCheck="${msgArr[4]}"
 if [ -z "$siteToCheck" ]; then
 	echo "This command requires a parameter"
 elif ! egrep -q "(([a-zA-Z](-?[a-zA-Z0-9])*)\.)*[a-zA-Z](-?[a-zA-Z0-9])+\.[a-zA-Z]{2,}" <<<"${siteToCheck}"; then
 	echo "The domain ${siteToCheck} does not appear to be a valid domain"
 elif [ "$(egrep -c "(www\.)?(isup\.me|downforeveryoneorjustme\.com)/?" <<<"${siteToCheck}")" -eq "1" ]; then
-	echo "Choke on a bowl of dicks."
+	echo "Error: Apocalypse detected. Purging of humanity imminent."
 else
-	siteToCheck="$(awk '{print $5}' <<<"${msg}" | sed "s/http:\/\///")"
+	siteToCheck="${msgArr[4]#http://}"
+	siteToCheck="${siteToCheck#https://}"
 	isSiteUp="$(curl -A "$nick" -m 5 -k -s -L "http://isup.me/${siteToCheck}" | fgrep -c "It's just you.")"
 	# 1 means it's up, 0 means it's down
 	if [ "$isSiteUp" -eq "1" ]; then

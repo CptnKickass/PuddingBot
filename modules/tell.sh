@@ -32,15 +32,17 @@ modForm=("tell")
 modFormCase=""
 modHelp="Sometimes people need things told to them. This module assists in that."
 modFlag="m"
-msg="$@"
-target="$(awk '{print $5}' <<<"$msg")"
+target="${msgArr[4]}"
 # Format should be:
 # :N!U@H PRIVMSG ${target} :!explain <to> ${target} <that> ${explain}
-explain="$(read -r one two three four five rest <<<"$msg"; echo "$rest")"
+explain="${msgArr[@]:5}"
 re="you're"
+explain="${explain//you/I}"
 explain="${explain//she\'s/$re}"
 explain="${explain//he\'s/$re}"
 explain="${explain//they\'re/$re}"
+explain="${explain//him/you}"
+explain="${explain//her/you}"
 if [ -z "$target" ]; then
 	echo "This command requires a target"
 elif [ -z "$explain" ]; then

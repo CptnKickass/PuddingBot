@@ -32,11 +32,10 @@ modForm=("whois")
 modFormCase=""
 modHelp="Checks a domain for ownership availability (If a domain is registered or not)"
 modFlag="m"
-msg="$@"
-if [ -z "$(awk '{print $5}')" <<<"${msg}" ]; then
+if [ -z "${msgArr[4]}" ]; then
 	echo "This command requires a parameter"
 else
-	domain="$(awk '{print $5}' <<<"${msg}")"
+	domain="${msgArr[4]}"
 	whois="$(whois "${domain}" | egrep -c "^No match|^NOT FOUND|^Not fo|AVAILABLE|^No Data Fou|has not been regi|No entri")"
 	if [ "$whois" -eq "0" ]; then 
 		echo "${domain} IS registered (Domain not available)"

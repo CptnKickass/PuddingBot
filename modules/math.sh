@@ -33,11 +33,10 @@ modForm=("calc" "math")
 modFormCase=""
 modHelp="Calculates basic arithmetic and returns the result"
 modFlag="m"
-msg="$@"
-if [ -z "$(awk '{print $5}' <<<"${msg}")" ]; then
+if [ -z "${msgArr[4]}" ]; then
 	echo "This command requires a parameter"
 else
-	equation="$(read -r one two three four rest <<<"$msg"; echo "$rest")"
+	equation="${msgArr[@]:4}"
 	result="$(echo "scale=3; ${equation}" | bc 2>&1)"
 	if [ "${#result}" -gt "50" ]; then
 		result="${result:0:50} (Truncated to first 50 characters)"

@@ -29,9 +29,12 @@ if [[ "$1" == "--dep-check" ]]; then
 fi
 
 modHook="prefix"
-modForm=("ping")
+modForm=("ping" "pong")
 modFormCase=""
 modHelp="Responds to pings"
 modFlag="m"
-echo "Pong!"
+case "${msgArr[3],,}" in
+	:${comPrefix}ping) echo "Pong!";;
+	:${comPrefix}pong) echo "Ping!";;
+esac
 exit 0

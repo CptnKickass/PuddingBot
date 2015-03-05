@@ -32,11 +32,10 @@ modForm=("explain")
 modFormCase=""
 modHelp="Sometimes people need things explained to them. This module assists in that."
 modFlag="m"
-msg="$@"
-target="$(awk '{print $6}' <<<"$msg")"
+target="${msgArr[5]}"
 # Format should be:
 # :N!U@H PRIVMSG ${target} :!explain <to> ${target} <that> ${explain}
-explain="$(read -r one two three four five six seven rest <<<"$msg"; echo "$rest")"
+explain="${msgArr[@]:7}"
 re="I'm"
 explain="${explain//you\'re/$re}"
 re="I"

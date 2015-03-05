@@ -27,22 +27,13 @@ if [[ "$1" == "--dep-check" ]]; then
 	fi
 fi
 
-if [ -e "var/.conf" ]; then
-	source var/.conf
-else
-	echo -e "Unable to locate \"${red}\$input${reset}\" file! (Is bot running?) Exiting."
-	exit 1
-fi
-
-
 modHook="Format"
 modForm=("^.*PRIVMSG.*:s/.*/.*/(i|g)?$")
 modFormCase="No"
 modHelp="Provides sed functionality"
 modFlag="m"
-msg="$@"
-target="$(awk '{print $3}' <<<"$msg")"
-sedCom="$(egrep -o -i "s/.*/.*/(i|g|ig)?$" <<<"${msg}")"
+target="${msgArr[2]}"
+sedCom="$(egrep -o -i "s/.*/.*/(i|g|ig)?$" <<<"${msgArr[@]}")"
 sedItem="${sedCom#s/}"
 sedItem="${sedItem%/*/*}"
 if [ -n "$sedItem" ]; then

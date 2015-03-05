@@ -33,10 +33,9 @@ modForm=("spell" "ispell")
 modFormCase=""
 modHelp="Provides spell check functionality via ispell"
 modFlag="m"
-msg="$@"
-if [ -z "$(awk '{print $5}' <<<"${msg}")" ]; then
+if [ -z "${msgArr[4]}" ]; then
 	echo "This command requires a parameter"
-elif [ -n "$(awk '{print $5, $6}' <<<"${msg}")" ] && [ -n "$(awk '{print $6}' <<<"${msg}")" ]; then
+elif [ -n "${msgArr[4]}" ] && [ -n "${msgArr[5]}" ]; then
 	echo "Too many parameters for command"
 else
 	spellResult="$(awk '{print $5}' <<<"${msg}" | ispell | head -n 2 | tail -n 1)"

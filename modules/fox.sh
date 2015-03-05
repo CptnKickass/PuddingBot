@@ -33,22 +33,8 @@ modForm=("what does the fox say")
 modFormCase="No"
 modHelp="Spits out a line about what the fox says on demand"
 modFlag="m"
-((foxResponseNum = RANDOM % 12 + 1))
-case $foxResponseNum in
-	1) foxResponse="Ring-ding-ding-ding-dingeringeding!";;
-	2) foxResponse="Gering-ding-ding-ding-dingeringeding!";;
-	3) foxResponse="Wa-pa-pa-pa-pa-pa-pow!";;
-	4) foxResponse="Hatee-hatee-hatee-ho!";;
-	5) foxResponse="Joff-tchoff-tchoffo-tchoffo-tchoff!";;
-	6) foxResponse="Tchoff-tchoff-tchoffo-tchoffo-tchoff!";;
-	7) foxResponse="Jacha-chacha-chacha-chow!";;
-	8) foxResponse="Chacha-chacha-chacha-chow!";;
-	9) foxResponse="Fraka-kaka-kaka-kaka-kow!";;
-	10) foxResponse="A-hee-ahee ha-hee!";;
-	11) foxResponse="Wa-wa-way-do Wub-wid-bid-dum-way-do Wa-wa-way-do!";;
-	12) foxResponse="Bay-budabud-dum-bam!";;
-	13) foxResponse="Abay-ba-da bum-bum bay-do!";;
-esac
-foxResponseNum="$(( $foxResponseNum + 1 ))"
+
+responseArr=("Ring-ding-ding-ding-dingeringeding!" "Gering-ding-ding-ding-dingeringeding!" "Wa-pa-pa-pa-pa-pa-pow!" "Hatee-hatee-hatee-ho!" "Joff-tchoff-tchoffo-tchoffo-tchoff!" "Tchoff-tchoff-tchoffo-tchoffo-tchoff!" "Jacha-chacha-chacha-chow!" "Chacha-chacha-chacha-chow!" "Fraka-kaka-kaka-kaka-kow!" "A-hee-ahee ha-hee!" "Wa-wa-way-do Wub-wid-bid-dum-way-do Wa-wa-way-do!" "Bay-budabud-dum-bam!" "Abay-ba-da bum-bum bay-do!")
+foxResponse="${responseArr[${RANDOM} % ${#responseArr[@]} ] }"
 echo "${foxResponse}"
 exit 0
