@@ -101,7 +101,9 @@ fi
 case "${msgArr[1]^^}" in
 	JOIN) 
 		# MySQL Seen Stuff
-		source ./bin/usr/mysql-update-seen-join.sh
+		if [ "${sqlSupport}" -eq "1" ]; then
+			source ./bin/usr/mysql-update-seen-join.sh
+		fi
 		;;
 	KICK)
 		;;
@@ -109,12 +111,16 @@ case "${msgArr[1]^^}" in
 		;;
 	PRIVMSG)
 		# MySQL Seen Stuff
-		source ./bin/user/mysql/mysql-update-seen-privmsg.sh
-		factMessage="${msgArr[@]}"
+		if [ "${sqlSupport}" -eq "1" ]; then
+			source ./bin/user/mysql/mysql-update-seen-privmsg.sh
+			factMessage="${msgArr[@]}"
+		fi
 		# Now that user's data is updated.
 		# Let's check for karma
 		if egrep -q "^.*:([[:alnum:]]|[[:punct:]])+(\+\+|--)$" <<<"${msgArr[@]}"; then
-			source ./bin/user/mysql/mysql-karma.sh
+			if [ "${sqlSupport}" -eq "1" ]; then
+				source ./bin/user/mysql/mysql-karma.sh
+			fi
 		# This is a ${comPrefix} addressed command
 		elif [[ "${msgArr[3]:0:2}" == ":${comPrefix}" ]]; then
 			isCom="1"
@@ -190,13 +196,17 @@ case "${msgArr[1]^^}" in
 			sed -i "/${senderUser}@${senderHost}/d" "var/.admins"
 		fi
 		# MySQL Seen Stuff
-		source ./bin/user/mysql/mysql-update-seen-quit.sh
+		if [ "${sqlSupport}" -eq "1" ]; then
+			source ./bin/user/mysql/mysql-update-seen-quit.sh
+		fi
 		;;
 	MODE)
 		;;
 	PART) 
 		# MySQL Seen Stuff
-		source ./bin/user/mysql/mysql-update-seen-part.sh
+		if [ "${sqlSupport}" -eq "1" ]; then
+			source ./bin/user/mysql/mysql-update-seen-part.sh
+		fi
 		;;
 	NICK)
 		;;

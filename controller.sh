@@ -156,6 +156,8 @@ checkSanity () {
 		fi
 		echo "${i}" >> var/.conf
 	done
+
+	echo "sqlSupport=\"${sqlSupport}\"" >> var/.conf
 }
 
 startBot () {
