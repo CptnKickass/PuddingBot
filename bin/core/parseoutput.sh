@@ -28,6 +28,8 @@ if [ "${#outArr[@]}" -ne "0" ]; then
 	done
 	unset outArr
 	for line in "${sendArr[@]}"; do
+		# This is a cheap way to remove trailing newlines
+		line="$(echo "${line}")"
 		if [ -n "${line}" ] && ! [[ "${line}" =~ ^" "+$ ]]; then
 			echo "${outAct} ${senderTarget} :${line}" >> "${output}"
 			sleep 0.25

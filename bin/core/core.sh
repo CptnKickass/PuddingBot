@@ -119,10 +119,12 @@ do
 	elif [[ "${msgArr[0]}" == "ERROR" ]]; then
 		echo "Received error message: ${msgArr[@]}"
 		if [ -e "${output}" ]; then
-			rm -f "${output}" 
+			#rm -f "${output}" 
+			mv "${output}" "${output} - $(date)"
 		fi
 		if [ -e "${input}" ]; then
-			rm -f "${input}"
+			#rm -f "${input}"
+			mv "${input}" "${input} - $(date)"
 		fi
 		if [ -e "var/.admins" ]; then
 			rm -f "var/.admins"
@@ -137,10 +139,11 @@ do
 			rm -f "var/.status"
 		fi
 		if [ -e "var/bot.pid" ]; then
+			pid="$(<var/bot.pid)"
 			rm -f "var/bot.pid"
 		fi
-		#exit 0
-		kill $$
+		kill ${pid}
+		exit 0
 	elif ! egrep -q "^:.*!.*@.*$" <<<"${msgArr[0]}"; then
 		# The message does not match an n!u@h mask, and should be a server
 		out="$(source ./bin/server/servermessage.sh)"
@@ -166,10 +169,12 @@ done
 
 # We've broken free of the above loop? We're exiting.
 if [ -e "${output}" ]; then
-	rm -f "${output}" 
+	#rm -f "${output}" 
+	mv "${output}" "${output} - $(date)"
 fi
 if [ -e "${input}" ]; then
-	rm -f "${input}"
+	#rm -f "${input}"
+	mv "${input}" "${input} - $(date)"
 fi
 if [ -e "var/.admins" ]; then
 	rm -f "var/.admins"
@@ -184,8 +189,8 @@ if [ -e "var/.status" ]; then
 	rm -f "var/.status"
 fi
 if [ -e "var/bot.pid" ]; then
+	pid="$(<var/bot.pid)"
 	rm -f "var/bot.pid"
 fi
-
-#exit 0
-kill $$
+kill ${pid}
+exit 0

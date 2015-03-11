@@ -175,7 +175,8 @@ else
 	# If output datafile still exists from last time, remove it
 	if [ -e "$output" ]; then
 		echo "Removing old datafiles (Improper shutdown?)"
-		rm -f "$output"
+		#rm -f "$output"
+		mv "${output}" "${output} - $(date)"
 		if [ -e "var/.admins" ]; then
 			rm "var/.admins"
 		fi
@@ -286,7 +287,8 @@ else
 		# If output datafile still exists from last time, remove it
 		if [ -e "$output" ]; then
 			echo "Removing old datafile (Improper shutdown?)"
-			rm -f "$output"
+			mv "${output}" "${output} - $(date)"
+			#rm -f "$output"
 		fi
 
 		# If logging is enabled
@@ -353,7 +355,8 @@ if [ -e "var/bot.pid" ]; then
 	fi
 	if [ -e "$output" ]; then
 		echo "Removing datafile"
-		rm -f "$output"
+		#rm -f "$output"
+		mv "${output}" "${output} $(date)"
 	fi
 	if [ -e "var/.conf" ]; then
 		rm -f "var/.conf"
