@@ -2,7 +2,7 @@
 
 ## Config
 # Path to search for file
-searchPath="/home/goose/public_html/captain-kickass.net"
+searchPath="/home/goose/public_html/captain-kickass.net/files"
 
 ## Source
 
@@ -33,8 +33,19 @@ modForm=("recent" "reshare")
 modFormCase=""
 modHelp="Displays the most recently updated file at captain-kickass.net"
 modFlag="m"
-msg="$@"
-out="$(find ${searchPath} -type f -printf "%T@ %Tc %p\n" | sort -n | tail -n 1 | awk '{print $8}')"
+
+re='^[0-9]+$'
+if ! [[ ${msgArr[4]} =~ $re ]]; then
+	n="1"
+elif [ -z "${msgArr[4]}" ]; then
+	n="1"
+elif [ "${msgArr[4]}" -gt "10" ]; then
+	echo "Max results allowed to be displayed is 10"
+	n="10"
+else
+	n="${msgArr[4]}"
+fi
+find ${searchPath} -type f -printf "%T@ %Tc %p\n" | sort -n | tail -n ${n} | awk '{print $8}' | while read out; do
 out="https://${out#*public_html/}"
 url="${out}"
 
@@ -157,5 +168,6 @@ else
 fi
 
 echo "${out}"
+done
 
 exit 0

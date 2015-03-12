@@ -40,6 +40,11 @@ if [[ "${target,,}" == "me" ]]; then
 	target="${senderNick}"
 fi
 n=0
+if [[ "${explain[0],,}" == "to" ]]; then
+	explainStr="${explain[@]}"
+	explainStr="${explainStr#* }"
+	explain=(${explainStr})
+fi
 for x in "${explain[@]}"; do
 	re="you're"
 	if [[ "${x,,}" == "you" ]]; then

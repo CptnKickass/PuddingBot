@@ -101,7 +101,7 @@ else
 	factModBy="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT updated FROM factoids WHERE id = '${factTrig}' LIMIT 1;")"
 	factCalled="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT callno FROM factoids WHERE id = '${factTrig}' LIMIT 1;")"
 	factCalledBy="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT calledby FROM factoids WHERE id = '${factTrig}' LIMIT 1;")"
-	echo "${factTrig} was created on $(date -d @${factMade}) by ${factMadeBy%%!*} (${factMadeBy#*!}). It was last modified on $(date -d @${factMod}) by ${factModBy%%!*} (${factModBy#*!}). It was last called ${factCalled} times, most recently by ${factCalledBy%%!*} (${factCalledBy#*!}). It has ${factNum} possible replies."
+	echo "${factTrig} was created on $(date -d @${factMade}) by ${factMadeBy%%!*} (${factMadeBy#*!}). It was last modified on $(date -d @${factMod}) by ${factModBy%%!*} (${factModBy#*!}). It has been called ${factCalled} times, most recently by ${factCalledBy%%!*} (${factCalledBy#*!}). It has ${factNum} possible replies."
 fi
 }
 
@@ -114,7 +114,9 @@ else
 	factVal="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT fact FROM factoids WHERE id = '${factTrig}';")"
 	unset factVals
 	readarray -t factVals <<<"${factVal}"
-	echo "${factTrig} is literally ${factVals[@]}"
+	factVal="$(printf '%s || ' "${factVals[@]}"; printf '\n')"
+	factVal="${factVal% || }"
+	echo "${factTrig} is literally: ${factVal}"
 fi
 }
 
@@ -132,6 +134,24 @@ if [ "${#factVals[@]}" -ne "0" ]; then
 	repAct="$(awk '{print $1}' <<<"${factOut,,}")"
 	repAct="${repAct#<}"
 	repAct="${repAct%>}"
+	if egrep -q -i "<sender(\^|,)?>" <<<"${factOut}"; then
+		while read q; do
+			q="${q#<}"
+			q="${q%>}"
+			case "${q,,}" in
+				sender,)
+				factOut="${factOut//<sender,>/${senderNick,,}}"
+				;;
+				sender^)
+				factOut="${factOut//<sender^>/${senderNick^^}}"
+				;;
+				*)
+				factOut="${factOut//<sender>/${senderNick}}"
+				;;
+			esac
+		done < <(egrep -o -i "<sender(\^|,)?>" <<<"${factOut}")
+	fi
+	factOut="${factOut//<sender>/${senderNick}}"
 	case "${repAct}" in
 		reply)
 		echo "${factOut#*> }"
@@ -167,6 +187,9 @@ msgTrim="$(sed "s/IS/is/i" <<<"${msgTrim}")"
 msgTrim="$(sed "s/IS ALSO/is also/i" <<<"${msgTrim}")"
 msgTrim="$(sed "s/<REPLY>/<reply>/i" <<<"${msgTrim}")"
 msgTrim="$(sed "s/<ACTION>/<action>/i" <<<"${msgTrim}")"
+msgTrim="$(sed "s/<SENDER>/<sender>/i" <<<"${msgTrim}")"
+msgTrim="$(sed "s/<SENDER,>/<sender,>/i" <<<"${msgTrim}")"
+msgTrim="$(sed "s/<SENDER^>/<sender^>/i" <<<"${msgTrim}")"
 
 msgArr=(${msgTrim})
 wasAddressed="0"
@@ -258,7 +281,7 @@ elif [ "${wasAddressed}" -eq "1" ]; then
 		factTrig="${factTrig#*forget }"
 		forgetFact;
 		;;
-		info)
+		factinfo|info)
 		factTrig="${factTrig#*info }"
 		getFactInfo;
 		;;

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 ## Config
+# YouTube v3 API
+ytApi="AIzaSyASqcwKbCMQOt07L7druptXDcbXNGZjqY4"
 # None
 
 ## Source
@@ -9,7 +11,7 @@ if ! [ -e "var/.conf" ]; then
 fi
 
 # Check dependencies 
-if [[ "$1" == "--dep-check" ]]; then
+if [[ "${1}" == "--dep-check" ]]; then
 	depFail="0"
 	deps=("curl" "w3m" "tr" "tail")
 	if [ "${#deps[@]}" -ne "0" ]; then
@@ -19,7 +21,7 @@ if [[ "$1" == "--dep-check" ]]; then
 				depFail="1"
 			fi
 		done
-		if [ "$depFail" -eq "1" ]; then
+		if [ "${depFail}" -eq "1" ]; then
 			exit 1
 		else
 			echo "ok"
@@ -31,110 +33,112 @@ if [[ "$1" == "--dep-check" ]]; then
 	fi
 fi
 modHook="Format"
-modForm=("^:.+!.+@.+ PRIVMSG.*http(s?):\/\/[^ \"\(\)\<\>]*")
+modForm=("^:.+!.+@.+ PRIVMSG (&|#).* :.*?http(s?):\/\/[^ \"\(\)\<\>]*")
 modFormCase="Yes"
 modHelp="Gets a URL's <title> and/or some other useful info"
 modFlag="m"
-egrep -i -o "http(s?):\/\/[^ \"\(\)\<\>]*" <<<"${msgArr[@]}" | while read url; do
 
-reqFullCurl="0"
-urlCurlContentHeader="$(curl -A "$nick" -m 5 -k -s -L -I "$url")"
-urlCurlContentHeader="${urlCurlContentHeader///}"
-httpResponseCode="$(egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" <<<"$urlCurlContentHeader" | tail -n 1 | awk '{print $2}')"
-if [ "$httpResponseCode" -eq "502" ]; then
-	sleep 5
-	urlCurlContentHeader="$(curl -A "$nick" -m 5 -k -s -L -o /dev/null -D - "$url")"
-	urlCurlContentHeader="${urlCurlContentHeader///}"
-	httpResponseCode="$(egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" <<<"${urlCurlContentHeader}" | tail -n 1 | awk '{print $2}')"
-fi
-if [ "$httpResponseCode" -ne "200" ]; then
-	reqFullCurl="1"
-	urlCurlContentHeader="$(curl -A "$nick" -m 5 -k -s -L -o /dev/null -D - "$url")"
-	urlCurlContentHeader="${urlCurlContentHeader///}"
-	httpResponseCode="$(egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" <<<"${urlCurlContentHeader}" | tail -n 1 | awk '{print $2}')"
-fi
-# Zero means the location is true, no redirect to the destination
-locationIsTrue="$(grep -c "Location:" <<<"$urlCurlContentHeader")"
-contentType="$(egrep -i "Content[ |-]Type:" <<<"$urlCurlContentHeader" | tail -n 1)"
-if [ "$httpResponseCode" -eq "200" ]; then
-	if fgrep -q "text/html" <<<"${contentType}"; then
-		pageTitle="$(curl -A "$nick" -m 5 -k -s -L "$url" | fgrep -m 1 "<title")"
-		pageTitle="${pageTitle%%</title>*}"
-		pageTitle="${pageTitle##*>}"
-		pageTitle="$(sed -e 's/^[ \t]*//' <<<"${pageTitle}" | w3m -dump -T text/html | tr '\n' ' ')"
-		if [ -z "$pageTitle" ]; then
-			pageTitle="[Unable to obtain page title]"
-		fi
+ytVid () {
+	if [[ "${url#*://}" =~ "youtu.be"* ]]; then
+		vidId="${url#*youtu.be/}"
+		vidId="${vidId:0:11}"
 	else
-		contentMatches="$(fgrep -c "Content-Length" <<<"$urlCurlContentHeader")"
-		if [ "$contentMatches" -eq "0" ]; then
-			pageTitle="${contentType} (Unable to determine size)"
-		elif [ "$contentMatches" -eq "1" ]; then
-			contentLength="$(fgrep -i "Content-Length" <<<"$urlCurlContentHeader" | awk '{print $2}')"
-			pageSize="$(awk '{ split( "B KB MB GB TB PB EB ZB YB" , v ); s=1; while( $1>1024 ){ $1/=1024; s++ } print int($1), v[s] }' <<<"$contentLength")"
-			pageTitle="${contentType} (${pageSize})"
-		else
-			grepNum="1"
-			contentLength="$(fgrep -i "Content-Length" -m ${grepNum} <<<"$urlCurlContentHeader" | awk '{print $2}')"
-			while [ "$contentLength" -eq "0" ] && [ "$grepNum" -ne "$contentMatches" ]; do
-				grepNum="$(( $grepNum + 1 ))"
-				contentLength="$(fgrep -i "Content-Length" -m ${grepNum} <<<"$urlCurlContentHeader" | tail -n 1 | awk '{print $2}')"
-			done
-			if [ "$contentLength" -eq "0" ]; then
-				pageTitle="${contentType} (Unable to determine size)"
-			else
-				pageSize="$(awk '{ split( "B KB MB GB TB PB EB ZB YB" , v ); s=1; while( $1>1024 ){ $1/=1024; s++ } print int($1), v[s] }' <<<"$contentLength")"
-				pageTitle="${contentType} (${pageSize})"
+		vidId="${url#*watch?v=}"
+		vidId="${vidId:0:11}"
+	fi
+	apiUrl="https://www.googleapis.com/youtube/v3/videos?id=${vidId}&key=${ytApi}&part=snippet,contentDetails"
+	vidInfo="$(curl -A "${nick}" -m 5 -k -s -L "${apiUrl}")"
+	vidTitle="$(fgrep -m 1 "\"title\": \"" <<<"${vidInfo}")"
+	vidTitle="${vidTitle%\",*}"
+	vidTitle="${vidTitle#*\"title\": \"}"
+	duration="$(fgrep "\"duration\": \"PT" <<<"${vidInfo}")"
+	duration="${duration#*PT}"
+	duration="${duration%\",*}"
+	duration="${duration,,}"
+	pageTitle="${vidTitle} [${duration}]"
+}
+
+getTitle () {
+	pageTitle="$(curl -A "${nick}" -m 5 -k -s -L "${url}" | fgrep -m 1 "<title")"
+	pageTitle="${pageTitle%%</title>*}"
+	pageTitle="${pageTitle##*>}"
+	pageTitle="$(sed -e 's/^[ \t]*//' <<<"${pageTitle}" | w3m -dump -T text/html | tr '\n' ' ')"
+	if [ -z "${pageTitle}" ]; then
+		pageTitle="[Unable to obtain page title]"
+	fi
+}
+
+otherSite () {
+	reqFullCurl="0"
+	contentHeader="$(curl -A "${nick}" -m 5 -k -s -L -I "${url}")"
+	contentHeader="${contentHeader///}"
+	httpResponseCode="$(egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" <<<"${contentHeader}" | tail -n 1 | awk '{print $2}')"
+	if [ "${httpResponseCode}" -eq "502" ]; then
+		sleep 3
+		contentHeader="$(curl -A "${nick}" -m 5 -k -s -L -o /dev/null -D - "${url}")"
+		contentHeader="${contentHeader///}"
+		httpResponseCode="$(egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" <<<"${contentHeader}" | tail -n 1 | awk '{print $2}')"
+		if [ "${httpResponseCode}" -eq "502" ]; then
+			sleep 3
+			contentHeader="$(curl -A "${nick}" -m 5 -k -s -L -o /dev/null -D - "${url}")"
+			contentHeader="${contentHeader///}"
+			httpResponseCode="$(egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" <<<"${contentHeader}" | tail -n 1 | awk '{print $2}')"
+			if [ "${httpResponseCode}" -eq "502" ]; then
+				sleep 3
+				contentHeader="$(curl -A "${nick}" -m 5 -k -s -L -o /dev/null -D - "${url}")"
+				contentHeader="${contentHeader///}"
+				httpResponseCode="$(egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" <<<"${contentHeader}" | tail -n 1 | awk '{print $2}')"
 			fi
 		fi
 	fi
-	if [ "$locationIsTrue" -ne "0" ]; then
-		if [ "$reqFullCurl" -eq "1" ]; then
-			pageDest="$(curl -A "$nick" -m 5 -k -s -L -o /dev/null -D - "$url" | grep "Location:" | tail -n 1 | awk '{print $2}')"
+	
+	if [ "${httpResponseCode}" -ne "200" ]; then
+		reqFullCurl="1"
+		contentHeader="$(curl -A "${nick}" -m 5 -k -s -L -o /dev/null -D - "${url}")"
+		contentHeader="${contentHeader///}"
+		httpResponseCode="$(egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" <<<"${contentHeader}" | tail -n 1 | awk '{print $2}')"
+	fi
+	
+	# Zero means the location is true, no (httpd) redirect to the destination
+	locationIsTrue="$(grep -c "Location:" <<<"${contentHeader}")"
+	alreadyMatched="0"
+	if [ "${locationIsTrue}" -ne "0" ]; then
+		if [ "${reqFullCurl}" -eq "1" ]; then
+			pageDest="$(curl -A "${nick}" -m 5 -k -s -L -o /dev/null -D - "${url}" | grep "Location:" | tail -n 1 | awk '{print $2}')"
 		else
-			pageDest="$(curl -A "$nick" -m 5 -k -s -L -I "$url" | grep "Location:" | tail -n 1 | awk '{print $2}')"
+			pageDest="$(curl -A "${nick}" -m 5 -k -s -L -I "${url}" | grep "Location:" | tail -n 1 | awk '{print $2}')"
 		fi
+		url="${pageDest}"
+		url="${url///}"
 	else
-		pageDest="$url"
+		pageDest="${url}"
 	fi
-	if [ -z "$pageDest" ]; then
-		pageDest="[Unable to determine URL destination]"
-	fi
-	if egrep -i -q "^http(s)?://(www\.)?youtube\.com/watch\?v\=" <<<"${pageDest}"; then
-		vidId="${pageDest#*watch?v=}"
-		vidId="${vidId:0:11}"
-		vidInfo="$(curl -A "$nick" -m 5 -k -s -L "http://gdata.youtube.com/feeds/api/videos/${vidId}")"
-		vidSecs="$(fgrep "yt:duration" <<<"${vidInfo}")"
-		vidSecs="${vidSecs#*yt:duration seconds=\'}"
-		vidSecs="${vidSecs%%\'*}"
-		vidHours=$((vidSecs/60/60%24))
-		vidMinutes=$((vidSecs/60%60))
-		vidSeconds=$((vidSecs%60))
-		if egrep -q "^[0-9]$" <<<"${vidSeconds}"; then
-			vidSeconds="0${vidSeconds}"
+
+	if egrep -i -q "^http(s)?://((www\.)?youtube\.com/watch\?v\=|youtu.be/)" <<<"${url}"; then
+		alreadyMatched="1"
+		ytVid;
+		if [ "${httpResponseCode}" -eq "429" ]; then
+			reqFullCurl="0"
+			contentHeader="$(curl -A "${nick}" -m 5 -k -s -L -o /dev/null -D - "${apiUrl}")"
+			contentHeader="${contentHeader///}"
+			httpResponseCode="$(egrep -i "HTTP/[0-9]\.[0-9] [0-9]{3}" <<<"${contentHeader}" | tail -n 1 | awk '{print $2}')"
 		fi
-		if [ "$vidHours" -gt "0" ] && egrep -q "^[0-9]$" <<<"${vidMinutes}"; then
-			vidMinutes="0${vidMinutes}"
-		fi
-		if [ "$vidHours" -ne "0" ] && [ "$vidMinutes" -ne "0" ]; then
-			pageTitle="${pageTitle} [${vidHours}:${vidMinutes}:${vidSeconds}]"
-		elif [ "$vidHours" -eq "0" ] && [ "$vidMinutes" -ne "0" ]; then
-			pageTitle="${pageTitle} [${vidMinutes}:${vidSeconds}]"
-		elif [ "$vidHours" -eq "0" ] && [ "$vidMinutes" -eq "0" ]; then
-			pageTitle="${pageTitle} [0:${vidSeconds}]"
-		fi
-	elif egrep -i -q "^http(s)?://(www\.)?newegg\.com/Product/" <<<"${pageDest}"; then
-		pageSrc="$(curl -A "$nick" -m 5 -k -s -L "$pageDest")"
-		itemPrice="$(fgrep -m 1 "product_sale_price" <<<"$pageSrc")"
+	elif egrep -i -q "^http(s)?://(www\.)?newegg\.com/Product/" <<<"${url}"; then
+		alreadyMatched="1"
+		getTitle;
+		pageSrc="$(curl -A "${nick}" -m 5 -k -s -L "${url}")"
+		itemPrice="$(fgrep -m 1 "product_sale_price" <<<"${pageSrc}")"
 		itemPrice="${itemPrice#*\'}"
 		itemPrice="${itemPrice%*\'*}"
-		if [ "$(fgrep -c "Discontinued" <<<"$itemPrice")" -eq "1" ]; then
+		if [ "$(fgrep -c "Discontinued" <<<"${itemPrice}")" -eq "1" ]; then
 			pageTitle="${pageTitle} [Item Discontinued]"
-		elif [ -n "$itemPrice" ]; then
+		elif [ -n "${itemPrice}" ]; then
 			pageTitle="${pageTitle} [Price: \$${itemPrice}]"
 		fi
-	elif egrep -i -q "^http(s)?://(www\.|smile\.)?amazon\.com/(g|d)p/" <<<"${pageDest}"; then
-		pageSrc="$(curl -A "$nick" -m 5 -k -s -L "${url}")"
+	elif egrep -i -q "^http(s)?://(www\.|smile\.)?amazon\.com/(.*/)?(g|d)p/" <<<"${url}"; then
+		alreadyMatched="1"
+		getTitle;
+		pageSrc="$(curl -A "${nick}" -m 5 -k -s -L "${url}")"
 		itemAvailable="$(fgrep -ci "Currently unavailable" <<<"${pageSrc}")"
 		if [ "${itemAvailable}" -eq "0" ]; then
 			itemPrice="$(egrep -o -m 1 "\\\$([0-9]|,)+\.[0-9][0-9]" <<<"${pageSrc}")"
@@ -143,17 +147,73 @@ if [ "$httpResponseCode" -eq "200" ]; then
 			pageTitle="${pageTitle} [Item not currently available]"
 		fi
 	fi
-	if [ "$locationIsTrue" -eq "0" ] && [ -n "$pageTitle" ]; then
-		echo "[URL] $pageTitle"
-	elif [ "$locationIsTrue" -ne "0" ] && [ -n "$pageTitle" ]; then
-		pageTitle="$pageTitle - Destination: $pageDest"
-		echo "[URL] $pageTitle"
+	
+	if [ "${httpResponseCode}" -eq "200" ]; then
+		contentType="$(egrep -i "Content[ |-]Type:" <<<"${contentHeader}" | tail -n 1)"
+		if fgrep -q "text/html" <<<"${contentType}"; then
+			getTitle;
+		elif [ "${alreadyMatched}" -eq "0" ]; then
+			contentMatches="$(fgrep -c "Content-Length" <<<"${contentHeader}")"
+			if [ "${contentMatches}" -eq "0" ]; then
+				pageTitle="${contentType} (Unable to determine size)"
+			elif [ "${contentMatches}" -eq "1" ]; then
+				contentLength="$(fgrep -i "Content-Length" <<<"${contentHeader}" | awk '{print $2}')"
+				pageSize="$(awk '{ split( "B KB MB GB TB PB EB ZB YB" , v ); s=1; while( $1>1024 ){ $1/=1024; s++ } print int($1), v[s] }' <<<"${contentLength}")"
+				pageTitle="${contentType} (${pageSize})"
+			else
+				grepNum="1"
+				contentLength="$(fgrep -i "Content-Length" -m ${grepNum} <<<"${contentHeader}" | awk '{print $2}')"
+				while [ "${contentLength}" -eq "0" ] && [ "${grepNum}" -ne "${contentMatches}" ]; do
+					grepNum="$(( ${grepNum} + 1 ))"
+					contentLength="$(fgrep -i "Content-Length" -m ${grepNum} <<<"${contentHeader}" | tail -n 1 | awk '{print $2}')"
+				done
+				if [ "${contentLength}" -eq "0" ]; then
+					pageTitle="${contentType} (Unable to determine size)"
+				else
+					pageSize="$(awk '{ split( "B KB MB GB TB PB EB ZB YB" , v ); s=1; while( $1>1024 ){ $1/=1024; s++ } print int($1), v[s] }' <<<"${contentLength}")"
+					pageTitle="${contentType} (${pageSize})"
+				fi
+			fi
+		fi
+		if [ -z "${pageDest}" ]; then
+			pageDest="[Unable to determine URL destination]"
+		fi
+		if [ "${locationIsTrue}" -ne "0" ] && [ -n "${pageTitle}" ]; then
+			pageTitle="${pageTitle} - Destination: ${pageDest}"
+		fi
+	else
+		if [ -n "${httpResponseCode}" ]; then
+			pageTitle="Returned ${httpResponseCode}"
+		fi
 	fi
-else
-	if [ -n "$httpResponseCode" ]; then
-		echo "[URL] Returned $httpResponseCode"
-	fi
-fi
+}
 
+egrep -i -o "http(s?):\/\/[^ \"\(\)\<\>]*" <<<"${msgArr[@]}" | while read url; do
+	if egrep -i -q "^http(s)?://((www\.)?youtube\.com/watch\?v\=|youtu.be/)" <<<"${url}"; then
+		ytVid;
+	elif egrep -i -q "^http(s)?://(www\.)?newegg\.com/Product/" <<<"${url}"; then
+		getTitle;
+		pageSrc="$(curl -A "${nick}" -m 5 -k -s -L "${url}")"
+		itemPrice="$(fgrep -m 1 "product_sale_price" <<<"${pageSrc}")"
+		itemPrice="${itemPrice#*\'}"
+		itemPrice="${itemPrice%*\'*}"
+		if [ "$(fgrep -c "Discontinued" <<<"${itemPrice}")" -eq "1" ]; then
+			pageTitle="${pageTitle} [Item Discontinued]"
+		elif [ -n "${itemPrice}" ]; then
+			pageTitle="${pageTitle} [Price: \$${itemPrice}]"
+		fi
+	elif egrep -i -q "^http(s)?://(www\.|smile\.)?amazon\.com/(.*/)?(g|d)p/" <<<"${url}"; then
+		getTitle;
+		pageSrc="$(curl -A "${nick}" -m 5 -k -s -L "${url}")"
+		itemAvailable="$(fgrep -ci "Currently unavailable" <<<"${pageSrc}")"
+		if [ "${itemAvailable}" -eq "0" ]; then
+			itemPrice="$(egrep -o -m 1 "\\\$([0-9]|,)+\.[0-9][0-9]" <<<"${pageSrc}")"
+			pageTitle="${pageTitle} [Price: ${itemPrice}]"
+		else
+			pageTitle="${pageTitle} [Item not currently available]"
+		fi
+	else
+		otherSite;
+	fi
+	echo "[URL] ${pageTitle}"
 done
-exit 0
