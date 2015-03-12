@@ -1,13 +1,6 @@
 #!/usr/bin/env bash
 
-# Currently this is just a rip off of the Google search module with site:wikipedia.org added
-# Eventually I'll actually use the wikipedia API, once I figure it out
-
 ## Config
-# Google API key
-googleApi=""
-# Custom Search Engine ID
-googleCid=""
 
 ## Source
 
@@ -39,22 +32,13 @@ modFormCase=""
 modHelp="Searches wikipedia for a query and returns the first result"
 modFlag="m"
 msg="$@"
-if [ -z "$(echo "$msg" | awk '{print $5}')" ]; then
+if [ -z "$(awk '{print $5}' <<<"${msg}")" ]; then
 	echo "This command requires a parameter"
 else
 	searchTerm="$(read -r one two thee four rest <<<"$msg"; echo "$rest")"
-	searchResult="$(curl -s --get --data-urlencode "q=${searchTerm} site:en.wikipedia.org" --data-urlencode "cx=${googleCid}" "https://www.googleapis.com/customsearch/v1?key=${googleApi}&num=1")"
-	results="$(grep -m 1 "totalResults" <<<"$searchResult")"
-	results="${results#*\": \"}"
-	results="${results%%\"*}"
-	if [ "$results" -ne "0" ]; then
-		link="$(grep "\"link\"" <<<"$searchResult" | tail -n 1)"
-		link="${link#*\": \"}"
-		link="${link%%\"*}"
-		title="$(grep "\"title\"" <<<"$searchResult" | tail -n 1)"
-		title="${title#*\": \"}"
-		title="${title%%\"*}"
-		echo "${link} - ${title}"
+	result="$(curl -s --data-urlencode "titles=${searchTerm}" "http://en.wikipedia.org/w/api.php?action=query&prop=extracts&format=json&exsentences=10&rawcontinue=&")"
+	if [ -n "$result" ]; then
+		echo "$result"
 	else
 		echo "No results founds"
 	fi
