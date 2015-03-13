@@ -8,5 +8,4 @@ To do:
 * Add documentation of how factoids work
 * Add a way to modify/delete one reply value of a factoid with multiple reply values, rather than having to delete the entire factoid
 * Add failed login notifications
-* Add "decide/choose" module
 * Add a setting to require being logged in to interact with the bot at all
