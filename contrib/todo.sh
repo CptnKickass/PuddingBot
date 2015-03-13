@@ -8,7 +8,7 @@
 # Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
-	deps=()
+	deps=("git")
 	if [ "${#deps[@]}" -ne "0" ]; then
 		for i in ${deps[@]}; do
 			if ! command -v ${i} > /dev/null 2>&1; then
