@@ -1,5 +1,6 @@
 # Runfiles that don't need to be pushed
 *.debug
+contrib/grodt.sh
 users/*.conf
 var/.mods
 var/.conf
