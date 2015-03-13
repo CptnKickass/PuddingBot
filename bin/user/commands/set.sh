@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
-if [ "$loggedIn" -eq "1" ]; then
+if [ "${loggedIn}" -eq "1" ]; then
 	loggedInUser="$(fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $1}')"
 	arg1="${msgArr[4]}"
 	case "${arg1,,}" in
 		password)
 			lPass="${msgArr[5]}"
-			lHash="$(echo -n "$lPass" | sha256sum | awk '{print $1}')"
+			lHash="$(echo -n "${lPass}" | sha256sum | awk '{print $1}')"
 			if [ -z "${lPass}" ]; then
 				echo "You must provide a password. Format is: set PASSWORD"
 			else
@@ -20,7 +20,7 @@ if [ "$loggedIn" -eq "1" ]; then
 			lClones="${msgArr[5]}"
 			if [ -z "${lClones}" ]; then
 				echo "You must provide a number of clones. Format is: set CLONES N (Where \"N\" is your desired number of alloted clones)"
-			elif [[ $lClones =~ $re ]]; then
+			elif [[ ${lClones} =~ ${re} ]]; then
 				sed -i "s/clones=\".*\"/clones=\"${lHash}\"/" "${userDir}/${loggedInUser}.conf"
 				echo "Successfully changed password to \"${lPass}\"."
 			else
@@ -80,7 +80,7 @@ if [ "$loggedIn" -eq "1" ]; then
 				;;
 				add)
 					metaToAdd="${msgArr[6]}"
-					if [ -z "$metaToAdd" ]; then
+					if [ -z "${metaToAdd}" ]; then
 						echo "Unable to add meta; no data input.)"
 					else
 						echo "meta=\"${metaToAdd}\"" >> "${userDir}/${loggedInUser}.conf"

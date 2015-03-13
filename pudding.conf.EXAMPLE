@@ -43,7 +43,7 @@ operModes=""
 # last autoconnect command run, after NickServ ID, opering up, joining
 # channels, etc. Because this can be anything, you need to enter the
 # actual raw IRC command. Use newlines (Enter) for multiple commands.
-# Use $nick for the bot's nickname
+# Use ${nick} for the bot's nickname
 # Leave blank if you don't need this.
 lastCom=""
 # Where should we keep the bot data files? The base directory needs to exist

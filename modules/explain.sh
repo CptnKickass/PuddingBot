@@ -15,7 +15,7 @@ if [[ "$1" == "--dep-check" ]]; then
 				depFail="1"
 			fi
 		done
-		if [ "$depFail" -eq "1" ]; then
+		if [ "${depFail}" -eq "1" ]; then
 			exit 1
 		else
 			echo "ok"
@@ -37,16 +37,16 @@ target="${msgArr[5]}"
 # :N!U@H PRIVMSG ${target} :!explain <to> ${target} <that> ${explain}
 explain="${msgArr[@]:7}"
 re="I'm"
-explain="${explain//you\'re/$re}"
+explain="${explain//you\'re/${re}}"
 re="I"
-explain="${explain//you/$re}"
+explain="${explain//you/${re}}"
 re="you're"
-explain="${explain//she\'s/$re}"
-explain="${explain//he\'s/$re}"
-explain="${explain//they\'re/$re}"
-if [ -z "$target" ]; then
+explain="${explain//she\'s/${re}}"
+explain="${explain//he\'s/${re}}"
+explain="${explain//they\'re/${re}}"
+if [ -z "${target}" ]; then
 	echo "This command requires a target"
-elif [ -z "$explain" ]; then
+elif [ -z "${explain}" ]; then
 	echo "You didn't tell me what to explain"
 	echo "(Format is: !explain to SnoFox that he's a faggot)"
 else

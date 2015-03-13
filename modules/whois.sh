@@ -16,7 +16,7 @@ if [[ "$1" == "--dep-check" ]]; then
 				depFail="1"
 			fi
 		done
-		if [ "$depFail" -eq "1" ]; then
+		if [ "${depFail}" -eq "1" ]; then
 			exit 1
 		else
 			echo "ok"
@@ -37,7 +37,7 @@ if [ -z "${msgArr[4]}" ]; then
 else
 	domain="${msgArr[4]}"
 	whois="$(whois "${domain}" | egrep -c "^No match|^NOT FOUND|^Not fo|AVAILABLE|^No Data Fou|has not been regi|No entri")"
-	if [ "$whois" -eq "0" ]; then 
+	if [ "${whois}" -eq "0" ]; then 
 		echo "${domain} IS registered (Domain not available)"
 	else
 		echo "${domain} is NOT registered (Domain available)"

@@ -2,7 +2,7 @@
 
 ## Config
 # YouTube v3 API
-ytApi="AIzaSyASqcwKbCMQOt07L7druptXDcbXNGZjqY4"
+apiKey=""
 # None
 
 ## Source
@@ -46,7 +46,7 @@ ytVid () {
 		vidId="${url#*watch?v=}"
 		vidId="${vidId:0:11}"
 	fi
-	apiUrl="https://www.googleapis.com/youtube/v3/videos?id=${vidId}&key=${ytApi}&part=snippet,contentDetails"
+	apiUrl="https://www.googleapis.com/youtube/v3/videos?id=${vidId}&key=${apiKey}&part=snippet,contentDetails"
 	vidInfo="$(curl -A "${nick}" -m 5 -k -s -L "${apiUrl}")"
 	vidTitle="$(fgrep -m 1 "\"title\": \"" <<<"${vidInfo}")"
 	vidTitle="${vidTitle%\",*}"

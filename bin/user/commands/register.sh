@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-if [ "$isPm" -eq "1" ]; then
+if [ "${isPm}" -eq "1" ]; then
 	loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
-	if [ "$loggedIn" -eq "0" ]; then
+	if [ "${loggedIn}" -eq "0" ]; then
 		lUser="${msgArr[4]}"
 		lPass="${msgArr[5]}"
-		lHash="$(echo -n "$lPass" | sha256sum | awk '{print $1}')"
+		lHash="$(echo -n "${lPass}" | sha256sum | awk '{print $1}')"
 		if [ -z "${lUser}" ]; then
 			echo "You must provide a username. Format is: \"register USERNAME PASSWORD\" ***Note that this bot is in debug mode. Although your password will be stored as a sha256 hash in the user files, the raw input/output is being logged for debug purposes. Do not use a password you use anywher else!***"
 		elif [ -z "${lPass}" ]; then

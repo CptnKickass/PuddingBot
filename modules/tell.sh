@@ -15,7 +15,7 @@ if [[ "$1" == "--dep-check" ]]; then
 				depFail="1"
 			fi
 		done
-		if [ "$depFail" -eq "1" ]; then
+		if [ "${depFail}" -eq "1" ]; then
 			exit 1
 		else
 			echo "ok"
@@ -54,16 +54,16 @@ for x in "${explain[@]}"; do
 		x="${x//I/you}"
 		explain[${n}]="${x}"
 	elif [[ "${x,,}" == "i'm" ]]; then
-		x="${x//I\'m/$re}"
+		x="${x//I\'m/${re}}"
 		explain[${n}]="${x}"
 	elif [[ "${x,,}" == "she's" ]]; then
-		x="${x//she\'s/$re}"
+		x="${x//she\'s/${re}}"
 		explain[${n}]="${x}"
 	elif [[ "${x,,}" == "he's" ]]; then
-		x="${x//he\'s/$re}"
+		x="${x//he\'s/${re}}"
 		explain[${n}]="${x}"
 	elif [[ "${x,,}" == "they're" ]]; then
-		x="${x//they\'re/$re}"
+		x="${x//they\'re/${re}}"
 		explain[${n}]="${x}"
 	elif [[ "${x,,}" == "him" ]]; then
 		x="${x//him/you}"

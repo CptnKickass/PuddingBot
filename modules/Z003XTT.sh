@@ -16,7 +16,7 @@ if [[ "$1" == "--dep-check" ]]; then
 				depFail="1"
 			fi
 		done
-		if [ "$depFail" -eq "1" ]; then
+		if [ "${depFail}" -eq "1" ]; then
 			exit 1
 		else
 			echo "ok"

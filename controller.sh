@@ -173,9 +173,9 @@ else
 		exit 255
 	fi
 	# If output datafile still exists from last time, remove it
-	if [ -e "$output" ]; then
+	if [ -e "${output}" ]; then
 		echo "Removing old datafiles (Improper shutdown?)"
-		#rm -f "$output"
+		#rm -f "${output}"
 		mv "${output}" "${output} - $(date)"
 		if [ -e "var/.admins" ]; then
 			rm "var/.admins"
@@ -195,7 +195,7 @@ else
 	echo "Checking config for sanity"
 	checkSanity;
 
-	if [ "$badConf" -eq "1" ]; then
+	if [ "${badConf}" -eq "1" ]; then
 		echo "Please fix above config options prior to start bot."
 		exit 255
 	else
@@ -203,14 +203,14 @@ else
 		echo "Loading variables into controller"
 		source ./var/.conf
 
-		# If $dataDir does not exist, create it
-		if [ ! -d "$dataDir" ]; then
+		# If ${dataDir} does not exist, create it
+		if [ ! -d "${dataDir}" ]; then
 			echo "Creating data directory"
-			mkdir "$dataDir"
+			mkdir "${dataDir}"
 		fi
 
 		# If logging is enabled
-		if [ "$logIn" -eq "1" ]; then
+		if [ "${logIn}" -eq "1" ]; then
 			echo "Logging enabled"
 			# If logging directory does not exist, create it
 			if [ ! -d "${dataDir}/logs" ]; then
@@ -228,7 +228,7 @@ else
 			if [ -e "modules/${mod}" ]; then
 				# File exists. Check that its dependencies are met.
 				./modules/${mod} --dep-check 2>&1 | head -n 1 | while read line; do
-					if [[ "$line" == "ok" ]]; then
+					if [[ "${line}" == "ok" ]]; then
 						cp "modules/${mod}" "var/.mods/${mod}"
 						echo -e "Loaded module:  ${green}${mod}${reset}"
 					else
@@ -238,7 +238,7 @@ else
 			elif [ -e "contrib/${mod}" ]; then
 				# File exists. Check that its dependencies are met.
 				./contrib/${mod} --dep-check 2>&1 | head -n 1 | while read line; do
-					if [[ "$line" == "ok" ]]; then
+					if [[ "${line}" == "ok" ]]; then
 						cp "contrib/${mod}" "var/.mods/${mod}"
 						echo -e "Loaded module:  ${green}${mod}${reset}"
 					else
@@ -270,7 +270,7 @@ else
 	echo "Checking config for sanity"
 	checkSanity;
 
-	if [ "$badConf" -eq "1" ]; then
+	if [ "${badConf}" -eq "1" ]; then
 		echo "Please fix above config options prior to start bot."
 		return 1
 	else
@@ -278,21 +278,21 @@ else
 		echo "Loading variables into controller"
 		source ./var/.conf
 
-		# If $dataDir does not exist, create it
-		if [ ! -d "$dataDir" ]; then
+		# If ${dataDir} does not exist, create it
+		if [ ! -d "${dataDir}" ]; then
 			echo "Creating data directory"
-			mkdir "$dataDir"
+			mkdir "${dataDir}"
 		fi
 
 		# If output datafile still exists from last time, remove it
-		if [ -e "$output" ]; then
+		if [ -e "${output}" ]; then
 			echo "Removing old datafile (Improper shutdown?)"
 			mv "${output}" "${output} - $(date)"
-			#rm -f "$output"
+			#rm -f "${output}"
 		fi
 
 		# If logging is enabled
-		if [ "$logIn" -eq "1" ]; then
+		if [ "${logIn}" -eq "1" ]; then
 			echo "Logging enabled"
 			# If logging directory does not exist, create it
 			if [ ! -d "${dataDir}/logs" ]; then
@@ -313,7 +313,7 @@ else
 			else
 				# File exists. Check that its dependencies are met.
 				./modules/${mod} --dep-check 2>&1 | head -n 1 | while read line; do
-					if [[ "$line" == "ok" ]]; then
+					if [[ "${line}" == "ok" ]]; then
 						cp "modules/${mod}" "var/.mods/${mod}"
 						echo -e "Loaded module:  ${green}${mod}${reset}"
 					else
@@ -333,7 +333,7 @@ stopBot () {
 source var/.conf
 if [ -e "var/bot.pid" ]; then
 	echo "Sending QUIT to IRCd"
-	echo "QUIT :Killed from console" >> $output
+	echo "QUIT :Killed from console" >> ${output}
 	echo "Killing bot PID ($(< var/bot.pid))"
 	kill $(<var/bot.pid)
 	echo "NOTICE! Due to a known bug of unknown origin, the \"tail -f\" PID cannot be killed by this controller. Please kill it manually."
@@ -346,16 +346,16 @@ forceStopBot () {
 source var/.conf
 if [ -e "var/bot.pid" ]; then
 	echo "Sending QUIT to IRCd"
-	echo "QUIT :Killed from console" >> $output
+	echo "QUIT :Killed from console" >> ${output}
 	echo "Attempting to kill bot PID ($(< var/bot.pid)) nicely"
 	kill < var/bot.pid
 	if [ -e "var/bot.pid" ]; then
 		echo "Quit unsuccessful. Killing bot by all means possible (SIGKILL)"
 		kill -9 $(<var/bot.pid)
 	fi
-	if [ -e "$output" ]; then
+	if [ -e "${output}" ]; then
 		echo "Removing datafile"
-		#rm -f "$output"
+		#rm -f "${output}"
 		mv "${output}" "${output} $(date)"
 	fi
 	if [ -e "var/.conf" ]; then
@@ -398,9 +398,9 @@ if [ -n "${1}" ]; then
 		--from-irc-restart)
 			sleep 1
 			numTries="0"
-			while [ "$numTries" -lt "10" ]; do
+			while [ "${numTries}" -lt "10" ]; do
 				if [ -e "var/bot.pid" ]; then
-					numTries="$(( $numTries + 1 ))"
+					numTries="$(( ${numTries} + 1 ))"
 				else
 					startBot;
 					exit 0
@@ -477,7 +477,7 @@ while true; do
 	echo "Please choose a number:"
 	read -p "> " opt
 	echo ""
-	case "$opt" in
+	case "${opt}" in
 		0)
 			echo "Goodbye."
 			exit 0

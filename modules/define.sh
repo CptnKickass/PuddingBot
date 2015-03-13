@@ -5,9 +5,9 @@
 # API available at: http://www.definitions.net/api.php
 
 # Definitions.net API user ID
-defUid=""
+apiKey=""
 # Definitions.net Developer Token ID
-defTid=""
+apiKeyToken=""
 
 ## Source
 
@@ -22,7 +22,7 @@ if [[ "$1" == "--dep-check" ]]; then
 				depFail="1"
 			fi
 		done
-		if [ "$depFail" -eq "1" ]; then
+		if [ "${depFail}" -eq "1" ]; then
 			exit 1
 		else
 			echo "ok"
@@ -38,19 +38,17 @@ modForm=("def" "define")
 modFormCase=""
 modHelp="Uses definitions.net API to define things"
 modFlag="m"
-msg="$@"
-if [ -z "$defUid" ]; then
+if [ -z "${apiKey}" ]; then
 	echo "A definitions.net API user ID is required"
-elif [ -z "$defTid" ]; then
+elif [ -z "${apiKeyToken}" ]; then
 	echo "A definitions.net developer token ID is required"
-elif [ -z "$(awk '{print $5}' <<<"${msg}")" ]; then
+elif [ -z "${msgArr[4]}" ]; then
 	echo "This command requires a parameter"
 else
-	searchTerm="$(read -r one two thee four rest <<<"$msg"; echo "$rest")"
-	searchResult="$(curl -m 5 -s --get --data-urlencode "word=${searchTerm}" "http://www.stands4.com/services/v2/defs.php?uid=${defUid}&tokenid=${defTid}")"
-	returnCode="$(fgrep -c "<error>" <<<"$searchResult")"
-	if [ "$returnCode" -eq "0" ]; then
-		result="$(fgrep "<result>" <<<"$searchResult")"
+	searchResult="$(curl -m 5 -s --get --data-urlencode "word=${msgArr[@]:4}" "http://www.stands4.com/services/v2/defs.php?uid=${apiKey}&tokenid=${apiKeyToken}")"
+	returnCode="$(fgrep -c "<error>" <<<"${searchResult}")"
+	if [ "${returnCode}" -eq "0" ]; then
+		result="$(fgrep "<result>" <<<"${searchResult}")"
 		result="${result#*<result>}"
 		result="${result%%</result>*}"
 		# At this point, ${result} is broken down to:
@@ -63,12 +61,12 @@ else
 		ex="${ex%%</example>*}"
 		pos="${result#*<partofspeech>}"
 		pos="${pos%%</partofspeech>*}"
-		if [ -n "$def" ]; then
-			if [ -n "$pos" ] && [ -n "$example" ]; then
+		if [ -n "${def}" ]; then
+			if [ -n "${pos}" ] && [ -n "${example}" ]; then
 				echo "${term} (${pos}) - ${def} - Example: ${ex}"
-			elif [ -n "$pos" ] && [ -z "$example" ]; then
+			elif [ -n "${pos}" ] && [ -z "${example}" ]; then
 				echo "${term} (${pos}) - ${def}"
-			elif [ -z "$pos" ] && [ -n "$example" ]; then
+			elif [ -z "${pos}" ] && [ -n "${example}" ]; then
 				echo "${term} - ${def} - Example: ${ex}"
 			else
 				echo "${term} - ${def}"
@@ -77,7 +75,7 @@ else
 			echo "No definition found"
 		fi
 	else
-		errorMessage="$(fgrep "<errorMessage>" <<<"$searchResult")"
+		errorMessage="$(fgrep "<errorMessage>" <<<"${searchResult}")"
 		errorMessage="${errorMessage#*<errorMessage>}"
 		errorMessage="${errorMessage%</errorMessage>*}"
 		echo "Unable to obtain conversion (Definitions.net returned error code ${returnCode}, and error message ${errorMessage})"

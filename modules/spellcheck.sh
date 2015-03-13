@@ -16,7 +16,7 @@ if [[ "$1" == "--dep-check" ]]; then
 				depFail="1"
 			fi
 		done
-		if [ "$depFail" -eq "1" ]; then
+		if [ "${depFail}" -eq "1" ]; then
 			exit 1
 		else
 			echo "ok"
@@ -38,8 +38,7 @@ if [ -z "${msgArr[4]}" ]; then
 elif [ -n "${msgArr[4]}" ] && [ -n "${msgArr[5]}" ]; then
 	echo "Too many parameters for command"
 else
-	spellResult="$(awk '{print $5}' <<<"${msg}" | ispell | head -n 2 | tail -n 1)"
-	spellResultParsed="$(read -r one rest <<<"$spellResult"; echo "$rest")"
-	echo "${spellResultParsed}"
+	spellResult=($(ispell <<<"${msgArr[4]}" | head -n 2 | tail -n 1))
+	echo "${spellResult[@]:1}"
 fi
 exit 0

@@ -2,7 +2,7 @@
 
 ## Config
 # goo.gl API key
-googleApi=""
+apiKey=""
 
 ## Source
 if [ -e "var/.conf" ]; then
@@ -22,7 +22,7 @@ if [[ "$1" == "--dep-check" ]]; then
 				depFail="1"
 			fi
 		done
-		if [ "$depFail" -eq "1" ]; then
+		if [ "${depFail}" -eq "1" ]; then
 			exit 1
 		else
 			echo "ok"
@@ -39,23 +39,22 @@ modForm=("short" "shorten")
 modFormCase=""
 modHelp="Shortens a URL via Google's URL shortener service"
 modFlag="m"
-msg="$@"
-if [ -z "${googleApi}" ]; then
+if [ -z "${apiKey}" ]; then
 	echo "A Google API key is required"
-elif [ -z "$(awk '{print $5}' <<<"${msg}")" ]; then
+elif [ -z "${msgArr[4]}" ]; then
 	shortItem="$(fgrep "PRIVMSG" "${input}" | egrep -o "http(s?):\/\/[^ \"\(\)\<\>]*" | tail -n 1)"
-	if [ -n "$shortItem" ]; then
+	if [ -n "${shortItem}" ]; then
 		echo "Shortening most recently spoken URL (${shortItem})"
-		shortUrl="$(curl -A "$nick" -m 5 -k -s -L -H "Content-Type: application/json" -d "{\"longUrl\": \"${shortItem}\"}" "https://www.googleapis.com/urlshortener/v1/url?key=${googleApi}" | fgrep "\"id\"" | egrep -o "http(s)?://goo.gl/[A-Z|a-z|0-9]+")"
+		shortUrl="$(curl -A "${nick}" -m 5 -k -s -L -H "Content-Type: application/json" -d "{\"longUrl\": \"${shortItem}\"}" "https://www.googleapis.com/urlshortener/v1/url?key=${apiKey}" | fgrep "\"id\"" | egrep -o "http(s)?://goo.gl/[A-Z|a-z|0-9]+")"
 		echo "Shortened URL: ${shortUrl}"
 	else
 		echo "No URL to shorten provided, and no recently spoken URL's in my memory."
 	fi
-elif ! awk '{print $5}' <<<"${msg}" | egrep -q "http(s?):\/\/[^ \"\(\)\<\>]*"; then
+elif ! egrep -q "http(s?):\/\/[^ \"\(\)\<\>]*" <<<"${msgArr[4]}"; then
 	echo "This does not appear to be a valid URL"
 else
-	shortItem="$(awk '{print $5}' <<<"${msg}")"
-	shortUrl="$(curl -A "$nick" -m 5 -k -s -L -H "Content-Type: application/json" -d "{\"longUrl\": \"${shortItem}\"}" "https://www.googleapis.com/urlshortener/v1/url?key=${googleApi}" | fgrep "\"id\"" | egrep -o "http(s)?://goo.gl/[A-Z|a-z|0-9]+")"
+	shortItem="${msgArr[4]}"
+	shortUrl="$(curl -A "${nick}" -m 5 -k -s -L -H "Content-Type: application/json" -d "{\"longUrl\": \"${shortItem}\"}" "https://www.googleapis.com/urlshortener/v1/url?key=${apiKey}" | fgrep "\"id\"" | egrep -o "http(s)?://goo.gl/[A-Z|a-z|0-9]+")"
 	echo "Shortened URL: ${shortUrl}"
 fi
 exit 0

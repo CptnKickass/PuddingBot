@@ -18,7 +18,7 @@ if [[ "$1" == "--dep-check" ]]; then
 				depFail="1"
 			fi
 		done
-		if [ "$depFail" -eq "1" ]; then
+		if [ "${depFail}" -eq "1" ]; then
 			exit 1
 		else
 			echo "ok"
@@ -33,7 +33,7 @@ fi
 if [ -e "var/.conf" ]; then
 	source var/.conf
 else
-	echo -e "Unable to locate \"${red}\$input${reset}\" file! (Is bot running?) Exiting."
+	echo -e "Unable to locate \"${red}\${input}${reset}\" file! (Is bot running?) Exiting."
 	exit 1
 fi
 
@@ -62,8 +62,8 @@ else
 		twitchUser="${twitchUser%\"}"
 		puddingUserFile="${match%%:meta=\"twitchuser=*}"
 		apiCall="$(curl -s "https://api.twitch.tv/kraken/streams/${twitchUser}")"
-		if [ "$(fgrep -c "\"stream\":null" <<<"$apiCall")" -ne "1" ]; then
-			numOnline="$(( $numOnline + 1 ))"
+		if [ "$(fgrep -c "\"stream\":null" <<<"${apiCall}")" -ne "1" ]; then
+			numOnline="$(( ${numOnline} + 1 ))"
 			streamContent="${apiCall#*\"game\":\"}"
 			streamContent="${streamContent%%\"*}"
 			puddingUser="$(egrep -v "^#" "${puddingUserFile}" | fgrep "user=\"")"
@@ -73,7 +73,7 @@ else
 		fi
 	done
 fi
-if [ "$numOnline" -eq "0" ]; then
+if [ "${numOnline}" -eq "0" ]; then
 	echo "No registered Twitch.tv users online."
 fi
 

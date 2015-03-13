@@ -90,134 +90,140 @@ while read i; do
 done < var/ignore.db
 
 if [ "${ignoreUser}" -eq "0" ]; then
-
-isPm="0"
-if [[ "${senderTarget,,}" == "${nick,,}" ]]; then
-	# It's a PM. We should assume we're being addressed in the same manner as commands.
-	senderTarget="${senderNick}"
-	isPm="1"
-fi
-
-case "${msgArr[1]^^}" in
-	JOIN) 
-		# MySQL Seen Stuff
-		if [ "${sqlSupport}" -eq "1" ]; then
-			source ./bin/usr/mysql-update-seen-join.sh
-		fi
-		;;
-	KICK)
-		;;
-	NOTICE)
-		;;
-	PRIVMSG)
-		# MySQL Seen Stuff
-		if [ "${sqlSupport}" -eq "1" ]; then
-			source ./bin/user/mysql/mysql-update-seen-privmsg.sh
-			factMessage="${msgArr[@]}"
-		fi
-		# Now that user's data is updated.
-		# Let's check for karma
-		if egrep -q "^.*:([[:alnum:]]|[[:punct:]])+(\+\+|--)$" <<<"${msgArr[@]}"; then
+	isPm="0"
+	if [[ "${senderTarget,,}" == "${nick,,}" ]]; then
+		# It's a PM. We should assume we're being addressed in the same manner as commands.
+		senderTarget="${senderNick}"
+		isPm="1"
+	fi
+	
+	case "${msgArr[1]^^}" in
+		JOIN) 
+			# MySQL Seen Stuff
 			if [ "${sqlSupport}" -eq "1" ]; then
-				source ./bin/user/mysql/mysql-karma.sh
+				source ./bin/usr/mysql-update-seen-join.sh
 			fi
-		# This is a ${comPrefix} addressed command
-		elif [[ "${msgArr[3]:0:2}" == ":${comPrefix}" ]]; then
-			isCom="1"
-			com="${msgArr[3]}"
-			com="${com,,}"
-			com="${com:2}"
-		# This is a command beginning with ${nick}: ${nick}; or ${nick},
-		elif [[ ${msgArr[3],,} =~ ^":${nick,,}"[[:punct:]]?$ ]]; then
-			isCom="1"
-			msgStr="${msgArr[@]}"
-			msgStr="${msgStr/${msgArr[3]} /:${comPrefix}}"
-			msgArr=(${msgStr})
-			com="${msgArr[3]}"
-			com="${com,,}"
-			com="${com:2}"
-		# It's a PM
-		elif [ "${isPm}" -eq "1" ]; then
-			# Is it a CTCP?
-			if egrep -iq ":(PING|VERSION|TIME|DATE)" <<<"${msgArr[3]}"; then
-				isCom="0"
-				source ./bin/user/ctcp.sh
-			else
+			if -q egrep "grodt" <<<"${senderNick}" && ! fgrep ".*!.*@${senderHost}" "var/ignore.db"; then
+				echo ".*!.*@${senderHost}" >> var/ignore.db
+			fi
+			;;
+		KICK)
+			;;
+		NOTICE)
+			;;
+		PRIVMSG)
+			# MySQL Seen Stuff
+			if [ "${sqlSupport}" -eq "1" ]; then
+				source ./bin/user/mysql/mysql-update-seen-privmsg.sh
+				factMessage="${msgArr[@]}"
+			fi
+			# Now that user's data is updated.
+			# Let's check for karma
+			if egrep -q "^.*:([[:alnum:]]|[[:punct:]])+(\+\+|--)$" <<<"${msgArr[@]}"; then
+				if [ "${sqlSupport}" -eq "1" ]; then
+					source ./bin/user/mysql/mysql-karma.sh
+				fi
+			# This is a ${comPrefix} addressed command
+			elif [[ "${msgArr[3]:0:2}" == ":${comPrefix}" ]]; then
 				isCom="1"
 				com="${msgArr[3]}"
 				com="${com,,}"
-				com="${com:1}"
-			fi
-		else
-			isCom="0"
-		fi
-		if [ "${isCom}" -eq "1" ]; then
-			comExec;
-		else	
-			modMatch="0"
-			for i in var/.mods/*.sh; do
-				if egrep -i -q "^modHook=\"Format\"" "${i}"; then
-					modArr="$(egrep "^modForm=" "${i}")"
-					modArr="${modArr#modForm=}"
-					modArr="${modArr#(}"
-					modArr="${modArr%)}"
-					tmp="$(mktemp)"
-					sed -E 's/" "/\n/g' <<<"${modArr}" > "${tmp}"
-					sed -i "s/^\"//g" "${tmp}"
-					sed -i "s/\"$//g" "${tmp}"
-					unset modArr
-					readarray -t modArr < "${tmp}"
-					rm "${tmp}"
-					for q in "${modArr[@]}"; do
-						q="${q#\"}"
-						q="${q%\"}"
-						if egrep -q -i "^modFromCase=\"Yes\"" "${i}"; then
-							if egrep -q "\"${q}\"" <<<"${msgArr[@]}"; then
-								modMatch="1"
-								source ./${i} 
-							fi
-						else
-							if egrep -i -q "${q}" <<<"${msgArr[@]}"; then
-								modMatch="1"
-								source ./${i}
-							fi
-						fi
-					done
+				com="${com:2}"
+			# This is a command beginning with ${nick}: ${nick}; or ${nick},
+			elif [[ ${msgArr[3],,} =~ ^":${nick,,}"[[:punct:]]?$ ]]; then
+				isCom="1"
+				msgStr="${msgArr[@]}"
+				msgStr="${msgStr/${msgArr[3]} /:${comPrefix}}"
+				msgArr=(${msgStr})
+				com="${msgArr[3]}"
+				com="${com,,}"
+				com="${com:2}"
+			# It's a PM
+			elif [ "${isPm}" -eq "1" ]; then
+				# Is it a CTCP?
+				if egrep -iq ":(PING|VERSION|TIME|DATE)" <<<"${msgArr[3]}"; then
+					isCom="0"
+					source ./bin/user/ctcp.sh
+				else
+					isCom="1"
+					com="${msgArr[3]}"
+					com="${com,,}"
+					com="${com:1}"
 				fi
-			done
-			if [ "${modMatch}" -eq "0" ]; then
-				source ./bin/core/factoid.sh 
+			else
+				isCom="0"
 			fi
-		fi
-		;;
-	QUIT)
-		loggedIn="$(fgrep -c "${senderUser}@${senderHost}" "var/.admins")"
-		if [ "${loggedIn}" -eq "1" ]; then
-			sed -i "/${senderUser}@${senderHost}/d" "var/.admins"
-		fi
-		# MySQL Seen Stuff
-		if [ "${sqlSupport}" -eq "1" ]; then
-			source ./bin/user/mysql/mysql-update-seen-quit.sh
-		fi
-		;;
-	MODE)
-		;;
-	PART) 
-		# MySQL Seen Stuff
-		if [ "${sqlSupport}" -eq "1" ]; then
-			source ./bin/user/mysql/mysql-update-seen-part.sh
-		fi
-		;;
-	NICK)
-		;;
-	WALLOPS)
-		;;
-	TOPIC)
-		;;
-	INVITE)
-		;;
-	*)
-		echo "$(date -R) [${0}] ${msgArr[@]}" >> ${dataDir}/$(<var/bot.pid).debug
-		;;
-esac
+			if [ "${isCom}" -eq "1" ]; then
+				comExec;
+			else	
+				modMatch="0"
+				for i in var/.mods/*.sh; do
+					if egrep -i -q "^modHook=\"Format\"" "${i}"; then
+						modArr="$(egrep "^modForm=" "${i}")"
+						modArr="${modArr#modForm=}"
+						modArr="${modArr#(}"
+						modArr="${modArr%)}"
+						tmp="$(mktemp)"
+						sed -E 's/" "/\n/g' <<<"${modArr}" > "${tmp}"
+						sed -i "s/^\"//g" "${tmp}"
+						sed -i "s/\"$//g" "${tmp}"
+						unset modArr
+						readarray -t modArr < "${tmp}"
+						rm "${tmp}"
+						for q in "${modArr[@]}"; do
+							q="${q#\"}"
+							q="${q%\"}"
+							if egrep -q -i "^modFromCase=\"Yes\"" "${i}"; then
+								if egrep -q "\"${q}\"" <<<"${msgArr[@]}"; then
+									modMatch="1"
+									source ./${i} 
+								fi
+							else
+								if egrep -i -q "${q}" <<<"${msgArr[@]}"; then
+									modMatch="1"
+									source ./${i}
+								fi
+							fi
+						done
+					fi
+				done
+				if [ "${modMatch}" -eq "0" ]; then
+					source ./bin/core/factoid.sh 
+				fi
+			fi
+			;;
+		QUIT)
+			loggedIn="$(fgrep -c "${senderUser}@${senderHost}" "var/.admins")"
+			if [ "${loggedIn}" -eq "1" ]; then
+				sed -i "/${senderUser}@${senderHost}/d" "var/.admins"
+			fi
+			# MySQL Seen Stuff
+			if [ "${sqlSupport}" -eq "1" ]; then
+				source ./bin/user/mysql/mysql-update-seen-quit.sh
+			fi
+			;;
+		MODE)
+			;;
+		PART) 
+			# MySQL Seen Stuff
+			if [ "${sqlSupport}" -eq "1" ]; then
+				source ./bin/user/mysql/mysql-update-seen-part.sh
+			fi
+			;;
+		NICK)
+			;;
+		WALLOPS)
+			;;
+		TOPIC)
+			;;
+		INVITE)
+			;;
+		*)
+			echo "$(date -R) [${0}] ${msgArr[@]}" >> ${dataDir}/$(<var/bot.pid).debug
+			;;
+	esac
+elif egrep -q "grodt" <<<"${senderNick}"; then
+	if [ -e "var/.mods/grodt.sh" ];then
+		source ./var/.mods/grodt.sh
+	fi
 fi

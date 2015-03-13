@@ -20,7 +20,7 @@ if [[ "$1" == "--dep-check" ]]; then
 				depFail="1"
 			fi
 		done
-		if [ "$depFail" -eq "1" ]; then
+		if [ "${depFail}" -eq "1" ]; then
 			exit 1
 		else
 			echo "ok"
@@ -61,25 +61,25 @@ else
 	lastSeenSaidIn="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT seensaidin FROM seen WHERE nick = '${seenTarget}';" | tail -n 1)"
 	timeDiff="$(( $(date +%s) - ${lastSeenTime} ))"
 	days="$((timeDiff/60/60/24))"
-	if [ "$days" -eq "1" ]; then
+	if [ "${days}" -eq "1" ]; then
 		days="${days} day"
 	else
 		days="${days} days"
 	fi
 	hours="$((timeDiff/60/60%24))"
-	if [ "$hours" -eq "1" ]; then
+	if [ "${hours}" -eq "1" ]; then
 		hours="${hours} hour"
 	else
 		hours="${hours} hours"
 	fi
 	minutes="$((timeDiff/60%60))"
-	if [ "$minutes" -eq "1" ]; then
+	if [ "${minutes}" -eq "1" ]; then
 		minutes="${minutes} minute"
 	else
 		minutes="${minutes} minutes"
 	fi
 	seconds="$((timeDiff%60))"
-	if [ "$seconds" -eq "1" ]; then
+	if [ "${seconds}" -eq "1" ]; then
 		seconds="${seconds} second"
 	else
 		seconds="${seconds} seconds"

@@ -15,7 +15,7 @@ if [[ "$1" == "--dep-check" ]]; then
 				depFail="1"
 			fi
 		done
-		if [ "$depFail" -eq "1" ]; then
+		if [ "${depFail}" -eq "1" ]; then
 			exit 1
 		else
 			echo "ok"
@@ -36,21 +36,21 @@ target="${msgArr[2]}"
 sedCom="$(egrep -o -i "s/.*/.*/(i|g|ig)?$" <<<"${msgArr[@]}")"
 sedItem="${sedCom#s/}"
 sedItem="${sedItem%/*/*}"
-if [ -n "$sedItem" ]; then
+if [ -n "${sedItem}" ]; then
 	sedFlag="${sedCom##*/}"
-	if [[ "$sedFlag" == "i" ]]; then
+	if [[ "${sedFlag}" == "i" ]]; then
 		prevLine="$(fgrep "PRIVMSG ${target}" "${input}" | egrep -v "s/.*/.*/(i|g|ig)?$" | egrep -i "${sedItem}" | tail -n 1)"
 	else
 		prevLine="$(fgrep "PRIVMSG ${target}" "${input}" | egrep -v "s/.*/.*/(i|g|ig)?$" | egrep "${sedItem}" | tail -n 1)"
 	fi
 	prevSend="$(awk '{print $1}' <<<"${prevLine}" | sed "s/!.*//" | sed "s/^://")"
-	line="$(read -r one two three rest <<<"${prevLine}"; echo "$rest")"
+	line="$(read -r one two three rest <<<"${prevLine}"; echo "${rest}")"
 	line="${line#:}"
-	if [ -n "$line" ]; then
+	if [ -n "${line}" ]; then
 		lineFixed="$(sed -E "${sedCom}" <<<"${line}")"
-		if ! [[ "$lineFixed" == "${line}" ]] && [ "${#lineFixed}" -le "200" ]; then
-			echo "[FTFY] <${prevSend}> $lineFixed"
-		elif ! [[ "$lineFixed" == "${line}" ]] && [ "${#lineFixed}" -gt "200" ]; then
+		if ! [[ "${line}Fixed" == "${line}" ]] && [ "${#lineFixed}" -le "200" ]; then
+			echo "[FTFY] <${prevSend}> ${line}Fixed"
+		elif ! [[ "${line}Fixed" == "${line}" ]] && [ "${#lineFixed}" -gt "200" ]; then
 			echo "sed response not sent due to result being over 200 characters"
 		fi
 	fi
