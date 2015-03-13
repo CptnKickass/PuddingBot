@@ -36,6 +36,12 @@ modFlag="m"
 hostToLookup="${msgArr[4]}"
 if [ -z "${hostToLookup}" ]; then
 	echo "This command requires a parameter."
+elif [[ "${hostToLookup,,}" == "localhost" ]]; then
+	echo "You must think you're real clever, huh?"
+elif [[ "${hostToLookup,,}" == "127.0.0.1" ]]; then
+	echo "http://en.wikipedia.org/wiki/Localhost"
+elif [[ "${hostToLookup,,}" == "::1" ]]; then
+	echo "http://www.lifehack.org/articles/productivity/20-productive-ways-to-use-your-free-time.html"
 elif ! egrep -q "(([a-zA-Z](-?[a-zA-Z0-9])*)\.)*[a-zA-Z](-?[a-zA-Z0-9])+\.[a-zA-Z]{2,}" <<<"${hostToLookup}"; then
 	echo "The domain ${hostToLookup} does not appear to be a valid domain"
 else
