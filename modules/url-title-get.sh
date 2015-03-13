@@ -38,6 +38,11 @@ modFormCase="Yes"
 modHelp="Gets a URL's <title> and/or some other useful info"
 modFlag="m"
 
+if [ -z "${apiKey}" ]; then
+	echo "A Google API key for YouTube is required"
+	exit 255
+fi
+
 ytVid () {
 	if [[ "${url#*://}" =~ "youtu.be"* ]]; then
 		vidId="${url#*youtu.be/}"

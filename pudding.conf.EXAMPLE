@@ -13,25 +13,27 @@ server="irc.freenode.net"
 port="6667"
 # Does the server have a password? If not, just leave this empty.
 serverpass=""
-# RUN ./bin/mysql.sh TO GET THE BELOW 3 SQL OPTIONS!!!!!!!!!!!!!!!!!!
+#############################################################
+# RUN ./bin/mysql.sh TO GET THE BELOW 3 SQL OPTIONS!!!!!!!!!!
 # MySQL Username
-sqlUser=""
+sqlUser="puddingbot"
 # MySQL password
-sqlPass=""
+sqlPass="test"
 # MySQL Database Name. Usually the username is fine.
-sqlDBname=""
+sqlDBname="puddingbot"
+#############################################################
 # Bot owner's IRC nickname?
 # (This is purely for info, not for administrative commands.)
-owner="goose"
+owner="<Your IRC nick goes here>"
 # Bot owner's e-mail address?
 # (This is purely for info, not for administrative commands.)
-ownerEmail="goose@captain-kickass.net"
+ownerEmail="<Your E-Mail address goes here>"
 # Prefix to use for bot commands. Be wary that "!" may interfere with IRC services (ChanServ)
 comPrefix="!"
 # What flags should non logged in users have?
 genFlags="m"
 # NickServ pass? Leave empty if you don't have one.
-nickPass="NickServ Password Goes Here"
+nickPass="<Bot's NickServ Pass goes here>"
 # Enable IRC logging? Should be "Yes" or "No"
 logIn="No"
 # IRC operator nick/pass. Leave empty if you don't have one.
@@ -49,23 +51,40 @@ lastCom=""
 # Where should we keep the bot data files? The base directory needs to exist
 dataDir="${HOME}/PuddingBot"
 # Where should we drop the data file we use to talk to the IRCd?
-# Usually the default values are fine. You can also use $(mktemp)
+# Usually the default value are fine. You can also use $(mktemp)
 output="${dataDir}/var/outbound"
 # Where should we drop the data file we use to talk to the IRCd?
-# Usually the default values are fine. You can also use $(mktemp)
+# Usually the default value are fine. You can also use $(mktemp)
 input="${dataDir}/var/inbound"
-# List of modules to load. These should exist in the modules directory.
+# Where should we drop the data files we use to store user information?
+# Usually the default value is fine.
+userDir="${dataDir}/users"
+# List of modules to load. These should exist in the modules/ or in
+# the contrib/ directory.
 # Add new loadMod= lines for each module.
+loadMod="grodt.sh"
+loadMod="recent.sh"
+loadMod="ck-extend.sh"
+loadMod="filesearch.sh"
+loadMod="todo.sh"
 loadMod="convert.sh"
 loadMod="define.sh"
 loadMod="explain.sh"
 loadMod="fox.sh"
 loadMod="google.sh"
+loadMod="goo.gl.sh"
 loadMod="host.sh"
 loadMod="isup.sh"
+loadMod="karma.sh"
 loadMod="math.sh"
 loadMod="ping.sh"
-loadMod="pong.sh"
+loadMod="sed.sh"
+loadMod="seen.sh"
+loadMod="spellcheck.sh"
 loadMod="tell.sh"
+loadMod="twitch.sh"
 loadMod="url-title-get.sh"
 loadMod="whois.sh"
+loadMod="wikipedia.sh"
+loadMod="wolfram.sh"
+loadMod="Z003XTT.sh"
