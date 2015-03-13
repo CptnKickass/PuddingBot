@@ -10,4 +10,3 @@ To do:
 * Add failed login notifications
 * Add "decide/choose" module
 * Add a setting to require being logged in to interact with the bot at all
-* Make a module that randomly abuses/mutes/kicks grodt
