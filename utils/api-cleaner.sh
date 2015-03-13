@@ -9,9 +9,11 @@ tmp="${HOME}/modules-tmp"
 
 case "${1,,}" in
 	--clean|--backup)
-		if ! [ -d "${tmp}" ]; then
-			mkdir "${tmp}"
+		if [ -d "${tmp}" ]; then
+			echo "Backup already exists!"
+			exit 255
 		fi
+		mkdir "${tmp}"
 		for i in "${files[@]}"; do
 			find "${path}/modules" "${path}/contrib" -name "${i}" | while read q; do
 				cp "${q}" "${tmp}"
@@ -19,6 +21,7 @@ case "${1,,}" in
 				sed -i "s/^apiKeyToken=\".*\"$/apiKeyToken=\"\"/" "${q}"
 			done
 		done
+		echo "Following modules backed up and cleaned of API keys and tokens: ${files[@]}"
 	;;
 	--restore)
 		if ! [ -d "${tmp}" ]; then
@@ -33,6 +36,7 @@ case "${1,,}" in
 			done
 		done
 		rmdir "${tmp}"
+		echo "Following modules restored of API keys and tokens: ${files[@]}"
 	;;
 	*)
 		echo "Invalid parameter. Choices are: --clean/--backup, and --restore"
