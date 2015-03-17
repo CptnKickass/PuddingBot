@@ -63,6 +63,12 @@ modFlag="m"
 
 # This is where the module source should start
 # the message is passed as ${msgArr[@]}
+# For reference, here's what the array items will be:
+#
+# 0                               1       2      3         4    5   6    7
+# goose!goose@captain-kickass.net PRIVMSG #goose :!example here are some parameters
+#
+# If you want all the parameters: ${msgArr[@]:4}
 
-echo "You typed !example, your message was ${msgArr[@]}"
+echo "You typed !example, your complete message was: ${msgArr[@]}"
 exit 0
