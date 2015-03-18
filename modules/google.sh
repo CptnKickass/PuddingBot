@@ -177,7 +177,6 @@ else
 		title="${title%%\"*}"
 		desc="${searchResult#*\"content\":\"}"
 		desc="${desc%%\"*}"
-		desc="$(sed -r "s/\\\\u.{4}(b|\/b)?//g" <<<"${desc}")"
 		desc="${url} | ${title} | ${desc}"
 		desc="${desc//\\\n/}"
 		desc="${desc//#33;/!}"
@@ -383,6 +382,8 @@ else
 		desc="${desc//amp;/&}"
 		desc="${desc//lt;/<}"
 		desc="${desc//gt;/>}"
+		desc="${desc//<b>/}"
+		desc="${desc//<\/b>/}"
 		# Not sure if this is intended by google or not, but let's fix it
 		desc="${desc//&${re}/${re}}"
 		echo "[Google] ${desc}"
