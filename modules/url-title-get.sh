@@ -64,12 +64,32 @@ ytVid () {
 }
 
 getTitle () {
-	pageTitle="$(curl -A "${nick}" -m 5 -k -s -L "${url}" | fgrep -m 1 "<title")"
-	pageTitle="${pageTitle%%</title>*}"
-	pageTitle="${pageTitle##*>}"
-	pageTitle="$(sed -e 's/^[ \t]*//' <<<"${pageTitle}" | w3m -dump -T text/html | tr '\n' ' ')"
-	if [ -z "${pageTitle}" ]; then
-		pageTitle="[Unable to obtain page title]"
+	titleStart="$(fgrep -m 1 -n "<title" <<<"${pageSrc}" | awk '{print $1}')"
+	titleStart="${titleStart%:}"
+	titleEnd="$(fgrep -m 1 -n "</title>" <<<"${pageSrc}" | awk '{print $1}')"
+	titleEnd="${titleEnd%:}"
+	if [ "${titleStart}" -eq "${titleEnd}" ]; then
+		pageTitle="$(curl -A "${nick}" -m 5 -k -s -L "${url}" | egrep -m 1 "<title.*</title>")"
+		pageTitle="${pageTitle%%</title>*}"
+		pageTitle="${pageTitle##*>}"
+		pageTitle="$(sed -e 's/^[ \t]*//' <<<"${pageTitle}" | w3m -dump -T text/html | tr '\n' ' ')"
+		if [ -z "${pageTitle}" ]; then
+			pageTitle="[Unable to obtain page title]"
+		fi
+	else
+		tmp="$(mktemp)"
+		tmp2="$(mktemp)"
+		echo "${pageSrc}" > "${tmp}"
+		head -n ${titleEnd} "${tmp}" | tail -n $(( ${titleStart} + 1 )) > "${tmp2}"
+		rm "${tmp}"
+		pageTitle="$(tr '\n' ' ' < "${tmp2}")"
+		rm "${tmp2}"
+		pageTitle="${pageTitle%%</title>*}"
+		pageTitle="${pageTitle##*>}"
+		pageTitle="$(sed -e 's/^[ \t]*//' <<<"${pageTitle}" | w3m -dump -T text/html | tr '\n' ' ')"
+		if [ -z "${pageTitle}" ]; then
+			pageTitle="[Unable to obtain page title]"
+		fi
 	fi
 }
 
@@ -130,8 +150,8 @@ otherSite () {
 		fi
 	elif egrep -i -q "^http(s)?://(www\.)?newegg\.com/Product/" <<<"${url}"; then
 		alreadyMatched="1"
-		getTitle;
 		pageSrc="$(curl -A "${nick}" -m 5 -k -s -L "${url}")"
+		getTitle;
 		itemPrice="$(fgrep -m 1 "product_sale_price" <<<"${pageSrc}")"
 		itemPrice="${itemPrice#*\'}"
 		itemPrice="${itemPrice%*\'*}"
@@ -142,8 +162,8 @@ otherSite () {
 		fi
 	elif egrep -i -q "^http(s)?://(www\.|smile\.)?amazon\.com/(.*/)?(g|d)p/" <<<"${url}"; then
 		alreadyMatched="1"
-		getTitle;
 		pageSrc="$(curl -A "${nick}" -m 5 -k -s -L "${url}")"
+		getTitle;
 		itemAvailable="$(fgrep -ci "Currently unavailable" <<<"${pageSrc}")"
 		if [ "${itemAvailable}" -eq "0" ]; then
 			itemPrice="$(egrep -o -m 1 "\\\$([0-9]|,)+\.[0-9][0-9]" <<<"${pageSrc}")"
@@ -156,6 +176,7 @@ otherSite () {
 	if [ "${httpResponseCode}" -eq "200" ]; then
 		contentType="$(egrep -i "Content[ |-]Type:" <<<"${contentHeader}" | tail -n 1)"
 		if fgrep -q "text/html" <<<"${contentType}"; then
+			pageSrc="$(curl -A "${nick}" -m 5 -k -s -L "${url}")"
 			getTitle;
 		elif [ "${alreadyMatched}" -eq "0" ]; then
 			contentMatches="$(fgrep -c "Content-Length" <<<"${contentHeader}")"
@@ -197,8 +218,8 @@ egrep -i -o "http(s?):\/\/[^ \"\(\)\<\>]*" <<<"${msgArr[@]}" | while read url; d
 	if egrep -i -q "^http(s)?://((www\.)?youtube\.com/watch\?v\=|youtu.be/)" <<<"${url}"; then
 		ytVid;
 	elif egrep -i -q "^http(s)?://(www\.)?newegg\.com/Product/" <<<"${url}"; then
-		getTitle;
 		pageSrc="$(curl -A "${nick}" -m 5 -k -s -L "${url}")"
+		getTitle;
 		itemPrice="$(fgrep -m 1 "product_sale_price" <<<"${pageSrc}")"
 		itemPrice="${itemPrice#*\'}"
 		itemPrice="${itemPrice%*\'*}"
@@ -208,8 +229,8 @@ egrep -i -o "http(s?):\/\/[^ \"\(\)\<\>]*" <<<"${msgArr[@]}" | while read url; d
 			pageTitle="${pageTitle} [Price: \$${itemPrice}]"
 		fi
 	elif egrep -i -q "^http(s)?://(www\.|smile\.)?amazon\.com/(.*/)?(g|d)p/" <<<"${url}"; then
-		getTitle;
 		pageSrc="$(curl -A "${nick}" -m 5 -k -s -L "${url}")"
+		getTitle;
 		itemAvailable="$(fgrep -ci "Currently unavailable" <<<"${pageSrc}")"
 		if [ "${itemAvailable}" -eq "0" ]; then
 			itemPrice="$(egrep -o -m 1 "\\\$([0-9]|,)+\.[0-9][0-9]" <<<"${pageSrc}")"
