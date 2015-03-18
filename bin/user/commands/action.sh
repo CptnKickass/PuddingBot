@@ -9,8 +9,7 @@ if [ "${loggedIn}" -eq "1" ]; then
 		elif ! egrep -q "^(#|&)" <<<"${msgArr[4]})"; then
 			echo "${msgArr[4]} does not appear to be a valid channel"
 		else
-			sayMsg="$(read -r one two three four five rest <<<"${message}"; echo "${rest}")"
-			echo "PRIVMSG ${msgArr[4]} :ACTION ${sayMsg}" >> ${output}
+			echo "PRIVMSG ${msgArr[4]} :ACTION ${msgArr[@]:5}" >> ${output}
 		fi
 	else
 		echo "You do not have sufficient permissions for this command"
