@@ -33,19 +33,19 @@ modFormCase="No"
 modHelp="Provides sed functionality"
 modFlag="m"
 target="${msgArr[2]}"
-sedCom="$(egrep -o -i "s/.*/.*/(i|g|ig)?$" <<<"${msgArr[@]}")"
+sedCom="${msgArr[3]#:}"
 sedItem="${sedCom#s/}"
-sedItem="${sedItem%/*/*}"
+sedItem="${sedItem%%/*}"
 if [ -n "${sedItem}" ]; then
 	sedFlag="${sedCom##*/}"
 	if [[ "${sedFlag}" == "i" ]]; then
-		prevLine="$(fgrep "PRIVMSG ${target}" "${input}" | egrep -v "s/.*/.*/(i|g|ig)?$" | egrep -i "${sedItem}" | tail -n 1)"
+		prevLine="$(fgrep "PRIVMSG ${target}" "${input}" | egrep -v "s/.*/.*/(i|g|ig)?$" | egrep -- -i "${sedItem}" | tail -n 1)"
 	else
-		prevLine="$(fgrep "PRIVMSG ${target}" "${input}" | egrep -v "s/.*/.*/(i|g|ig)?$" | egrep "${sedItem}" | tail -n 1)"
+		prevLine="$(fgrep "PRIVMSG ${target}" "${input}" | egrep -v "s/.*/.*/(i|g|ig)?$" | egrep -- "${sedItem}" | tail -n 1)"
 	fi
-	prevSend="$(awk '{print $1}' <<<"${prevLine}" | sed "s/!.*//" | sed "s/^://")"
-	line="$(read -r one two three rest <<<"${prevLine}"; echo "${rest}")"
-	line="${line#:}"
+	prevSend="${prevLine%%!*}"
+	prevSend="${prevSend#:}"
+	line="${prevLine#* :}"
 	if [ -n "${line}" ]; then
 		lineFixed="$(sed -E "${sedCom}" <<<"${line}")"
 		if ! [[ "${lineFixed}" == "${line}" ]] && [ "${#lineFixed}" -le "200" ]; then
