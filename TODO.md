@@ -10,3 +10,4 @@ To do:
 * Add failed login notifications
 * Add a setting to require being logged in to interact with the bot at all
 * Fix directed output on multiple lines
+* Add wolf/mafia game module
