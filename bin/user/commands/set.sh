@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
 loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
-if [ "${loggedIn}" -eq "1" ]; then
+if [[ "${loggedIn}" -eq "1" ]]; then
 	loggedInUser="$(fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $1}')"
 	arg1="${msgArr[4]}"
 	case "${arg1,,}" in
 		password)
 			lPass="${msgArr[5]}"
 			lHash="$(echo -n "${lPass}" | sha256sum | awk '{print $1}')"
-			if [ -z "${lPass}" ]; then
+			if [[ -z "${lPass}" ]]; then
 				echo "You must provide a password. Format is: set PASSWORD"
 			else
 				sed -i "s/pass=\".*\"/pass=\"${lHash}\"/" "${userDir}/${loggedInUser}.conf"
@@ -18,7 +18,7 @@ if [ "${loggedIn}" -eq "1" ]; then
 		clones)
 			re='^[0-9]+$'
 			lClones="${msgArr[5]}"
-			if [ -z "${lClones}" ]; then
+			if [[ -z "${lClones}" ]]; then
 				echo "You must provide a number of clones. Format is: set CLONES N (Where \"N\" is your desired number of alloted clones)"
 			elif [[ ${lClones} =~ ${re} ]]; then
 				sed -i "s/clones=\".*\"/clones=\"${lHash}\"/" "${userDir}/${loggedInUser}.conf"
@@ -31,7 +31,7 @@ if [ "${loggedIn}" -eq "1" ]; then
 			case "${msgArr[5]}" in
 				list)
 					IFS=$'\r\n' :; hostArr=($(egrep "^allowedLoginHost=\".*\"$" "${userDir}/${loggedInUser}.conf"))
-					if [ "${#hostArr[@]}" -eq "0" ]; then
+					if [[ "${#hostArr[@]}" -eq "0" ]]; then
 						echo "No authenticated login hosts set to ${loggedInUser}"
 					else
 						hostArr=(${hostArr[@]#allowedLoginHost=\"})
@@ -70,7 +70,7 @@ if [ "${loggedIn}" -eq "1" ]; then
 			case "${msgArr[5]}" in
 				list)
 					IFS=$'\r\n' :; metaArr=($(egrep "^meta=\".*\"$" "${userDir}/${loggedInUser}.conf"))
-					if [ "${#metaArr[@]}" -eq "0" ]; then
+					if [[ "${#metaArr[@]}" -eq "0" ]]; then
 						echo "No meta data set for ${loggedInUser}"
 					else
 						metaArr=(${metaArr[@]#meta=\"})
@@ -80,7 +80,7 @@ if [ "${loggedIn}" -eq "1" ]; then
 				;;
 				add)
 					metaToAdd="${msgArr[6]}"
-					if [ -z "${metaToAdd}" ]; then
+					if [[ -z "${metaToAdd}" ]]; then
 						echo "Unable to add meta; no data input.)"
 					else
 						echo "meta=\"${metaToAdd}\"" >> "${userDir}/${loggedInUser}.conf"
@@ -102,7 +102,7 @@ if [ "${loggedIn}" -eq "1" ]; then
 			esac
 			;;
 		removeacct|removeaccount)
-			if [ -z "${msgArr[5]}" ]; then
+			if [[ -z "${msgArr[5]}" ]]; then
 				if egrep -q "^removeKey=\"" "${userDir}/${loggedInUser}.conf"; then
 					removeKey="$(egrep "^removeKey=\"" "${userDir}/${loggedInUser}.conf")"
 					removeKey="${removeKey#removeKey=\"}"
@@ -123,7 +123,7 @@ if [ "${loggedIn}" -eq "1" ]; then
 			elif egrep -q "^removeKey=\"${msgArr[5]}\"$" "${userDir}/${loggedInUser}.conf"; then
 				echo "Deletion for account ${loggedInUser} confirmed. Removing all user data..."
 				rm -f "${userDir}/${loggedInUser}.conf"
-				if [ -e "${userDir}/${loggedInUser}.conf" ]; then
+				if [[ -e "${userDir}/${loggedInUser}.conf" ]]; then
 					echo "Unable to remove user data! Please contact an administrator."
 				else
 					echo "${loggedInUser} purged from data files. Logging ${loggedInUser} out of bot..."

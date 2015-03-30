@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-if [ "${isPm}" -eq "1" ]; then
+if [[ "${isPm}" -eq "1" ]]; then
 	loggedIn="$(fgrep -c "${senderUser}@${senderHost}" "var/.admins")"
-	if [ "${loggedIn}" -eq "0" ]; then
+	if [[ "${loggedIn}" -eq "0" ]]; then
 		lUser="${msgArr[4]}"
 		lPass="${msgArr[5]}"
 		lHash="$(echo -n "${lPass}" | sha256sum | awk '{print $1}')"
-		if [ -n "${lUser}" ]; then
+		if [[ -n "${lUser}" ]]; then
 			if egrep -q "^user=\"${lUser}\"$" ${userDir}/*.conf; then
 				matchFile="$(egrep "^user=\"${lUser}\"$" ${userDir}/*.conf /dev/null)"
 				matchFile="${matchFile%%:*}"
@@ -18,7 +18,7 @@ if [ "${isPm}" -eq "1" ]; then
 						numClonesAllowed="${numClonesAllowed%\"}"
 						numClonesAllowed="${numClonesAllowed#*\"}"
 						numClones="$(egrep "^${lUser}" "var/.admins" | awk '{print $2}')"
-						if [ "${numClones}" -lt "${numClonesAllowed}" ]; then
+						if [[ "${numClones}" -lt "${numClonesAllowed}" ]]; then
 							# Less than their alloted number
 							userLine="$(egrep "^${lUser}" "var/.admins")"
 							numClones="$(( ${numClones} + 1 ))"
@@ -61,7 +61,7 @@ if [ "${isPm}" -eq "1" ]; then
 					numClonesAllowed="${numClonesAllowed%\"}"
 					numClonesAllowed="${numClonesAllowed#*\"}"
 					numClones="$(egrep "^${lUser}" "var/.admins" | awk '{print $2}')"
-					if [ "${numClones}" -lt "${numClonesAllowed}" ]; then
+					if [[ "${numClones}" -lt "${numClonesAllowed}" ]]; then
 						# Less than their alloted number
 						userLine="$(egrep "^${lUser}" "var/.admins")"
 						numClones="$(( ${numClones} + 1 ))"
@@ -93,7 +93,7 @@ if [ "${isPm}" -eq "1" ]; then
 	fi
 else
 	loggedIn="$(fgrep -c "${senderUser}@${senderHost}" "var/.admins")"
-	if [ "${loggedIn}" -eq "0" ]; then
+	if [[ "${loggedIn}" -eq "0" ]]; then
 		if egrep -q "^allowedLoginHost=\"${senderUser}@${senderHost}\"$" ${userDir}/*.conf /dev/null; then
 			matchFile="$(egrep "^allowedLoginHost=\"${senderUser}@${senderHost}\"$" ${userDir}/*.conf /dev/null)"
 			matchFile="${matchFile%%:*}"
@@ -107,7 +107,7 @@ else
 				numClonesAllowed="${numClonesAllowed%\"}"
 				numClonesAllowed="${numClonesAllowed#*\"}"
 				numClones="$(egrep "^${lUser}" "var/.admins" | awk '{print $2}')"
-				if [ "${numClones}" -lt "${numClonesAllowed}" ]; then
+				if [[ "${numClones}" -lt "${numClonesAllowed}" ]]; then
 					# Less than their alloted number
 					userLine="$(egrep "^${lUser}" "var/.admins")"
 					numClones="$(( ${numClones} + 1 ))"

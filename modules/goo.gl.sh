@@ -5,7 +5,7 @@
 apiKey=""
 
 ## Source
-if [ -e "var/.conf" ]; then
+if [[ -e "var/.conf" ]]; then
 	source var/.conf
 else
 	nick="Null"
@@ -15,14 +15,14 @@ fi
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=("curl")
-	if [ "${#deps[@]}" -ne "0" ]; then
+	if [[ "${#deps[@]}" -ne "0" ]]; then
 		for i in ${deps[@]}; do
 			if ! command -v ${i} > /dev/null 2>&1; then
 				echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
 				depFail="1"
 			fi
 		done
-		if [ "${depFail}" -eq "1" ]; then
+		if [[ "${depFail}" -eq "1" ]]; then
 			exit 1
 		else
 			echo "ok"
@@ -39,11 +39,11 @@ modForm=("short" "shorten")
 modFormCase=""
 modHelp="Shortens a URL via Google's URL shortener service"
 modFlag="m"
-if [ -z "${apiKey}" ]; then
+if [[ -z "${apiKey}" ]]; then
 	echo "A Google API key is required"
-elif [ -z "${msgArr[4]}" ]; then
+elif [[ -z "${msgArr[4]}" ]]; then
 	shortItem="$(fgrep "PRIVMSG" "${input}" | egrep -o "http(s?):\/\/[^ \"\(\)\<\>]*" | tail -n 1)"
-	if [ -n "${shortItem}" ]; then
+	if [[ -n "${shortItem}" ]]; then
 		echo "Shortening most recently spoken URL (${shortItem})"
 		shortUrl="$(curl -A "${nick}" -m 5 -k -s -L -H "Content-Type: application/json" -d "{\"longUrl\": \"${shortItem}\"}" "https://www.googleapis.com/urlshortener/v1/url?key=${apiKey}" | fgrep "\"id\"" | egrep -o "http(s)?://goo.gl/[A-Z|a-z|0-9]+")"
 		echo "Shortened URL: ${shortUrl}"

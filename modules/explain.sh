@@ -8,14 +8,14 @@
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=()
-	if [ "${#deps[@]}" -ne "0" ]; then
+	if [[ "${#deps[@]}" -ne "0" ]]; then
 		for i in ${deps[@]}; do
 			if ! command -v ${i} > /dev/null 2>&1; then
 				echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
 				depFail="1"
 			fi
 		done
-		if [ "${depFail}" -eq "1" ]; then
+		if [[ "${depFail}" -eq "1" ]]; then
 			exit 1
 		else
 			echo "ok"
@@ -44,9 +44,9 @@ re="you're"
 explain="${explain//she\'s/${re}}"
 explain="${explain//he\'s/${re}}"
 explain="${explain//they\'re/${re}}"
-if [ -z "${target}" ]; then
+if [[ -z "${target}" ]]; then
 	echo "This command requires a target"
-elif [ -z "${explain}" ]; then
+elif [[ -z "${explain}" ]]; then
 	echo "You didn't tell me what to explain"
 	echo "(Format is: !explain to SnoFox that he's a faggot)"
 else

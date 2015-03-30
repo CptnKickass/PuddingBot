@@ -16,7 +16,7 @@ for i in var/.mods/*.sh; do
 	helpTopic+=("(${file})")
 done
 arg1="${msgArr[4]}"
-if [ -z "${arg1,,}" ]; then
+if [[ -z "${arg1,,}" ]]; then
 	echo "Available Help Topics: ${helpTopic[@]}"
 elif fgrep -q "${arg1,,}" <<<"${helpTopic[@]}"; then
 	case "${arg1,,}" in
@@ -150,13 +150,13 @@ else
 		helpLine="${helpLine#modHelp=\"}"
 		helpLine="${helpLine%\"}"
 		echo "(${arg1}) => ${helpLine} (Provided by ${helpFile##*/} module)"
-	elif [ -e "var/.mods/${arg1}.sh" ]; then
+	elif [[ -e "var/.mods/${arg1}.sh" ]]; then
 		helpFile="var/.mods/${arg1}.sh"
 		helpLine="$(egrep "^modHelp=\"" "${helpFile}")"
 		helpLine="${helpLine#modHelp=\"}"
 		helpLine="${helpLine%\"}"
 		echo "(${arg1}) => ${helpLine} (Provided by ${helpFile##*/} module)"
-	elif [ -e "var/.mods/${arg1}" ]; then
+	elif [[ -e "var/.mods/${arg1}" ]]; then
 		helpFile="var/.mods/${arg1}"
 		helpLine="$(egrep "^modHelp=\"" "${helpFile}")"
 		helpLine="${helpLine#modHelp=\"}"

@@ -9,7 +9,7 @@ tmp="${HOME}/modules-tmp"
 
 case "${1,,}" in
 	--clean|--backup)
-		if [ -d "${tmp}" ]; then
+		if [[ -d "${tmp}" ]]; then
 			echo "Backup already exists!"
 			exit 255
 		fi
@@ -24,7 +24,7 @@ case "${1,,}" in
 		echo "Following modules backed up and cleaned of API keys and tokens: ${files[@]}"
 	;;
 	--restore)
-		if ! [ -d "${tmp}" ]; then
+		if ! [[ -d "${tmp}" ]]; then
 			echo "No backups to restore from!"
 			exit 255
 		fi

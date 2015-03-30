@@ -8,7 +8,7 @@ ctcp="${ctcp^^}"
 case "${ctcp}" in
 	PING)
 		ms="$(date +%s)"
-		if [ -z "${msgArr[5]}" ]; then
+		if [[ -z "${msgArr[5]}" ]]; then
 			echo "${ctcp} ${ms}" 
 		else
 			ms2=$(($(date +%s%N)/1000000))

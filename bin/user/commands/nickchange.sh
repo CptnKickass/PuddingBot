@@ -2,9 +2,9 @@
 reqFlag="s"
 
 loggedIn="$(fgrep -c "${senderUser}@${senderHost}" "var/.admins")"
-if [ "${loggedIn}" -eq "1" ]; then
+if [[ "${loggedIn}" -eq "1" ]]; then
 	if fgrep "${senderUser}@${senderHost}" "var/.admins" | awk '{print $3}' | fgrep -q "${reqFlag}"; then
-		if [ -z "${msgArr[4]}" ]; then
+		if [[ -z "${msgArr[4]}" ]]; then
 			echo "This command requires a parameter"
 		else
 			echo "NICK ${msgArr[4]}" >> ${output}

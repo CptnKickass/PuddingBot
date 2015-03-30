@@ -13,14 +13,14 @@ if [[ "$1" == "--dep-check" ]]; then
 	# read fgrep egrep echo cut sed ps awk
 	# Format is: deps=("foo" "bar")
 	deps=()
-	if [ "${#deps[@]}" -ne "0" ]; then
+	if [[ "${#deps[@]}" -ne "0" ]]; then
 		for i in ${deps[@]}; do
 			if ! command -v ${i} > /dev/null 2>&1; then
 				echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
 				depFail="1"
 			fi
 		done
-		if [ "${depFail}" -eq "1" ]; then
+		if [[ "${depFail}" -eq "1" ]]; then
 			exit 1
 		else
 			echo "ok"
@@ -50,7 +50,7 @@ seenTarget="${msgArr[4]}"
 #seenTarget="${seenTarget//\'/''}"
 seenTarget="$(sed "s/'/''/g" <<<"${seenTarget}")"
 sqlUserExists="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM seen WHERE nick = '${seenTarget}';")"
-if [ -z "${sqlUserExists}" ]; then
+if [[ -z "${sqlUserExists}" ]]; then
 	# Returned nothing. User does not exist.
 	echo "I have no such record of anyone by the nick ${seenTarget}"
 else
@@ -61,34 +61,34 @@ else
 	lastSeenSaidIn="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT seensaidin FROM seen WHERE nick = '${seenTarget}';" | tail -n 1)"
 	timeDiff="$(( $(date +%s) - ${lastSeenTime} ))"
 	days="$((timeDiff/60/60/24))"
-	if [ "${days}" -eq "1" ]; then
+	if [[ "${days}" -eq "1" ]]; then
 		days="${days} day"
 	else
 		days="${days} days"
 	fi
 	hours="$((timeDiff/60/60%24))"
-	if [ "${hours}" -eq "1" ]; then
+	if [[ "${hours}" -eq "1" ]]; then
 		hours="${hours} hour"
 	else
 		hours="${hours} hours"
 	fi
 	minutes="$((timeDiff/60%60))"
-	if [ "${minutes}" -eq "1" ]; then
+	if [[ "${minutes}" -eq "1" ]]; then
 		minutes="${minutes} minute"
 	else
 		minutes="${minutes} minutes"
 	fi
 	seconds="$((timeDiff%60))"
-	if [ "${seconds}" -eq "1" ]; then
+	if [[ "${seconds}" -eq "1" ]]; then
 		seconds="${seconds} second"
 	else
 		seconds="${seconds} seconds"
 	fi
-	if [ "${days:0:1}" -ne "0" ]; then
+	if [[ "${days:0:1}" -ne "0" ]]; then
 		seenAgo="${days}, ${hours}, ${minutes}, ${seconds}"
-	elif [ "${hours:0:1}" -ne "0" ]; then
+	elif [[ "${hours:0:1}" -ne "0" ]]; then
 		seenAgo="${hours}, ${minutes}, ${seconds}"
-	elif [ "${minutes:0:1}" -ne "0" ]; then
+	elif [[ "${minutes:0:1}" -ne "0" ]]; then
 		seenAgo="${minutes}, ${seconds}"
 	else
 		seenAgo="${seconds}"

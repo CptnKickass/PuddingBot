@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Load variables into the core
-if [ -e "var/.conf" ]; then
+if [[ -e "var/.conf" ]]; then
 	echo "Loading variables into bot"
 	source var/.conf
 else
@@ -10,19 +10,19 @@ else
 fi
 
 # Setup file for user checks
-if [ -e "var/.admins" ]; then
+if [[ -e "var/.admins" ]]; then
 	rm -f var/.admins
 fi
 touch var/.admins
 
 # Setup file for status checks
-if [ -e "var/.status" ]; then
+if [[ -e "var/.status" ]]; then
 	rm -f var/.status
 fi
 touch var/.status
 
 # Setup file for ignore list
-if [ ! -e "var/ignore.db" ]; then
+if [[ ! -e "var/ignore.db" ]]; then
 	touch var/ignore.db
 fi
 
@@ -56,7 +56,7 @@ echo "Creating datafile"
 # This should be done with a pipe, but a flat file is easier to debug
 # Create the file that will be the messages going out to the server
 touch "${output}"
-if [ -n "${serverpass}" ]; then
+if [[ -n "${serverpass}" ]]; then
 		echo "NICK ${nick}" >> "${output}"
 		echo "USER ${ident} +iwx * :${gecos}" >> "${output}"
 		echo "PASS ${serverpass}" >> "${output}"
@@ -67,7 +67,7 @@ fi
 
 echo "Connecting to IRC server"
 # This is where the initial connection is spawned
-while [ -e "${output}" ]; do tail -f "${output}" | nc "${server}" "${port}" | while read -r message
+while [[ -e "${output}" ]]; do tail -f "${output}" | nc "${server}" "${port}" | while read -r message
 do
 	isHelp="0"
 	isCtcp="0"
@@ -78,7 +78,7 @@ do
 	echo "${msgArr[@]}" >> "${input}"
 	# ${allMsgArr[@]} array will contain all input
 	allMsgArr+=("${msgArr[@]}")
-	if [ "${logIn}" -eq "1" ]; then
+	if [[ "${logIn}" -eq "1" ]]; then
 		# This is where messages should be parsed for logging
 		echo "Place holder" > /dev/null
 	fi
@@ -93,7 +93,7 @@ do
 	elif [[ "${msgArr[0]}" == ":${nick}" ]]; then
 		# The bot is changing modes on itself
 		out="$(source ./bin/self/botmodechange.sh)"
-		if [ -n "${out}" ]; then
+		if [[ -n "${out}" ]]; then
 			mapfile outArr <<<"${out}"
 		fi
 	elif egrep -q "^:.*!.*@.*$" <<<"${msgArr[0]}"; then
@@ -110,35 +110,35 @@ do
 		isHelp="$(egrep -ic ":(!)?(${nick}[:;,]?)?help" <<<"${msgArr[@]:(3):2}")" 
 
 		out="$(source ./bin/user/usermessage.sh)"
-		if [ "$(fgrep -c "${senderTarget}" <<< "${nick}")" -eq "1" ]; then
+		if [[ "$(fgrep -c "${senderTarget}" <<< "${nick}")" -eq "1" ]]; then
 			senderTarget="${senderNick}"
 		fi
-		if [ -n "${out}" ]; then
+		if [[ -n "${out}" ]]; then
 			mapfile outArr <<<"${out}" 
 		fi
 	elif [[ "${msgArr[0]}" == "ERROR" ]]; then
 		echo "Received error message: ${msgArr[@]}"
-		if [ -e "${output}" ]; then
+		if [[ -e "${output}" ]]; then
 			#rm -f "${output}" 
 			mv "${output}" "${output} - $(date)"
 		fi
-		if [ -e "${input}" ]; then
+		if [[ -e "${input}" ]]; then
 			#rm -f "${input}"
 			mv "${input}" "${input} - $(date)"
 		fi
-		if [ -e "var/.admins" ]; then
+		if [[ -e "var/.admins" ]]; then
 			rm -f "var/.admins"
 		fi
-		if [ -e "var/.conf" ]; then
+		if [[ -e "var/.conf" ]]; then
 			rm -f "var/.conf"
 		fi
-		if [ -e "var/.mods" ]; then
+		if [[ -e "var/.mods" ]]; then
 			rm -rf "var/.mods"
 		fi
-		if [ -e "var/.status" ]; then
+		if [[ -e "var/.status" ]]; then
 			rm -f "var/.status"
 		fi
-		if [ -e "var/bot.pid" ]; then
+		if [[ -e "var/bot.pid" ]]; then
 			pid="$(<var/bot.pid)"
 			rm -f "var/bot.pid"
 		fi
@@ -147,7 +147,7 @@ do
 	elif ! egrep -q "^:.*!.*@.*$" <<<"${msgArr[0]}"; then
 		# The message does not match an n!u@h mask, and should be a server
 		out="$(source ./bin/server/servermessage.sh)"
-		if [ -n "${out}" ]; then
+		if [[ -n "${out}" ]]; then
 			senderTarget="${channels[0]}"
 			mapfile outArr <<<"${out}" 
 		fi
@@ -156,10 +156,17 @@ do
 		echo "$(date -R) [${0}] ${msgArr[@]}" >> $(<var/bot.pid).debug
 	fi
 
-	echo "outArr: ${outArr[@]}"
+	if [[ -e "var/.silence" ]]; then
+		unset outArr
+	else
+		if [[ "${#outArr[@]}" -ne "0" ]]; then
+			source ./bin/core/parseoutput.sh
+		fi
+	fi
 
-	if [ "${#outArr[@]}" -ne "0" ]; then
-		source ./bin/core/parseoutput.sh
+	# This is a cheap hack to get silence command to work the way I want it to
+	if [[ -e "var/.silence1" ]]; then
+		mv "var/.silence1" "var/.silence"
 	fi
 
 	# Wipe the output file
@@ -168,27 +175,27 @@ done
 done
 
 # We've broken free of the above loop? We're exiting.
-if [ -e "${output}" ]; then
+if [[ -e "${output}" ]]; then
 	#rm -f "${output}" 
 	mv "${output}" "${output} - $(date)"
 fi
-if [ -e "${input}" ]; then
+if [[ -e "${input}" ]]; then
 	#rm -f "${input}"
 	mv "${input}" "${input} - $(date)"
 fi
-if [ -e "var/.admins" ]; then
+if [[ -e "var/.admins" ]]; then
 	rm -f "var/.admins"
 fi
-if [ -e "var/.conf" ]; then
+if [[ -e "var/.conf" ]]; then
 	rm -f "var/.conf"
 fi
-if [ -e "var/.mods" ]; then
+if [[ -e "var/.mods" ]]; then
 	rm -rf "var/.mods"
 fi
-if [ -e "var/.status" ]; then
+if [[ -e "var/.status" ]]; then
 	rm -f "var/.status"
 fi
-if [ -e "var/bot.pid" ]; then
+if [[ -e "var/bot.pid" ]]; then
 	pid="$(<var/bot.pid)"
 	rm -f "var/bot.pid"
 fi

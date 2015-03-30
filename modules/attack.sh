@@ -13,14 +13,14 @@ if [[ "$1" == "--dep-check" ]]; then
 	# read fgrep egrep echo cut sed ps awk
 	# Format is: deps=("foo" "bar")
 	deps=()
-	if [ "${#deps[@]}" -ne "0" ]; then
+	if [[ "${#deps[@]}" -ne "0" ]]; then
 		for i in ${deps[@]}; do
 			if ! command -v ${i} > /dev/null 2>&1; then
 				echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
 				depFail="1"
 			fi
 		done
-		if [ "${depFail}" -eq "1" ]; then
+		if [[ "${depFail}" -eq "1" ]]; then
 			exit 1
 		else
 			echo "ok"
@@ -45,33 +45,33 @@ throw=("throws" "flings" "chucks")
 hits=("hits" "whacks" "slaps" "smacks")
 location=("in the chest" "on the head" "on the bum")
 
-if [ -z "${msgArr[4]}" ]; then
+if [[ -z "${msgArr[4]}" ]]; then
 	echo "This command can't attack random people yet. Please specify a target."
 else
-	attack="${temp[${RANDOM} % ${#temp[@]} ] }"
+	attack="${temp[${RANDOM} % ${#temp[@]} ]] }"
 	if [[ "${msgArr[4],,}" == "${nick,,}" ]]; then
 		attack="${attack//\{user\}/${senderNick}}"
 	else
 		attack="${attack//\{user\}/${msgArr[@]:4}}"
 	fi
 	if fgrep -q "{item}" <<<"${attack}"; then
-		item="${itemSingle[${RANDOM} % ${#itemSingle[@]} ] }"
+		item="${itemSingle[${RANDOM} % ${#itemSingle[@]} ]] }"
 		attack="${attack//\{item\}/${item}}"
 	fi
 	if fgrep -q "{item_plural}" <<<"${attack}"; then
-		items="${itemPlural[${RANDOM} % ${#itemPlural[@]} ] }"
+		items="${itemPlural[${RANDOM} % ${#itemPlural[@]} ]] }"
 		attack="${attack//\{item_plural\}/${items}}"
 	fi
 	if fgrep -q "{throws}" <<<"${attack}"; then
-		throw="${throw[${RANDOM} % ${#throw[@]} ] }"
+		throw="${throw[${RANDOM} % ${#throw[@]} ]] }"
 		attack="${attack//\{throws\}/${throw}}"
 	fi
 	if fgrep -q "{hits}" <<<"${attack}"; then
-		hits="${hits[${RANDOM} % ${#hits[@]} ] }"
+		hits="${hits[${RANDOM} % ${#hits[@]} ]] }"
 		attack="${attack//\{hits\}/${hits}}"
 	fi
 	if fgrep -q "{where}" <<<"${attack}"; then
-		location="${location[${RANDOM} % ${#location[@]} ] }"
+		location="${location[${RANDOM} % ${#location[@]} ]] }"
 		attack="${attack//\{where\}/${location}}"
 	fi
 	echo "ACTION ${attack}"

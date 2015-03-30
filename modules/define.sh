@@ -15,14 +15,14 @@ apiKeyToken=""
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=("curl" "w3m")
-	if [ "${#deps[@]}" -ne "0" ]; then
+	if [[ "${#deps[@]}" -ne "0" ]]; then
 		for i in ${deps[@]}; do
 			if ! command -v ${i} > /dev/null 2>&1; then
 				echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
 				depFail="1"
 			fi
 		done
-		if [ "${depFail}" -eq "1" ]; then
+		if [[ "${depFail}" -eq "1" ]]; then
 			exit 1
 		else
 			echo "ok"
@@ -38,16 +38,16 @@ modForm=("def" "define")
 modFormCase=""
 modHelp="Uses definitions.net API to define things"
 modFlag="m"
-if [ -z "${apiKey}" ]; then
+if [[ -z "${apiKey}" ]]; then
 	echo "A definitions.net API user ID is required"
-elif [ -z "${apiKeyToken}" ]; then
+elif [[ -z "${apiKeyToken}" ]]; then
 	echo "A definitions.net developer token ID is required"
-elif [ -z "${msgArr[4]}" ]; then
+elif [[ -z "${msgArr[4]}" ]]; then
 	echo "This command requires a parameter"
 else
 	searchResult="$(curl -m 5 -s --get --data-urlencode "word=${msgArr[@]:4}" "http://www.stands4.com/services/v2/defs.php?uid=${apiKey}&tokenid=${apiKeyToken}")"
 	returnCode="$(fgrep -c "<error>" <<<"${searchResult}")"
-	if [ "${returnCode}" -eq "0" ]; then
+	if [[ "${returnCode}" -eq "0" ]]; then
 		result="$(fgrep "<result>" <<<"${searchResult}")"
 		result="${result#*<result>}"
 		result="${result%%</result>*}"
@@ -61,12 +61,12 @@ else
 		ex="${ex%%</example>*}"
 		pos="${result#*<partofspeech>}"
 		pos="${pos%%</partofspeech>*}"
-		if [ -n "${def}" ]; then
-			if [ -n "${pos}" ] && [ -n "${example}" ]; then
+		if [[ -n "${def}" ]]; then
+			if [[ -n "${pos}" ]] && [[ -n "${example}" ]]; then
 				echo "${term} (${pos}) - ${def} - Example: ${ex}"
-			elif [ -n "${pos}" ] && [ -z "${example}" ]; then
+			elif [[ -n "${pos}" ]] && [[ -z "${example}" ]]; then
 				echo "${term} (${pos}) - ${def}"
-			elif [ -z "${pos}" ] && [ -n "${example}" ]; then
+			elif [[ -z "${pos}" ]] && [[ -n "${example}" ]]; then
 				echo "${term} - ${def} - Example: ${ex}"
 			else
 				echo "${term} - ${def}"

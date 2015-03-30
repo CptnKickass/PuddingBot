@@ -2,7 +2,7 @@
 reqFlag="M"
 
 loggedIn="$(fgrep -c "${senderUser}@${senderHost}" "var/.admins")"
-if [ "${loggedIn}" -eq "1" ]; then
+if [[ "${loggedIn}" -eq "1" ]]; then
 	if fgrep "${senderUser}@${senderHost}" "var/.admins" | awk '{print $3}' | fgrep -q "${reqFlag}"; then
 		modCom="${msgArr[4]}"
 		unset modComItem
@@ -14,9 +14,9 @@ if [ "${loggedIn}" -eq "1" ]; then
 					if ! egrep -q "\.sh$" <<<"${arrItem}"; then
 						arrItem="${arrItem}.sh"
 					fi
-					if [ -z "${arrItem}" ]; then
+					if [[ -z "${arrItem}" ]]; then
 						echo "This command requires a parameter (module name)"
-					elif [ -e "var/.mods/${arrItem}" ]; then
+					elif [[ -e "var/.mods/${arrItem}" ]]; then
 						echo "${arrItem} is loaded"
 					else
 						echo "${arrItem} is not loaded"
@@ -30,16 +30,16 @@ if [ "${loggedIn}" -eq "1" ]; then
 					if ! egrep -q "\.sh$" <<<"${arrItem}"; then
 						arrItem="${arrItem}.sh"
 					fi
-					if [ -e "var/.mods/${arrItem}" ]; then
+					if [[ -e "var/.mods/${arrItem}" ]]; then
 						echo "${arrItem} is already loaded. Do you mean reload, or unload?"
-					elif [ -e "modules/${arrItem}" ]; then
+					elif [[ -e "modules/${arrItem}" ]]; then
 						if [[ "$(source ./modules/${arrItem} --dep-check)" == "ok" ]]; then
 							cp "modules/${arrItem}" "var/.mods/${arrItem}"
 							echo "modules/${arrItem} loaded"
 						else
 							echo "Unable to load modules/${arrItem}! ($(source ./modules/${arrItem} --dep-check))"
 						fi
-					elif [ -e "contrib/${arrItem}" ]; then
+					elif [[ -e "contrib/${arrItem}" ]]; then
 						if [[ "$(source ./contrib/${arrItem} --dep-check)" == "ok" ]]; then
 							cp "contrib/${arrItem}" "var/.mods/${arrItem}"
 							echo "contrib/${arrItem} loaded"
@@ -58,9 +58,9 @@ if [ "${loggedIn}" -eq "1" ]; then
 					if ! egrep -q "\.sh$" <<<"${arrItem}"; then
 						arrItem="${arrItem}.sh"
 					fi
-					if [ -e "var/.mods/${arrItem}" ]; then
+					if [[ -e "var/.mods/${arrItem}" ]]; then
 						rm "var/.mods/${arrItem}"
-						if [ -e "var/.mods/${arrItem}" ]; then
+						if [[ -e "var/.mods/${arrItem}" ]]; then
 							echo "Unable to unload ${arrItem}!"
 						else
 							echo "${arrItem} unloaded"
@@ -77,20 +77,20 @@ if [ "${loggedIn}" -eq "1" ]; then
 					if ! egrep -q "\.sh$" <<<"${arrItem}"; then
 						arrItem="${arrItem}.sh"
 					fi
-					if [ -e "var/.mods/${arrItem}" ]; then
+					if [[ -e "var/.mods/${arrItem}" ]]; then
 						rm "var/.mods/${arrItem}"
-						if [ -e "var/.mods/${arrItem}" ]; then
+						if [[ -e "var/.mods/${arrItem}" ]]; then
 							echo "Unable to unload ${arrItem}!"
 						else
 							echo "${arrItem} unloaded"
-							if [ -e "modules/${arrItem}" ]; then
+							if [[ -e "modules/${arrItem}" ]]; then
 								if [[ "$(source ./modules/${arrItem} --dep-check)" == "ok" ]]; then
 									cp "modules/${arrItem}" "var/.mods/${arrItem}"
 									echo "modules/${arrItem} loaded"
 								else
 									echo "Unable to load modules/${arrItem}! ($(source ./modules/${arrItem} --dep-check))"
 								fi
-							elif [ -e "contrib/${arrItem}" ]; then
+							elif [[ -e "contrib/${arrItem}" ]]; then
 								if [[ "$(source ./contrib/${arrItem} --dep-check)" == "ok" ]]; then
 									cp "contrib/${arrItem}" "var/.mods/${arrItem}"
 									echo "contrib/${arrItem} loaded"
@@ -111,14 +111,14 @@ if [ "${loggedIn}" -eq "1" ]; then
 				for modComItem in var/.mods/*.sh; do
 					modComItem="${modComItem##*/}"
 					rm "var/.mods/${modComItem}"
-					if [ -e "var/.mods/${modComItem}" ]; then
+					if [[ -e "var/.mods/${modComItem}" ]]; then
 						modOutArr+=("Unable to unload ${modComItem} ->")
 					else
 						modOutArr+=("${modComItem} unloaded ->")
-						if [ -e "modules/${modComItem}" ]; then
+						if [[ -e "modules/${modComItem}" ]]; then
 							cp "modules/${modComItem}" "var/.mods/${modComItem}"
 							modOutArr+=("modules/${modComItem} loaded |")
-						elif [ -e "contrib/${modComItem}" ]; then
+						elif [[ -e "contrib/${modComItem}" ]]; then
 							cp "contrib/${modComItem}" "var/.mods/${modComItem}"
 							modOutArr+=("contrib/${modComItem} loaded |")
 						else

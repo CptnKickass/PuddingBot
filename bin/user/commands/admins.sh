@@ -2,7 +2,7 @@
 reqFlag="a"
 
 loggedIn="$(fgrep -c "${senderUser}@${senderHost}" "var/.admins")"
-if [ "${loggedIn}" -eq "1" ]; then
+if [[ "${loggedIn}" -eq "1" ]]; then
 	if fgrep "${senderUser}@${senderHost}" "var/.admins" | awk '{print $3}' | fgrep -q "${reqFlag}"; then
 		cat "var/.admins" | while read item; do
 			lUser="$(awk '{print $1}' <<<"${item}")"

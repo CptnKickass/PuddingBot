@@ -96,7 +96,7 @@ echo ""
 
 echo "Testing for good username and password..."
 mysql --raw --silent -u ${sqlRootUser} -p${sqlRootPass} -e "show databases" > /dev/null 2>&1
-if [ "${?}" -eq "0" ]; then
+if [[ "${?}" -eq "0" ]]; then
 	echo "Username and password good. Continuing..."
 else
 	echo "Bad username or password. Exiting."
@@ -105,7 +105,7 @@ fi
 
 echo "Attempting to create user..."
 mysql --raw --silent -u ${sqlRootUser} -p${sqlRootPass} -e "CREATE USER '${sqlUser}'@'localhost' IDENTIFIED BY  '${sqlPass}';"
-if [ "${?}" -eq "0" ]; then
+if [[ "${?}" -eq "0" ]]; then
 	echo "User created. Continuing..."
 else
 	echo "Unable to create user. Exiting."
@@ -114,7 +114,7 @@ fi
 
 echo "Attempting to grant user usage..."
 mysql --raw --silent -u ${sqlRootUser} -p${sqlRootPass} -e "GRANT USAGE ON * . * TO  '${sqlUser}'@'localhost' IDENTIFIED BY  '${sqlPass}' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0 ;"
-if [ "${?}" -eq "0" ]; then
+if [[ "${?}" -eq "0" ]]; then
 	echo "User usage granted. Continuing..."
 else
 	echo "Unable to grant user usage. Exiting."
@@ -123,7 +123,7 @@ fi
 
 echo "Attempting to create database..."
 mysql --raw --silent -u ${sqlRootUser} -p${sqlRootPass} -e "CREATE DATABASE IF NOT EXISTS ${sqlDBname} ;"
-if [ "${?}" -eq "0" ]; then
+if [[ "${?}" -eq "0" ]]; then
 	echo "Database created. Continuing..."
 else
 	echo "Unable to create database. Exiting."
@@ -132,17 +132,17 @@ fi
 
 echo "Attempting to create tables..."
 mysql --raw --silent -u ${sqlRootUser} -p${sqlRootPass} -e "USE ${sqlDBname}; CREATE TABLE seen (nuh VARCHAR(255), nick VARCHAR(255), seen INT(255), seensaid VARCHAR(255), seensaidin VARCHAR(255));"
-if [ "${?}" -ne "0" ]; then
+if [[ "${?}" -ne "0" ]]; then
 	echo "Unable to create tables. Exiting."
 	exit 255
 fi
 mysql --raw --silent -u ${sqlRootUser} -p${sqlRootPass} -e "USE ${sqlDBname}; CREATE TABLE karma (nick VARCHAR(255), value INT(255));"
-if [ "${?}" -ne "0" ]; then
+if [[ "${?}" -ne "0" ]]; then
 	echo "Unable to create tables. Exiting."
 	exit 255
 fi
 mysql --raw --silent -u ${sqlRootUser} -p${sqlRootPass} -e "USE ${sqlDBname}; CREATE TABLE factoids (id VARCHAR(255), fact VARCHAR(255), locked INT(255), created VARCHAR(255), createdon INT(255), updated VARCHAR(255), updatedon INT(255), callno INT(255), calledby VARCHAR(255));"
-if [ "${?}" -eq "0" ]; then
+if [[ "${?}" -eq "0" ]]; then
 	echo "Tables created. Continuing..."
 else
 	echo "Unable to create tables. Exiting."
@@ -155,7 +155,7 @@ arr=("nuh" "nick" "seensaid" "seensaidin")
 echo "Converting 'karma' table..."
 for i in "${arr[@]}"; do
 	mysql --raw --silent -u ${sqlRootUser} -p${sqlRootPass} -e "USE ${sqlDBname}; ALTER TABLE seen CHANGE ${i} ${i} VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL;"
-	if [ "${?}" -ne "0" ]; then
+	if [[ "${?}" -ne "0" ]]; then
 		echo "Unable to convert ${i} to UTF-8. Exiting."
 		exit 255
 	fi
@@ -164,7 +164,7 @@ arr=("nick")
 echo "Converting 'factoid' table..."
 for i in "${arr[@]}"; do
 	mysql --raw --silent -u ${sqlRootUser} -p${sqlRootPass} -e "USE ${sqlDBname}; ALTER TABLE seen CHANGE ${i} ${i} VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL;"
-	if [ "${?}" -ne "0" ]; then
+	if [[ "${?}" -ne "0" ]]; then
 		echo "Unable to convert ${i} to UTF-8. Exiting."
 		exit 255
 	fi
@@ -172,7 +172,7 @@ done
 arr=("id" "fact" "created" "updated" "calledby")
 for i in "${arr[@]}"; do
 	mysql --raw --silent -u ${sqlRootUser} -p${sqlRootPass} -e "USE ${sqlDBname}; ALTER TABLE seen CHANGE ${i} ${i} VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL;"
-	if [ "${?}" -ne "0" ]; then
+	if [[ "${?}" -ne "0" ]]; then
 		echo "Unable to convert ${i} to UTF-8. Exiting."
 		exit 255
 	fi
@@ -181,7 +181,7 @@ echo "Tables converted. Continuing..."
 
 echo "Attempting to grant database permissions..."
 mysql --raw --silent -u ${sqlRootUser} -p${sqlRootPass} -e "GRANT ALL PRIVILEGES ON  ${sqlDBname} . * TO  '${sqlDBname}'@'localhost';"
-if [ "${?}" -eq "0" ]; then
+if [[ "${?}" -eq "0" ]]; then
 	echo "Database permissions granted. Continuing..."
 else
 	echo "Unable to grant database permissions. Exiting."

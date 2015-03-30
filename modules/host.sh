@@ -9,14 +9,14 @@
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=("host")
-	if [ "${#deps[@]}" -ne "0" ]; then
+	if [[ "${#deps[@]}" -ne "0" ]]; then
 		for i in ${deps[@]}; do
 			if ! command -v ${i} > /dev/null 2>&1; then
 				echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
 				depFail="1"
 			fi
 		done
-		if [ "${depFail}" -eq "1" ]; then
+		if [[ "${depFail}" -eq "1" ]]; then
 			exit 1
 		else
 			echo "ok"
@@ -34,7 +34,7 @@ modFormCase=""
 modHelp="Checks DNS records for a domain"
 modFlag="m"
 hostToLookup="${msgArr[4]}"
-if [ -z "${hostToLookup}" ]; then
+if [[ -z "${hostToLookup}" ]]; then
 	echo "This command requires a parameter."
 elif [[ "${hostToLookup,,}" == "localhost" ]]; then
 	echo "You must think you're real clever, huh?"
@@ -52,19 +52,19 @@ else
 	v6hosts="$(grep "has IPv6 address" <<<"${hostReply}" | awk '{print $5}' | tr '\n' ' ' && echo "")"
 	mailHosts="$(grep "mail is handled by" <<<"${hostReply}" | awk '{print $7}' | tr '\n' ' ' && echo "")"
 	echo "${hostToLookup} DNS Report:"
-	if [ -n "${cname}" ]; then
+	if [[ -n "${cname}" ]]; then
 		echo "${hostToLookup} is a CNAME for ${cname}"
 	fi
-	if [ -n "${rdns}" ]; then
+	if [[ -n "${rdns}" ]]; then
 		echo "${hostToLookup} has a reverse DNS of ${rdns}"
 	fi
-	if [ -n "${v4hosts}" ]; then
+	if [[ -n "${v4hosts}" ]]; then
 		echo "IPv4: ${v4hosts}"
 	fi
-	if [ -n "${v6hosts}" ]; then
+	if [[ -n "${v6hosts}" ]]; then
 		echo "IPv6: ${v6hosts}"
 	fi
-	if [ -n "${mailHosts}" ]; then
+	if [[ -n "${mailHosts}" ]]; then
 		echo "Mail: ${mailHosts}"
 	fi
 fi

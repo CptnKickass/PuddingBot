@@ -15,7 +15,7 @@ if ! [[ "${senderNick}" == "${nick}" ]]; then
 	sqlSeenSaidIn="${sqlMsgArr[2]}" 
 	# Is the user already in the database?
 	sqlUserExists="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM seen WHERE nick = '${sqlNick}';")"
-	if [ -z "${sqlUserExists}" ]; then
+	if [[ -z "${sqlUserExists}" ]]; then
 		# Returned nothing. User does not exist. Let's add them.
 		mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; INSERT INTO seen VALUES ('${sqlNuh}','${sqlNick}','${sqlSeen}','${sqlSeenSaid}','${sqlSeenSaidIn}');" 
 	else

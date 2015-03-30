@@ -56,6 +56,12 @@ case "${com}" in
 	mod)
 		source ./bin/user/commands/mod.sh
 	;;
+	quiet|silence|lobotomy|mute)
+		source ./bin/user/commands/silence.sh
+	;;
+	unquiet|unsilence|unlobotomy|unmute)
+		source ./bin/user/commands/unsilence.sh
+	;;
 	*)
 		modMatch="0"
 		for i in var/.mods/*.sh; do
@@ -73,7 +79,7 @@ case "${com}" in
 				done
 			fi
 		done
-		if [ "${modMatch}" -eq "0" ]; then
+		if [[ "${modMatch}" -eq "0" ]]; then
 			source ./bin/core/factoid.sh 
 		fi
 	;;
@@ -89,7 +95,7 @@ while read i; do
 	fi
 done < var/ignore.db
 
-if [ "${ignoreUser}" -eq "0" ]; then
+if [[ "${ignoreUser}" -eq "0" ]]; then
 	isPm="0"
 	if [[ "${senderTarget,,}" == "${nick,,}" ]]; then
 		# It's a PM. We should assume we're being addressed in the same manner as commands.
@@ -100,7 +106,7 @@ if [ "${ignoreUser}" -eq "0" ]; then
 	case "${msgArr[1]^^}" in
 		JOIN) 
 			# MySQL Seen Stuff
-			if [ "${sqlSupport}" -eq "1" ]; then
+			if [[ "${sqlSupport}" -eq "1" ]]; then
 				source ./bin/usr/mysql-update-seen-join.sh
 			fi
 			if -q egrep "grodt" <<<"${senderNick}" && ! fgrep ".*!.*@${senderHost}" "var/ignore.db"; then
@@ -113,14 +119,14 @@ if [ "${ignoreUser}" -eq "0" ]; then
 			;;
 		PRIVMSG)
 			# MySQL Seen Stuff
-			if [ "${sqlSupport}" -eq "1" ]; then
+			if [[ "${sqlSupport}" -eq "1" ]]; then
 				source ./bin/user/mysql/mysql-update-seen-privmsg.sh
 				factMessage="${msgArr[@]}"
 			fi
 			# Now that user's data is updated.
 			# Let's check for karma
 			if egrep -q "^.*:([[:alnum:]]|[[:punct:]])+(\+\+|--)$" <<<"${msgArr[@]}"; then
-				if [ "${sqlSupport}" -eq "1" ]; then
+				if [[ "${sqlSupport}" -eq "1" ]]; then
 					source ./bin/user/mysql/mysql-karma.sh
 				fi
 			# This is a ${comPrefix} addressed command
@@ -139,7 +145,7 @@ if [ "${ignoreUser}" -eq "0" ]; then
 				com="${com,,}"
 				com="${com:2}"
 			# It's a PM
-			elif [ "${isPm}" -eq "1" ]; then
+			elif [[ "${isPm}" -eq "1" ]]; then
 				# Is it a CTCP?
 				if egrep -iq ":(PING|VERSION|TIME|DATE)" <<<"${msgArr[3]}"; then
 					isCom="0"
@@ -153,7 +159,7 @@ if [ "${ignoreUser}" -eq "0" ]; then
 			else
 				isCom="0"
 			fi
-			if [ "${isCom}" -eq "1" ]; then
+			if [[ "${isCom}" -eq "1" ]]; then
 				comExec;
 			else	
 				modMatch="0"
@@ -187,18 +193,18 @@ if [ "${ignoreUser}" -eq "0" ]; then
 						done
 					fi
 				done
-				if [ "${modMatch}" -eq "0" ]; then
+				if [[ "${modMatch}" -eq "0" ]]; then
 					source ./bin/core/factoid.sh 
 				fi
 			fi
 			;;
 		QUIT)
 			loggedIn="$(fgrep -c "${senderUser}@${senderHost}" "var/.admins")"
-			if [ "${loggedIn}" -eq "1" ]; then
+			if [[ "${loggedIn}" -eq "1" ]]; then
 				sed -i "/${senderUser}@${senderHost}/d" "var/.admins"
 			fi
 			# MySQL Seen Stuff
-			if [ "${sqlSupport}" -eq "1" ]; then
+			if [[ "${sqlSupport}" -eq "1" ]]; then
 				source ./bin/user/mysql/mysql-update-seen-quit.sh
 			fi
 			;;
@@ -206,7 +212,7 @@ if [ "${ignoreUser}" -eq "0" ]; then
 			;;
 		PART) 
 			# MySQL Seen Stuff
-			if [ "${sqlSupport}" -eq "1" ]; then
+			if [[ "${sqlSupport}" -eq "1" ]]; then
 				source ./bin/user/mysql/mysql-update-seen-part.sh
 			fi
 			;;
@@ -222,8 +228,8 @@ if [ "${ignoreUser}" -eq "0" ]; then
 			echo "$(date -R) [${0}] ${msgArr[@]}" >> ${dataDir}/$(<var/bot.pid).debug
 			;;
 	esac
-elif egrep -q "grodt" <<<"${senderNick}"; then
-	if [ -e "var/.mods/grodt.sh" ];then
+elif  [[ "${senderNick,,}" == "grodt" ]]; then
+	if [[ -e "var/.mods/grodt.sh" ]]; then
 		source ./var/.mods/grodt.sh
 	fi
 fi

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 loggedIn="$(fgrep -c "${senderUser}@${senderHost}" "var/.admins")"
-if [ "${loggedIn}" -eq "0" ]; then
+if [[ "${loggedIn}" -eq "0" ]]; then
 	echo "You are not logged in"
 else
-	if [ "$(fgrep "${senderUser}@${senderHost}" "var/.admins" | awk '{print $2}')" -eq "1" ]; then
+	if [[ "$(fgrep "${senderUser}@${senderHost}" "var/.admins" | awk '{print $2}')" -eq "1" ]]; then
 		# Only 1 clone logged in, so we can delete their entry
 		sed -i "/${senderUser}@${senderHost}/d" "var/.admins"
 		echo "Successfully logged out"

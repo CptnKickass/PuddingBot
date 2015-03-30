@@ -548,20 +548,20 @@ case "${msgArr[1]}" in
 	;;
 	# 375 is MOTDSTART
 	375)
-	if [ -n "${operId}" ] && [ -n "${operPass}" ]; then
+	if [[ -n "${operId}" ]] && [[ -n "${operPass}" ]]; then
 		echo "OPER ${operId} ${operPass}"
-		if [ -n "${operModes}" ]; then
+		if [[ -n "${operModes}" ]]; then
 			echo "MODE ${nick} ${operModes}" >> ${output}
 		fi
 	fi
-	if [ -n "${nickPass}" ]; then
+	if [[ -n "${nickPass}" ]]; then
 		echo "PRIVMSG NickServ :identify ${nickPass}" >> ${output}
 		nickPassSent="1"
 	fi
 	for item in ${channels[*]}; do
 		echo "JOIN ${item}" >> ${output}
 	done
-	if [ -n "${lastCom}" ]; then
+	if [[ -n "${lastCom}" ]]; then
 		echo "${lastCom}" >> ${output}
 	fi
 	;;

@@ -59,16 +59,16 @@ checkSanity () {
 	echo "-----"
 	echo ""
 
-	if ! [ -d "var" ]; then
+	if ! [[ -d "var" ]]; then
 		mkdir var
 	fi
 
-	if [ -e "var/.conf" ]; then
+	if [[ -e "var/.conf" ]]; then
 		rm -f "var/.conf"
 	fi
 
 	# Check to make sure at least one admin exists
-	if [ -d "users" ]; then
+	if [[ -d "users" ]]; then
 		echo "Users exist. Checking for presence of administrator..."
 		if find users -depth -type f -iname "*.conf" > /dev/null 2>&1; then
 			if egrep -q "^flags=\".*A.*\"$" users/*.conf; then
@@ -103,7 +103,7 @@ checkSanity () {
 		testVar="$(egrep -m 1 "^${i}=\"" "${confFile}")"
 		testVar="${testVar#${i}=\"}"
 		testVar="${testVar%\"}"
-		if [ -z "${testVar}" ]; then
+		if [[ -z "${testVar}" ]]; then
 			echo -e "Config option ${red}${i}${reset} appears to be invalid!"
 			badConf="1"
 		fi
@@ -112,26 +112,26 @@ checkSanity () {
 	sqlUser="$(egrep -m 1 "^sqlUser=\"" "${confFile}")"
 	sqlUser="${sqlUser#sqlUser=\"}"
 	sqlUser="${sqlUser%\"}"
-	if [ -z "${sqlUser}" ]; then
+	if [[ -z "${sqlUser}" ]]; then
 		echo "No SQL Username defined. Disabling SQL support..."
 		sqlSupport="0"
 	else
 		sqlPass="$(egrep -m 1 "^sqlPass=\"" "${confFile}")"
 		sqlPass="${sqlPass#sqlPass=\"}"
 		sqlPass="${sqlPass%\"}"
-		if [ -z "${sqlPass}" ]; then
+		if [[ -z "${sqlPass}" ]]; then
 			echo "No SQL Password defined. Disabling SQL support..."
 			sqlSupport="0"
 		else
 			sqlDB="$(egrep -m 1 "^sqlDBname=\"" "${confFile}")"
 			sqlDB="${sqlDB#sqlDBname=\"}"
 			sqlDB="${sqlDB%\"}"
-			if [ -z "${sqlDB}" ]; then
+			if [[ -z "${sqlDB}" ]]; then
 				echo "No SQL Database name defined. Disabling SQL support..."
 				sqlSupport="0"
 			else
 				mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDB};" > /dev/null 2>&1
-				if [ "${?}" -eq "0" ]; then
+				if [[ "${?}" -eq "0" ]]; then
 					echo "Valid SQL username, password, and database name found. Enabling SQL support."
 					sqlSupport="1"
 				else
@@ -161,32 +161,32 @@ checkSanity () {
 }
 
 startBot () {
-if [ -e "var/bot.pid" ]; then
+if [[ -e "var/bot.pid" ]]; then
 	echo "Bot appears to be running already (Under PID: $(<var/bot.pid))"
 	return 1
 else
 	echo "Initiating PuddingBot v${ver}"
 	echo ""
-	if [ ! -e "${confFile}" ]; then
+	if [[ ! -e "${confFile}" ]]; then
 		echo "You do not appear to have a \"${confFile}\" file!"
 		echo "Did you not copy your EXAMPLE file?"
 		exit 255
 	fi
 	# If output datafile still exists from last time, remove it
-	if [ -e "${output}" ]; then
+	if [[ -e "${output}" ]]; then
 		echo "Removing old datafiles (Improper shutdown?)"
 		#rm -f "${output}"
 		mv "${output}" "${output} - $(date)"
-		if [ -e "var/.admins" ]; then
+		if [[ -e "var/.admins" ]]; then
 			rm "var/.admins"
 		fi
-		if [ -d "var/.mods" ]; then
+		if [[ -d "var/.mods" ]]; then
 			rm -rf "var/.mods"
 		fi
-		if [ -e "var/.conf" ]; then
+		if [[ -e "var/.conf" ]]; then
 			rm "var/.conf"
 		fi
-		if [ -e "var/.status" ]; then
+		if [[ -e "var/.status" ]]; then
 			rm "var/.status"
 		fi
 	fi
@@ -195,7 +195,7 @@ else
 	echo "Checking config for sanity"
 	checkSanity;
 
-	if [ "${badConf}" -eq "1" ]; then
+	if [[ "${badConf}" -eq "1" ]]; then
 		echo "Please fix above config options prior to start bot."
 		exit 255
 	else
@@ -204,16 +204,16 @@ else
 		source ./var/.conf
 
 		# If ${dataDir} does not exist, create it
-		if [ ! -d "${dataDir}" ]; then
+		if [[ ! -d "${dataDir}" ]]; then
 			echo "Creating data directory"
 			mkdir "${dataDir}"
 		fi
 
 		# If logging is enabled
-		if [ "${logIn}" -eq "1" ]; then
+		if [[ "${logIn}" -eq "1" ]]; then
 			echo "Logging enabled"
 			# If logging directory does not exist, create it
-			if [ ! -d "${dataDir}/logs" ]; then
+			if [[ ! -d "${dataDir}/logs" ]]; then
 				echo "Created log directory"
 				mkdir "${dataDir}/logs"
 			fi
@@ -225,7 +225,7 @@ else
 		egrep "^loadMod" "${confFile}" | sort -u | while read mod; do
 			mod="${mod%\"}"
 			mod="${mod#*\"}"
-			if [ -e "modules/${mod}" ]; then
+			if [[ -e "modules/${mod}" ]]; then
 				# File exists. Check that its dependencies are met.
 				./modules/${mod} --dep-check 2>&1 | head -n 1 | while read line; do
 					if [[ "${line}" == "ok" ]]; then
@@ -235,7 +235,7 @@ else
 						echo -e "Skipped module: ${red}${mod}${reset} (Dependency check failed)"
 					fi
 				done
-			elif [ -e "contrib/${mod}" ]; then
+			elif [[ -e "contrib/${mod}" ]]; then
 				# File exists. Check that its dependencies are met.
 				./contrib/${mod} --dep-check 2>&1 | head -n 1 | while read line; do
 					if [[ "${line}" == "ok" ]]; then
@@ -260,7 +260,7 @@ fi
 }
 
 startBotDebug () {
-if [ -e "var/bot.pid" ]; then
+if [[ -e "var/bot.pid" ]]; then
 	echo "Bot appears to be running already (Under PID: $(<var/bot.pid))"
 	return 1
 else
@@ -270,7 +270,7 @@ else
 	echo "Checking config for sanity"
 	checkSanity;
 
-	if [ "${badConf}" -eq "1" ]; then
+	if [[ "${badConf}" -eq "1" ]]; then
 		echo "Please fix above config options prior to start bot."
 		return 1
 	else
@@ -279,23 +279,23 @@ else
 		source ./var/.conf
 
 		# If ${dataDir} does not exist, create it
-		if [ ! -d "${dataDir}" ]; then
+		if [[ ! -d "${dataDir}" ]]; then
 			echo "Creating data directory"
 			mkdir "${dataDir}"
 		fi
 
 		# If output datafile still exists from last time, remove it
-		if [ -e "${output}" ]; then
+		if [[ -e "${output}" ]]; then
 			echo "Removing old datafile (Improper shutdown?)"
 			mv "${output}" "${output} - $(date)"
 			#rm -f "${output}"
 		fi
 
 		# If logging is enabled
-		if [ "${logIn}" -eq "1" ]; then
+		if [[ "${logIn}" -eq "1" ]]; then
 			echo "Logging enabled"
 			# If logging directory does not exist, create it
-			if [ ! -d "${dataDir}/logs" ]; then
+			if [[ ! -d "${dataDir}/logs" ]]; then
 				echo "Created log directory"
 				mkdir "${dataDir}/logs"
 			fi
@@ -307,7 +307,7 @@ else
 		egrep "^loadMod" "${confFile}" | sort -u | while read mod; do
 			mod="${mod%\"}"
 			mod="${mod#*\"}"
-			if [ ! -e "modules/${mod}" ]; then
+			if [[ ! -e "modules/${mod}" ]]; then
 				# No such file exists
 				echo -e "Skipped module: ${red}${mod}${reset} (No such module found)"
 			else
@@ -331,7 +331,7 @@ fi
 
 stopBot () {
 source var/.conf
-if [ -e "var/bot.pid" ]; then
+if [[ -e "var/bot.pid" ]]; then
 	echo "Sending QUIT to IRCd"
 	echo "QUIT :Killed from console" >> ${output}
 	echo "Killing bot PID ($(< var/bot.pid))"
@@ -344,30 +344,30 @@ fi
 
 forceStopBot () {
 source var/.conf
-if [ -e "var/bot.pid" ]; then
+if [[ -e "var/bot.pid" ]]; then
 	echo "Sending QUIT to IRCd"
 	echo "QUIT :Killed from console" >> ${output}
 	echo "Attempting to kill bot PID ($(< var/bot.pid)) nicely"
 	kill < var/bot.pid
-	if [ -e "var/bot.pid" ]; then
+	if [[ -e "var/bot.pid" ]]; then
 		echo "Quit unsuccessful. Killing bot by all means possible (SIGKILL)"
 		kill -9 $(<var/bot.pid)
 	fi
-	if [ -e "${output}" ]; then
+	if [[ -e "${output}" ]]; then
 		echo "Removing datafile"
 		#rm -f "${output}"
 		mv "${output}" "${output} $(date)"
 	fi
-	if [ -e "var/.conf" ]; then
+	if [[ -e "var/.conf" ]]; then
 		rm -f "var/.conf"
 	fi
-	if [ -e "var/.mods" ]; then
+	if [[ -e "var/.mods" ]]; then
 		rm -f "var/.mods"
 	fi
-	if [ -e "var/.status" ]; then
+	if [[ -e "var/.status" ]]; then
 		rm -f "var/.status"
 	fi
-	if [ -e "var/.admins" ]; then
+	if [[ -e "var/.admins" ]]; then
 		rm -f "var/.admins"
 	fi
 	echo "NOTICE! Due to a known bug of unknown origin, the \"tail -f\" PID cannot be killed by this controller. Please kill it manually."
@@ -377,7 +377,7 @@ fi
 }
 
 # Check for args for non interactive mode. If not present, start in interactive mode.
-if [ -n "${1}" ]; then
+if [[ -n "${1}" ]]; then
 	# Convert ${1} to lowercase
 	arg="${1,,}"
 	case "${arg}" in
@@ -398,8 +398,8 @@ if [ -n "${1}" ]; then
 		--from-irc-restart)
 			sleep 1
 			numTries="0"
-			while [ "${numTries}" -lt "10" ]; do
-				if [ -e "var/bot.pid" ]; then
+			while [[ "${numTries}" -lt "10" ]]; do
+				if [[ -e "var/bot.pid" ]]; then
 					numTries="$(( ${numTries} + 1 ))"
 				else
 					startBot;
@@ -409,10 +409,10 @@ if [ -n "${1}" ]; then
 			done
 		;;
 		--status)
-			if [ -e "var/bot.pid" ]; then
+			if [[ -e "var/bot.pid" ]]; then
 				# PID exists. Is it actually running?
 				pid="$(< var/bot.pid)"
-				if [ "$(ps aux | awk '{print $2}' | fgrep -c "${pid}")" -eq "1" ]; then
+				if [[ "$(ps aux | awk '{print $2}' | fgrep -c "${pid}")" -eq "1" ]]; then
 					# The bot's PID matches an actual process
 					echo -e "Bot status: ${green}Running${reset}"
 				else
@@ -444,10 +444,10 @@ fi
 clear
 while true; do
 	echo "PuddingBot Interactive Console"
-	if [ -e "var/bot.pid" ]; then
+	if [[ -e "var/bot.pid" ]]; then
 		# PID exists. Is it actually running?
 		pid="$(< var/bot.pid)"
-		if [ "$(ps aux | awk '{print $2}' | fgrep -c "${pid}")" -eq "1" ]; then
+		if [[ "$(ps aux | awk '{print $2}' | fgrep -c "${pid}")" -eq "1" ]]; then
 			# The bot's PID matches an actual process
 			echo -e "Bot status: ${green}Running${reset}"
 		else

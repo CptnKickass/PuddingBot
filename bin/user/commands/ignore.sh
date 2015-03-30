@@ -2,9 +2,9 @@
 
 reqFlag="i"
 loggedIn="$(fgrep -c "${senderUser}@${senderHost}" "var/.admins")"
-if [ "${loggedIn}" -eq "1" ]; then
+if [[ "${loggedIn}" -eq "1" ]]; then
 	if fgrep "${senderUser}@${senderHost}" "var/.admins" | awk '{print $3}' | fgrep -q "${reqFlag}"; then
-		if [ -z "${msgArr[4]}" ]; then
+		if [[ -z "${msgArr[4]}" ]]; then
 			echo "This command requires a command parameter"
 		else
 			ignoreHost="${msgArr[5]}"
@@ -13,14 +13,14 @@ if [ "${loggedIn}" -eq "1" ]; then
 			case "${caseMsg,,}" in
 				list)
 					ignoreList="$(<var/ignore.db)"
-					if [ -n "${ignoreList}" ]; then
+					if [[ -n "${ignoreList}" ]]; then
 						echo "${ignoreList}"
 					else
 						echo "Ignore list empty"
 					fi
 					;;
 				add)
-					if [ -z "${msgArr[5]}" ]; then
+					if [[ -z "${msgArr[5]}" ]]; then
 						echo "This command requires a host parameter"
 					# It's important to check for patterns with fgrep instead of
 					# egrep, because we don't want a pattern we've already set
@@ -33,7 +33,7 @@ if [ "${loggedIn}" -eq "1" ]; then
 					fi
 					;;
 				del)
-					if [ -z "${msgArr[5]}" ]; then
+					if [[ -z "${msgArr[5]}" ]]; then
 						echo "This command requires a host parameter"
 					elif fgrep -q "${ignoreHost}" var/ignore.db; then
 						escapedHost="${ignoreHost//\*/\\*}"

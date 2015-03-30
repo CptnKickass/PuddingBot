@@ -2,12 +2,12 @@
 reqFlag="L"
 
 loggedIn="$(fgrep -c "${senderUser}@${senderHost}" "var/.admins")"
-if [ "${loggedIn}" -eq "1" ]; then
+if [[ "${loggedIn}" -eq "1" ]]; then
 	if fgrep "${senderUser}@${senderHost}" "var/.admins" | awk '{print $3}' | fgrep -q "${reqFlag}"; then
 		target="${msgArr[4]}"
-		if [ -n "${target}" ]; then
+		if [[ -n "${target}" ]]; then
 			loggedIn="$(egrep -c "^${target}" "var/.admins")"
-			if [ "${loggedIn}" -eq "0" ]; then
+			if [[ "${loggedIn}" -eq "0" ]]; then
 				echo "${target} is not logged in"
 			else
 				sed -i "/^${target}/d" "var/.admins"

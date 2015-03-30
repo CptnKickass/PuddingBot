@@ -11,14 +11,14 @@ if [[ "$1" == "--dep-check" ]]; then
 	# read fgrep egrep echo cut sed ps awk
 	# Format is: deps=("foo" "bar")
 	deps=("curl" "mktemp" "fgrep")
-	if [ "${#deps[@]}" -ne "0" ]; then
+	if [[ "${#deps[@]}" -ne "0" ]]; then
 		for i in ${deps[@]}; do
 			if ! command -v ${i} > /dev/null 2>&1; then
 				echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
 				depFail="1"
 			fi
 		done
-		if [ "${depFail}" -eq "1" ]; then
+		if [[ "${depFail}" -eq "1" ]]; then
 			exit 1
 		else
 			echo "ok"
@@ -30,7 +30,7 @@ if [[ "$1" == "--dep-check" ]]; then
 	fi
 fi
 
-if [ -e "var/.conf" ]; then
+if [[ -e "var/.conf" ]]; then
 	source var/.conf
 else
 	echo -e "Unable to locate \"${red}\${input}${reset}\" file! (Is bot running?) Exiting."
@@ -44,7 +44,7 @@ modFormCase=""
 modHelp="Checks to see who's streaming on twitch.tv. You can register your twitch username to work with this module via the command: \"set meta twitchuser=YOUR-TWITCH-USERNAME-HERE\""
 modFlag="m"
 
-if [ ! -d "${userDir}" ]; then
+if [[ ! -d "${userDir}" ]]; then
 	echo "Users directory in config does not appear to exist."
 	exit 255
 fi
@@ -62,7 +62,7 @@ else
 		twitchUser="${twitchUser%\"}"
 		puddingUserFile="${match%%:meta=\"twitchuser=*}"
 		apiCall="$(curl -s "https://api.twitch.tv/kraken/streams/${twitchUser}")"
-		if [ "$(fgrep -c "\"stream\":null" <<<"${apiCall}")" -ne "1" ]; then
+		if [[ "$(fgrep -c "\"stream\":null" <<<"${apiCall}")" -ne "1" ]]; then
 			numOnline="$(( ${numOnline} + 1 ))"
 			streamContent="${apiCall#*\"game\":\"}"
 			streamContent="${streamContent%%\"*}"
@@ -73,7 +73,7 @@ else
 		fi
 	done
 fi
-if [ "${numOnline}" -eq "0" ]; then
+if [[ "${numOnline}" -eq "0" ]]; then
 	echo "No registered Twitch.tv users online."
 fi
 

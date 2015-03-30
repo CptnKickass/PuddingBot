@@ -8,14 +8,14 @@
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=("curl")
-	if [ "${#deps[@]}" -ne "0" ]; then
+	if [[ "${#deps[@]}" -ne "0" ]]; then
 		for i in ${deps[@]}; do
 			if ! command -v ${i} > /dev/null 2>&1; then
 				echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
 				depFail="1"
 			fi
 		done
-		if [ "${depFail}" -eq "1" ]; then
+		if [[ "${depFail}" -eq "1" ]]; then
 			exit 1
 		else
 			echo "ok"
@@ -31,7 +31,7 @@ modForm=("wiki" "wikipedia")
 modFormCase=""
 modHelp="Searches wikipedia for a query and returns the first result"
 modFlag="m"
-if [ -z "${msgArr[4]}" ]; then
+if [[ -z "${msgArr[4]}" ]]; then
 	echo "This command requires a parameter"
 else
 	re="'"
@@ -39,7 +39,7 @@ else
 	searchResult="$(curl -s --get "https://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=site:en.wikipedia.org%20${qry}")"
 	results="${searchResult#*\"results\":[}"
 	results="${results%]*}"
-	if [ -z "${results}" ]; then
+	if [[ -z "${results}" ]]; then
 		echo "No results found"
 	else
 		url="${searchResult#*\"unescapedUrl\":\"}"
