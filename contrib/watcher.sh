@@ -33,7 +33,7 @@ fi
 
 input="https://${input}"
 
-if [[ -e "${output}" ]]; then
+if [[ -e "${output}" ]] && ! [[ -e "${output%/*}/.silence" ]] && ! [[ -e "${output%/*}/.silence1" ]]; then
 	for i in "${chan[@]}"; do
 		echo "PRIVMSG ${i} :[WATCHER] File Created: ${input}" >> "${output}"
 	done

@@ -330,8 +330,8 @@ fi
 }
 
 stopBot () {
-source var/.conf
 if [[ -e "var/bot.pid" ]]; then
+	source var/.conf
 	echo "Sending QUIT to IRCd"
 	echo "QUIT :Killed from console" >> ${output}
 	echo "Killing bot PID ($(< var/bot.pid))"
