@@ -121,11 +121,15 @@ fi
 }
 
 callFact () {
-if [[ "${factTrig:(-1)}" == "!" ]]; then
-	factTrig="$(sed -E "s/[[:punct:]]+$//" <<<"${factTrig}")"
-elif [[ "${factTrig:(-1)}" == "?" ]]; then
-	factTrig="$(sed -E "s/[[:punct:]]+$//" <<<"${factTrig}")"
-fi
+factTrig="$(sed "s/'/''/g" <<<"${factTrig}")"
+factTrig="$(sed 's/\\/\\\\/g' <<<"${factTrig}")"
+while [[ "${factTrig:(-1)}" =~ [?|!] ]]; do
+	if [[ "${factTrig:(-1)}" == "!" ]]; then
+		factTrig="${factTrig%!}"
+	elif [[ "${factTrig:(-1)}" == "?" ]]; then
+		factTrig="${factTrig%?}"
+	fi
+done
 factVal="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT fact FROM factoids WHERE id = '${factTrig}';")"
 unset factVals
 readarray -t factVals <<<"${factVal}"
