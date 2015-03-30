@@ -9,14 +9,14 @@
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=("git")
-	if [ "${#deps[@]}" -ne "0" ]; then
+	if [[ "${#deps[@]}" -ne "0" ]]; then
 		for i in ${deps[@]}; do
 			if ! command -v ${i} > /dev/null 2>&1; then
 				echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
 				depFail="1"
 			fi
 		done
-		if [ "${depFail}" -eq "1" ]; then
+		if [[ "${depFail}" -eq "1" ]]; then
 			exit 1
 		else
 			echo "ok"
@@ -35,7 +35,7 @@ modHelp="Add items to Pudding's todo list"
 modFlag="A"
 
 loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
-if [ "${loggedIn}" -eq "1" ]; then
+if [[ "${loggedIn}" -eq "1" ]]; then
 	if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${modFlag}"; then
 		if [[ "${msgArr[4]}" =~ "push" ]]; then
 			git add TODO.md 2>&1
