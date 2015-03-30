@@ -2,14 +2,6 @@
 *.debug
 contrib/grodt.sh
 users/*.conf
-var/.mods
-var/.conf
-var/.admins
-var/.status
-var/input
-var/inbound
-var/outbound
-var/ignore.db
-var/bot.pid
+var/
 pudding.conf
 admins.conf
