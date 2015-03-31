@@ -218,16 +218,6 @@ elif egrep -iq ".*is also <(reply|action)>.*" <<<"${msgTrim}"; then
 	factType="${factType%%>*}"
 	factType="<${factType,,}>"
 	learnAddtlFact;
-elif [[ -z "${factRe}" ]]; then
-	factTrig="${msgTrim,,}"
-	factTrig="$(sed -E "s/[[:punct:]]+$//g" <<<"${factTrig}")"
-	callFact;
-elif [[ "${msgTrim:(-1)}" =~ ${factRe} ]]; then
-	factTrig="${msgTrim,,}"
-	if [[ -n "${factRe}" ]] && [[ "${factTrig:(-1)}" =~ ${factRe} ]]; then
-		factTrig="$(sed -E "s/${factRe}+$//g" <<<"${factTrig}")"
-	fi
-	callFact;
 elif [[ "${wasAddressed}" -eq "1" ]]; then
 	factTrig="${msgTrim,,}"
 	case "${msgArr[0],,}" in
@@ -286,4 +276,14 @@ elif [[ "${wasAddressed}" -eq "1" ]]; then
 		callFact;
 		;;
 	esac
+elif [[ -z "${factRe}" ]]; then
+	factTrig="${msgTrim,,}"
+	factTrig="$(sed -E "s/[[:punct:]]+$//g" <<<"${factTrig}")"
+	callFact;
+elif [[ "${msgTrim:(-1)}" =~ ${factRe} ]]; then
+	factTrig="${msgTrim,,}"
+	if [[ -n "${factRe}" ]] && [[ "${factTrig:(-1)}" =~ ${factRe} ]]; then
+		factTrig="$(sed -E "s/${factRe}+$//g" <<<"${factTrig}")"
+	fi
+	callFact;
 fi
