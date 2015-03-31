@@ -76,8 +76,10 @@ do
 	msgArr=(${message})
 
 	echo "${msgArr[@]}" >> "${input}"
+
 	# ${allMsgArr[@]} array will contain all input
 	allMsgArr+=("${msgArr[@]}")
+
 	if [[ "${logIn}" -eq "1" ]]; then
 		# This is where messages should be parsed for logging
 		echo "Place holder" > /dev/null
@@ -108,6 +110,22 @@ do
 		senderHost="${senderFull#*@}"
 		isCtcp="$(egrep -ic ":(PING|VERSION|TIME|DATE)" <<<"${msgArr[3]}")" 
 		isHelp="$(egrep -ic ":(!)?(${nick}[:;,]?)?help" <<<"${msgArr[@]:(3):2}")" 
+
+		if [[ "${msgArr[1]}" == "PRIVMSG" ]]; then
+			directOut="0"
+			if [[ "${msgArr[@]:(-2):1}" == ">" ]]; then
+				if ! egrep -q "^(#|&)" <<<"${msgArr[@]:(-1):1}"; then
+					directOut="1"
+				fi
+			elif [[ "${msgArr[@]:(-2):1}" == "|" ]]; then
+				directOut="2"
+			fi
+		fi
+
+		if [[ "${directOut}" -ne "0" ]]; then
+			oMsgArr=(${msgArr[@]})
+			msgArr=(${msgArr[@]:0:${#msgArr[@]}-2})
+		fi	
 
 		out="$(source ./bin/user/usermessage.sh)"
 		if [[ "$(fgrep -c "${senderTarget}" <<< "${nick}")" -eq "1" ]]; then

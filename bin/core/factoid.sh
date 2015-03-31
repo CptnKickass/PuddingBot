@@ -121,15 +121,11 @@ fi
 }
 
 callFact () {
+if [[ -n "${factRe}" ]] && [[ "${factTrig:(-1)}" =~ ${factRe} ]]; then
+	factTrig="$(sed -E "s/${factRe}+$//g" <<<"${factTrig}")"
+fi
 factTrig="$(sed "s/'/''/g" <<<"${factTrig}")"
 factTrig="$(sed 's/\\/\\\\/g' <<<"${factTrig}")"
-while [[ "${factTrig:(-1)}" =~ [?|!] ]]; do
-	if [[ "${factTrig:(-1)}" == "!" ]]; then
-		factTrig="${factTrig%!}"
-	elif [[ "${factTrig:(-1)}" == "?" ]]; then
-		factTrig="${factTrig%?}"
-	fi
-done
 factVal="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT fact FROM factoids WHERE id = '${factTrig}';")"
 unset factVals
 readarray -t factVals <<<"${factVal}"
@@ -175,15 +171,6 @@ inArr=(${factMessage})
 
 # Let's trim the first three useless items.
 inArr=(${inArr[@]:3})
-
-# Is the last two items a directive? If so, trim those, parseOutput; in the core/core.sh will handle those
-if [[ "${inArr[@]:(-2):1}" == ">" ]]; then
-	unset inArr[${#inArr[@]}-1]
-	unset inArr[${#inArr[@]}-1]
-elif [[ "${inArr[@]:(-2):1}" == "|" ]]; then
-	unset inArr[${#inArr[@]}-1]
-	unset inArr[${#inArr[@]}-1]
-fi
 
 # We only need the message contents
 msgTrim="${inArr[@]#:}"
@@ -234,10 +221,10 @@ elif egrep -iq ".*is also <(reply|action)>.*" <<<"${msgTrim}"; then
 	factType="${factType%%>*}"
 	factType="<${factType,,}>"
 	learnAddtlFact;
-elif [[ "${msgTrim:(-1)}" == "!" ]]; then
+elif [[ -z "${factRe}" ]]; then
 	factTrig="${msgTrim,,}"
 	callFact;
-elif [[ "${msgTrim:(-1)}" == "?" ]]; then
+elif [[ "${msgTrim:(-1)}" =~ ${factRe} ]]; then
 	factTrig="${msgTrim,,}"
 	callFact;
 elif [[ "${wasAddressed}" -eq "1" ]]; then
