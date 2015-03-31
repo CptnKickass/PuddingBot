@@ -44,8 +44,10 @@ else
 	else
 		for line in "${results[@]}"; do
 			item="${line#*${searchPath}/}"
-			item="https://github.com/CptnKickass/PuddingBot/blob/master/${item}"
-			echo "${item}"
+			if ! fgrep -q "${item}" "${searchPath}/.gitignore}"; then
+				item="https://github.com/CptnKickass/PuddingBot/blob/master/${item}"
+				echo "${item}"
+			fi
 		done
 	fi
 fi
