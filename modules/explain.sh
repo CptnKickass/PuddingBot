@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-## Config
-
-## Source
-
-# Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=()
@@ -33,8 +28,6 @@ modFormCase=""
 modHelp="Sometimes people need things explained to them. This module assists in that."
 modFlag="m"
 target="${msgArr[5]}"
-# Format should be:
-# :N!U@H PRIVMSG ${target} :!explain <to> ${target} <that> ${explain}
 explain="${msgArr[@]:7}"
 re="I'm"
 explain="${explain//you\'re/${re}}"

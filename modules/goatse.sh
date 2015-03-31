@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
 
-## Config
-# None for this script
-
-## Source
-
-# Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=()

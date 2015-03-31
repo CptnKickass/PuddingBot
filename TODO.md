@@ -20,3 +20,4 @@ To do:
 * Add Imgur search module
 * Add a memo-on-next-seen type module
 * Add an SMS module
+* Update host.sh to be IPv6 compatible

@@ -1,17 +1,7 @@
 #!/usr/bin/env bash
 
-## Config
-# Config options go here
-
-## Source
-
-# Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
-	# Dependencies go in this array
-	# Dependencies already required by the controller script:
-	# read fgrep egrep echo cut sed ps awk
-	# Format is: deps=("foo" "bar")
 	deps=()
 	if [[ "${#deps[@]}" -ne "0" ]]; then
 		for i in ${deps[@]}; do
@@ -32,6 +22,11 @@ if [[ "$1" == "--dep-check" ]]; then
 	fi
 fi
 
+if [[ "${sqlSupport}" -eq "0" ]]; then
+	echo "This module requires SQL support to be enabled"
+	exit 255
+fi
+
 modHook="Prefix"
 modForm=("seen")
 modFormCase=""
@@ -39,13 +34,13 @@ modHelp="Checks to see the last time a user was seen"
 modFlag="m"
 msg="$@"
 seenTarget="${msgArr[4]}"
-#if [[ "${seenTarget,,}" == "${senderNick}" ]]; then
-#	echo "Eat a dick ${senderNick}"
-#	exit 0
-#elif [[ "${seenTarget,,}" == "${nick,,}" ]]; then
-#	echo "Eat a buffet of dicks ${senderNick}"
-#	exit 0
-#fi
+if [[ "${seenTarget,,}" == "${senderNick}" ]]; then
+	echo "Go play in traffic"
+	exit 0
+elif [[ "${seenTarget,,}" == "${nick,,}" ]]; then
+	echo "Eat a buffet of dicks, ${senderNick}"
+	exit 0
+fi
 # This method is preferred, but pisses off vim's syntax. So I'll use sed for debugging purposes.
 #seenTarget="${seenTarget//\'/''}"
 seenTarget="$(sed "s/'/''/g" <<<"${seenTarget}")"
@@ -95,4 +90,3 @@ else
 	fi
 	echo "${seenTarget} last seen ${seenAgo} ago (from \"${lastSeenNuh#*!}\"), saying \"${lastSeenSaid}\" in ${lastSeenSaidIn}"
 fi
-exit 0

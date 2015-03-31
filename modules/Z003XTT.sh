@@ -34,4 +34,3 @@ modFormCase="No"
 modHelp="Handles dickery"
 modFlag="m"
 echo "No, you eat a dick ${senderNick}"
-exit 0

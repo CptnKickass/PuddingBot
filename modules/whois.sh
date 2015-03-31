@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
 
-## Config
-# None
-
-## Source
-
-# Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=("whois")
@@ -28,7 +22,7 @@ if [[ "$1" == "--dep-check" ]]; then
 	fi
 fi
 modHook="Prefix"
-modForm=("whois")
+modForm=("whois" "available" "domain")
 modFormCase=""
 modHelp="Checks a domain for ownership availability (If a domain is registered or not)"
 modFlag="m"
@@ -43,4 +37,3 @@ else
 		echo "${domain} is NOT registered (Domain available)"
 	fi 
 fi
-exit 0

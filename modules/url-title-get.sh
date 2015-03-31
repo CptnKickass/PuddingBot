@@ -60,7 +60,9 @@ ytVid () {
 	duration="${duration#*PT}"
 	duration="${duration%\",*}"
 	duration="${duration,,}"
-	pageTitle="[Youtube] ${vidTitle} [${duration}]"
+	pageTitle="[YouTube] ${vidTitle} [${duration}]"
+	echo "${pageTitle}"
+	exit 0
 }
 
 getTitle () {
@@ -241,5 +243,7 @@ egrep -i -o "http(s?):\/\/[^ \"\(\)\<\>]*" <<<"${msgArr[@]}" | while read url; d
 	else
 		otherSite;
 	fi
-	echo "[URL] ${pageTitle}"
+	if [[ -n "${pageTitle}" ]]; then
+		echo "[URL] ${pageTitle}"
+	fi
 done

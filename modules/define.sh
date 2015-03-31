@@ -11,7 +11,6 @@ apiKeyToken=""
 
 ## Source
 
-# Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=("curl" "w3m")

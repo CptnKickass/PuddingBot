@@ -1,17 +1,7 @@
 #!/usr/bin/env bash
 
-## Config
-# Config options go here
-
-## Source
-
-# Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
-	# Dependencies go in this array
-	# Dependencies already required by the controller script:
-	# read fgrep egrep echo cut sed ps awk
-	# Format is: deps=("foo" "bar")
 	deps=()
 	if [[ "${#deps[@]}" -ne "0" ]]; then
 		for i in ${deps[@]}; do

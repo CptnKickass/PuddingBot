@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
 
-## Config
-# None
-
-## Source
-
-# Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=("ispell")
@@ -41,4 +35,3 @@ else
 	spellResult=($(ispell <<<"${msgArr[4]}" | head -n 2 | tail -n 1))
 	echo "${spellResult[@]:1}"
 fi
-exit 0

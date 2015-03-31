@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-## Config
-
-## Source
-
-# Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=("curl")
@@ -389,4 +384,3 @@ else
 		echo "[Google] ${desc}"
 	fi
 fi
-exit 0

@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-## Config
-# None
-
-## Source
-# Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=("sed")
@@ -55,4 +50,3 @@ if [[ -n "${sedItem}" ]]; then
 		fi
 	fi
 fi
-exit 0

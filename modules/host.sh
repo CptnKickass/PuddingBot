@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
 
-## Config
-# None
-
-## Source
-
-# Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=("host")
@@ -42,7 +36,7 @@ elif [[ "${hostToLookup,,}" == "127.0.0.1" ]]; then
 	echo "http://en.wikipedia.org/wiki/Localhost"
 elif [[ "${hostToLookup,,}" == "::1" ]]; then
 	echo "http://www.lifehack.org/articles/productivity/20-productive-ways-to-use-your-free-time.html"
-elif ! egrep -q "(([a-zA-Z](-?[a-zA-Z0-9])*)\.)*[a-zA-Z](-?[a-zA-Z0-9])+\.[a-zA-Z]{2,}" <<<"${hostToLookup}"; then
+elif ! egrep -q "((([a-zA-Z](-?[a-zA-Z0-9])*)\.)*[a-zA-Z](-?[a-zA-Z0-9])+\.[a-zA-Z]{2,}|[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})" <<<"${hostToLookup}"; then
 	echo "The domain ${hostToLookup} does not appear to be a valid domain"
 else
 	hostReply="$(host "${hostToLookup}")"
@@ -68,4 +62,3 @@ else
 		echo "Mail: ${mailHosts}"
 	fi
 fi
-exit 0

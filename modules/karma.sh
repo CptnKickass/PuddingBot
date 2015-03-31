@@ -1,17 +1,7 @@
 #!/usr/bin/env bash
 
-## Config
-# Config options go here
-
-## Source
-
-# Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
-	# Dependencies go in this array
-	# Dependencies already required by the controller script:
-	# read fgrep egrep echo cut sed ps awk
-	# Format is: deps=("foo" "bar")
 	deps=()
 	if [[ "${#deps[@]}" -ne "0" ]]; then
 		for i in ${deps[@]}; do
@@ -30,6 +20,11 @@ if [[ "$1" == "--dep-check" ]]; then
 		echo "ok"
 		exit 0
 	fi
+fi
+
+if [[ "${sqlSupport}" -eq "0" ]]; then
+	echo "This module requires SQL support to be enabled"
+	exit 255
 fi
 
 modHook="Prefix"
@@ -55,16 +50,12 @@ else
 	if [[ "${karmaTarget,,}" == "${nick,,}" ]]; then
 		if [[ "${karma}" -eq "0" ]]; then
 			echo "I have no karma"
-			exit 0
 		else
 			echo "I have a karma of ${karma}"
-			exit 0
 		fi
-	fi
-	if [[ "${karma}" -eq "0" ]]; then
+	elif [[ "${karma}" -eq "0" ]]; then
 		echo "${karmaTarget} has no karma"
 	else
 		echo "${karmaTarget} has a karma of ${karma}"
 	fi
 fi
-exit 0

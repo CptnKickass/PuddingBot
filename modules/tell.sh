@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-## Config
-
-## Source
-
-# Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=()
@@ -82,4 +77,3 @@ elif [[ -z "${explain[@]}" ]]; then
 else
 	echo "${target}: ${explain[@]}"
 fi
-exit 0

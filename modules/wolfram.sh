@@ -68,4 +68,3 @@ else
 	echo "${wolfArr[@]}"
 	unset wolfArr
 fi
-exit 0

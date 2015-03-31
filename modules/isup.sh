@@ -1,16 +1,11 @@
 #!/usr/bin/env bash
 
-## Config
-# None
-
-## Source
 if [[ -e "var/.conf" ]]; then
 	source var/.conf
 else
 	nick="Null"
 fi
 
-# Check dependencies 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=("curl")
@@ -58,4 +53,3 @@ else
 		echo "You should never get this message. Is http://isup.me/ down?"
 	fi
 fi
-exit 0
