@@ -14,7 +14,7 @@ port="6667"
 # Does the server have a password? If not, just leave this empty.
 serverpass=""
 #############################################################
-# RUN ./bin/mysql.sh TO GET THE BELOW 3 SQL OPTIONS!!!!!!!!!!
+# RUN ./utils/mysql.sh TO GET THE BELOW 3 SQL OPTIONS!!!!!!!!!!
 # MySQL Username
 sqlUser="puddingbot"
 # MySQL password
@@ -62,11 +62,6 @@ userDir="${dataDir}/users"
 # List of modules to load. These should exist in the modules/ or in
 # the contrib/ directory.
 # Add new loadMod= lines for each module.
-loadMod="grodt.sh"
-loadMod="recent.sh"
-loadMod="ck-extend.sh"
-loadMod="filesearch.sh"
-loadMod="todo.sh"
 loadMod="convert.sh"
 loadMod="define.sh"
 loadMod="explain.sh"
@@ -86,5 +81,3 @@ loadMod="twitch.sh"
 loadMod="url-title-get.sh"
 loadMod="whois.sh"
 loadMod="wikipedia.sh"
-loadMod="wolfram.sh"
-loadMod="Z003XTT.sh"
