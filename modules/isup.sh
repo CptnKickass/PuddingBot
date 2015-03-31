@@ -36,10 +36,12 @@ modFlag="m"
 siteToCheck="${msgArr[4]}"
 if [[ -z "${siteToCheck}" ]]; then
 	echo "This command requires a parameter"
+elif egrep -qi "(www\.)?(isup\.me|downforeveryoneorjustme\.com)/?" <<<"${siteToCheck}"; then
+	echo "Error: Apocalypse detected. Purging of humanity imminent."
+elif egrep -qi "localhost" <<<"${siteToCheck}"; then
+	echo "ACTION has quit IRC (Connection reset by peer)"
 elif ! egrep -q "(([a-zA-Z](-?[a-zA-Z0-9])*)\.)*[a-zA-Z](-?[a-zA-Z0-9])+\.[a-zA-Z]{2,}" <<<"${siteToCheck}"; then
 	echo "The domain ${siteToCheck} does not appear to be a valid domain"
-elif [[ "$(egrep -c "(www\.)?(isup\.me|downforeveryoneorjustme\.com)/?" <<<"${siteToCheck}")" -eq "1" ]]; then
-	echo "Error: Apocalypse detected. Purging of humanity imminent."
 else
 	siteToCheck="${msgArr[4]#http://}"
 	siteToCheck="${siteToCheck#https://}"
