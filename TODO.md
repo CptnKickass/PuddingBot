@@ -1,18 +1,15 @@
 To do:
-* Store incoming messages in searchable array
 * Fix tail not dying on kill
+* Add user verification for registration to prevent abuse
 * Add some kind of structured logging option
 * Add method for changing user flags
-* Decide what to add to SQL and what to keep in flat file support
 * Add nick tracking of some kind, as far as channel ops/voice/etc
 * Add documentation of how factoids work
 * Add a way to modify/delete one reply value of a factoid with multiple reply values, rather than having to delete the entire factoid
 * Add failed login notifications
 * Add a setting to require being logged in to interact with the bot at all
-* Fix directed output on multiple lines
 * Add wolf/mafia game module
 * Add some kind of "prize for karma" system
-* Change regex which calls factoids to be configuable, also allowing them to be called on no regex (Every message sent)
 * Add Twitter to URL module
 * Add SpeedTest.net to URL module
 * Add Steam to URL module
@@ -21,3 +18,5 @@ To do:
 * Add Imgur to URL module
 * Add google images search module
 * Add Imgur search module
+* Add a memo-on-next-seen type module
+* Add an SMS module
