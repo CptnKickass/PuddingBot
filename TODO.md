@@ -11,3 +11,13 @@ To do:
 * Add a setting to require being logged in to interact with the bot at all
 * Fix directed output on multiple lines
 * Add wolf/mafia game module
+* Add some kind of "prize for karma" system
+* Change regex which calls factoids to be configuable, also allowing them to be called on no regex (Every message sent)
+* Add Twitter to URL module
+* Add SpeedTest.net to URL module
+* Add Steam to URL module
+* Add Wikipedia to URL module
+* Add Reddit to URL module
+* Add Imgur to URL module
+* Add google images search module
+* Add Imgur search module
