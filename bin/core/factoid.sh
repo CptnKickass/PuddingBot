@@ -121,9 +121,6 @@ fi
 }
 
 callFact () {
-if [[ -n "${factRe}" ]] && [[ "${factTrig:(-1)}" =~ ${factRe} ]]; then
-	factTrig="$(sed -E "s/${factRe}+$//g" <<<"${factTrig}")"
-fi
 factTrig="$(sed "s/'/''/g" <<<"${factTrig}")"
 factTrig="$(sed 's/\\/\\\\/g' <<<"${factTrig}")"
 factVal="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT fact FROM factoids WHERE id = '${factTrig}';")"
@@ -223,9 +220,13 @@ elif egrep -iq ".*is also <(reply|action)>.*" <<<"${msgTrim}"; then
 	learnAddtlFact;
 elif [[ -z "${factRe}" ]]; then
 	factTrig="${msgTrim,,}"
+	factTrig="$(sed -E "s/[[:punct:]]+$//g" <<<"${factTrig}")"
 	callFact;
 elif [[ "${msgTrim:(-1)}" =~ ${factRe} ]]; then
 	factTrig="${msgTrim,,}"
+	if [[ -n "${factRe}" ]] && [[ "${factTrig:(-1)}" =~ ${factRe} ]]; then
+		factTrig="$(sed -E "s/${factRe}+$//g" <<<"${factTrig}")"
+	fi
 	callFact;
 elif [[ "${wasAddressed}" -eq "1" ]]; then
 	factTrig="${msgTrim,,}"
