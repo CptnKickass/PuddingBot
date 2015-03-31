@@ -22,6 +22,10 @@ sqlPass="test"
 # MySQL Database Name. Usually the username is fine.
 sqlDBname="puddingbot"
 #############################################################
+# What regular expression should phrases end in for factoids to be called?
+# Be warned that leaving this blank will check for factoids on every single message sent
+# (If it's not registered as a command). Usually the default is fine.
+factRe="[?|!]"
 # Bot owner's IRC nickname?
 # (This is purely for info, not for administrative commands.)
 owner="<Your IRC nick goes here>"
