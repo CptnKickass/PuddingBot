@@ -74,7 +74,7 @@ forgetFact () {
 sqlFactExists="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM factoids WHERE id = '${factTrig}';")"
 if [[ -z "${sqlFactExists}" ]]; then
 	# Returned nothing. Factoid does not exist. Let's add it.
-	echo "But I don't have any factoids for ${factTrig}"
+	echo "But I don't have any factoids for ${factTrigOrig}"
 else
 	isLocked="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT locked FROM factoids WHERE id = '${factTrig}' LIMIT 1;")"
 	# Factoid does exist.
@@ -127,7 +127,7 @@ factVal="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname};
 unset factVals
 readarray -t factVals <<<"${factVal}"
 if [[ "${#factVals[@]}" -eq "0" ]]; then
-	factTrig="${factTrigPre}"
+	factTrig="${factTrigOrig}"
 	factTrig="$(sed "s/'/''/g" <<<"${factTrig}")"
 	factTrig="$(sed 's/\\/\\\\/g' <<<"${factTrig}")"
 	factVal="$(mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT fact FROM factoids WHERE id = '${factTrig}';")"
@@ -200,8 +200,8 @@ msgTrim="${msgArr[@]}"
 # Are we learning a new factoid?
 if egrep -iq ".*is <(reply|action)>.*" <<<"${msgTrim}"; then
 	# We're learning a new factoid!
-	factTrigOrig="${factTrig}"
 	factTrig="${msgTrim%% is <*}"
+	factTrigOrig="${factTrig}"
 	factTrig="$(sed "s/'/''/g" <<<"${factTrig}")"
 	factTrig="$(sed 's/\\/\\\\/g' <<<"${factTrig}")"
 	factVal="${msgTrim#*>}"
@@ -215,8 +215,8 @@ if egrep -iq ".*is <(reply|action)>.*" <<<"${msgTrim}"; then
 	learnFact;
 elif egrep -iq ".*is also <(reply|action)>.*" <<<"${msgTrim}"; then 
 	# We're appending an existing factoid!
-	factTrigOrig="${factTrig}"
 	factTrig="${msgTrim%% is also <*}"
+	factTrigOrig="${factTrig}"
 	factTrig="$(sed "s/'/''/g" <<<"${factTrig}")"
 	factTrig="$(sed 's/\\/\\\\/g' <<<"${factTrig}")"
 	factVal="${msgTrim#*>}"
@@ -230,6 +230,7 @@ elif egrep -iq ".*is also <(reply|action)>.*" <<<"${msgTrim}"; then
 	learnAddtlFact;
 elif [[ "${wasAddressed}" -eq "1" ]]; then
 	factTrig="${msgTrim,,}"
+	factTrigOrig="${factTrig}"
 	case "${msgArr[0],,}" in
 		lock)
 		loggedIn="$(fgrep -c "${senderUser}@${senderHost}" "var/.admins")"
@@ -288,13 +289,13 @@ elif [[ "${wasAddressed}" -eq "1" ]]; then
 	esac
 elif [[ -z "${factRe}" ]]; then
 	factTrig="${msgTrim,,}"
-	factTrigPre="${factTrig}"
+	factTrigOrig="${factTrig}"
 	factTrig="$(sed -E "s/[!|?|.|:]+$//g" <<<"${factTrig}")"
 	callFact;
 elif [[ "${msgTrim:(-1)}" =~ ${factRe} ]]; then
 	factTrig="${msgTrim,,}"
 	if [[ -n "${factRe}" ]] && [[ "${factTrig:(-1)}" =~ ${factRe} ]]; then
-		factTrigPre="${factTrig}"
+		factTrigOrig="${factTrig}"
 		factTrig="$(sed -E "s/${factRe}+$//g" <<<"${factTrig}")"
 	fi
 	callFact;
