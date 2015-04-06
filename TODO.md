@@ -21,3 +21,9 @@ To do:
 * Add a memo-on-next-seen type module
 * Add an SMS module
 * Update host.sh to be IPv6 compatible
+* Add a way to address the bot in factoid reply values
+* Add "snofox.sh" module; reference PM on 2015-04-04 01:07:02
+* Add /r/ lengthener
+* Add Cards Against Humanity module
+* Add Choose Your Own Adventure module or factoid set
+* Move all API keys to an "api.conf" file

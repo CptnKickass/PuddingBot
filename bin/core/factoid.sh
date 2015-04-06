@@ -231,6 +231,8 @@ elif egrep -iq ".*is also <(reply|action)>.*" <<<"${msgTrim}"; then
 elif [[ "${wasAddressed}" -eq "1" ]]; then
 	factTrig="${msgTrim,,}"
 	factTrigOrig="${factTrig}"
+	factTrig="$(sed "s/'/''/g" <<<"${factTrig}")"
+	factTrig="$(sed 's/\\/\\\\/g' <<<"${factTrig}")"
 	case "${msgArr[0],,}" in
 		lock)
 		loggedIn="$(fgrep -c "${senderUser}@${senderHost}" "var/.admins")"
