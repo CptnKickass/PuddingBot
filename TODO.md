@@ -28,3 +28,4 @@ To do:
 * Add Choose Your Own Adventure module or factoid set
 * Add idle channel messages
 * Check to see if a username was given in login parameters. If so, use that username.
+* Add API key requirements during dependency checks of modules
