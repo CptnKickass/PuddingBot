@@ -5,4 +5,4 @@ contrib/snofox.sh
 users/*.conf
 var/
 pudding.conf
-admins.conf
+api.conf
