@@ -239,7 +239,7 @@ elif [[ "${wasAddressed}" -eq "1" ]] || [[ "${isPm}" -eq "1" ]]; then
 		if [[ "${loggedIn}" -eq "1" ]]; then
 			reqFlag="l"
 			if fgrep "${senderUser}@${senderHost}" "var/.admins" | awk '{print $3}' | fgrep -q "${reqFlag}"; then
-				target="${msgArr[4]}"
+				target="${msgArr[1]}"
 				if [[ -n "${target}" ]]; then
 					factTrig="${factTrig#*lock }"
 					lockFact;
@@ -258,7 +258,7 @@ elif [[ "${wasAddressed}" -eq "1" ]] || [[ "${isPm}" -eq "1" ]]; then
 		if [[ "${loggedIn}" -eq "1" ]]; then
 			reqFlag="l"
 			if fgrep "${senderUser}@${senderHost}" "var/.admins" | awk '{print $3}' | fgrep -q "${reqFlag}"; then
-				target="${msgArr[4]}"
+				target="${msgArr[1]}"
 				if [[ -n "${target}" ]]; then
 					factTrig="${factTrig#*unlock }"
 					unlockFact;
