@@ -491,6 +491,17 @@ case "${msgArr[1]}" in
 	;;
 	# 353 is NAMREPLY
 	353)
+	chan="${msgArr[4]#\#}"
+	if ! [[ -d "var/.track" ]]; then
+		mkdir "var/.track"
+	fi
+	if [[ -e "var/.track/.${chan}" ]]; then
+		rm "var/.track/.${chan}"
+	fi
+	msgArr[5]="${msgArr[5]#:}"
+	for i in "${msgArr[@]:5}"; do
+		echo "${i}" >> "var/.track/.${chan}"
+	done
 	;;
 	# 354 is WHOSPCRPL
 	354)

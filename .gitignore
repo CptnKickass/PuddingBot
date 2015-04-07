@@ -1,6 +1,7 @@
 # Runfiles that don't need to be pushed
 *.debug
 contrib/grodt.sh
+contrib/snofox.sh
 users/*.conf
 var/
 pudding.conf

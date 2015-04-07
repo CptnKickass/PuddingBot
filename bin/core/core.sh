@@ -8,6 +8,13 @@ else
 	echo "Unable to locate bot config!"
 	exit 255
 fi
+if [[ -e "var/.api" ]]; then
+	echo "Loading variables into bot"
+	source var/.api
+else
+	echo "Unable to locate bot api config!"
+	exit 255
+fi
 
 # Setup file for user checks
 if [[ -e "var/.admins" ]]; then
@@ -36,7 +43,7 @@ inArr="0"
 echo "startTime=\"$(date +%s)\"" >> var/.status
 
 # Functions
-inArray() {
+inArray () {
 # When passing items to this to see if they're in the array or not,
 # the format should be:
 # inArray "${itemToBeCheck}" "${arrayToCheck[@]}"
@@ -50,6 +57,63 @@ for h; do
 		inArr="0"
 	fi
 done
+}
+
+rehash () {
+rm "var/.conf"
+rm "var/.api"
+
+egrep -v "(^$|^#)" "${apiFile}" >> var/.api
+
+sqlUser="$(egrep -m 1 "^sqlUser=\"" "${confFile}")"
+sqlUser="${sqlUser#sqlUser=\"}"
+sqlUser="${sqlUser%\"}"
+if [[ -z "${sqlUser}" ]]; then
+	sqlSupport="0"
+else
+	sqlPass="$(egrep -m 1 "^sqlPass=\"" "${confFile}")"
+	sqlPass="${sqlPass#sqlPass=\"}"
+	sqlPass="${sqlPass%\"}"
+	if [[ -z "${sqlPass}" ]]; then
+		sqlSupport="0"
+	else
+		sqlDB="$(egrep -m 1 "^sqlDBname=\"" "${confFile}")"
+		sqlDB="${sqlDB#sqlDBname=\"}"
+		sqlDB="${sqlDB%\"}"
+		if [[ -z "${sqlDB}" ]]; then
+			sqlSupport="0"
+		else
+			mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDB};" > /dev/null 2>&1
+			if [[ "${?}" -eq "0" ]]; then
+				sqlSupport="1"
+			else
+				sqlSupport="0"
+			fi
+		fi
+	fi
+fi
+
+egrep -v "^#" "${confFile}" | egrep -v "^loadMod=\"" | while read i; do
+	testVar="${i}"
+	testVar="${testVar#*=\"}"
+	testVar="${testVar%\"}"
+	if [[ "${i%%=\"*}" == "logIn" ]]; then
+		case "${testVar,,}" in
+			yes)
+			i="logIn=\"1\"";;
+			no)
+			i="logIn=\"0\"";;
+		esac
+	fi
+	echo "${i}" >> var/.conf
+done
+
+echo "sqlSupport=\"${sqlSupport}\"" >> var/.conf
+echo "confFile=\"${confFile}\""
+echo "apiFile=\"${apiFile}\""
+
+source var/.conf
+source var/.api
 }
 
 echo "Creating datafile"
@@ -128,6 +192,12 @@ do
 		fi	
 
 		out="$(source ./bin/user/usermessage.sh)"
+
+		if [[ -e "var/.rehash" ]]; then
+			rehash;
+			rm "var/.rehash"
+		fi
+
 		if [[ "$(fgrep -c "${senderTarget}" <<< "${nick}")" -eq "1" ]]; then
 			senderTarget="${senderNick}"
 		fi
@@ -149,6 +219,9 @@ do
 		fi
 		if [[ -e "var/.conf" ]]; then
 			rm -f "var/.conf"
+		fi
+		if [[ -e "var/.api" ]]; then
+			rm -f "var/.api"
 		fi
 		if [[ -e "var/.mods" ]]; then
 			rm -rf "var/.mods"
@@ -206,6 +279,9 @@ if [[ -e "var/.admins" ]]; then
 fi
 if [[ -e "var/.conf" ]]; then
 	rm -f "var/.conf"
+fi
+if [[ -e "var/.api" ]]; then
+	rm -f "var/.api"
 fi
 if [[ -e "var/.mods" ]]; then
 	rm -rf "var/.mods"

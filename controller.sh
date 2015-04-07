@@ -41,6 +41,7 @@ yellow='\E[1;33m'
 reset="\033[1m\033[0m"
 badConf="0"
 confFile="pudding.conf"
+apiFile="api.conf"
 
 # Check dependencies for the controller script
 # Define some functions
@@ -65,6 +66,9 @@ checkSanity () {
 
 	if [[ -e "var/.conf" ]]; then
 		rm -f "var/.conf"
+	fi
+	if [[ -e "var/.api" ]]; then
+		rm -f "var/.api"
 	fi
 
 	# Check to make sure at least one admin exists
@@ -96,6 +100,13 @@ checkSanity () {
 			echo "No admins exist. Please create an administrator before launching bot for the first time."
 			./utils/createuser.sh
 		done
+	fi
+
+	if [[ -e "${apiFile}" ]]; then
+		egrep -v "(^$|^#)" "${apiFile}" >> var/.api
+	else
+		echo "${apiFile} does not exist!"
+		exit 255
 	fi
 
 	confReq=("nick" "ident" "gecos" "server" "port" "owner" "ownerEmail" "comPrefix" "genFlags" "logIn" "dataDir" "output" "input")
@@ -158,6 +169,8 @@ checkSanity () {
 	done
 
 	echo "sqlSupport=\"${sqlSupport}\"" >> var/.conf
+	echo "confFile=\"${confFile}\"" >> var/.conf
+	echo "apiFile=\"${apiFile}\"" >> var/.conf
 }
 
 startBot () {
@@ -185,6 +198,9 @@ else
 		fi
 		if [[ -e "var/.conf" ]]; then
 			rm "var/.conf"
+		fi
+		if [[ -e "var/.api" ]]; then
+			rm "var/.api"
 		fi
 		if [[ -e "var/.status" ]]; then
 			rm "var/.status"
@@ -360,6 +376,9 @@ if [[ -e "var/bot.pid" ]]; then
 	fi
 	if [[ -e "var/.conf" ]]; then
 		rm -f "var/.conf"
+	fi
+	if [[ -e "var/.api" ]]; then
+		rm -f "var/.api"
 	fi
 	if [[ -e "var/.mods" ]]; then
 		rm -f "var/.mods"

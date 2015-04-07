@@ -23,8 +23,8 @@ To do:
 * Add a memo-on-next-seen type module
 * Add an SMS module
 * Add a way to address the bot in factoid reply values
-* Add "snofox.sh" module; reference PM on 2015-04-04 01:07:02
 * Add /r/ lengthener
 * Add Cards Against Humanity module
 * Add Choose Your Own Adventure module or factoid set
 * Add idle channel messages
+* Check to see if a username was given in login parameters. If so, use that username.

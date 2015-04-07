@@ -228,7 +228,7 @@ elif egrep -iq ".*is also <(reply|action)>.*" <<<"${msgTrim}"; then
 	factType="${factType%%>*}"
 	factType="<${factType,,}>"
 	learnAddtlFact;
-elif [[ "${wasAddressed}" -eq "1" ]]; then
+elif [[ "${wasAddressed}" -eq "1" ]] || [[ "${isPm}" -eq "1" ]]; then
 	factTrig="${msgTrim,,}"
 	factTrigOrig="${factTrig}"
 	factTrig="$(sed "s/'/''/g" <<<"${factTrig}")"

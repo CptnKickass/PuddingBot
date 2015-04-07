@@ -62,6 +62,9 @@ case "${com}" in
 	unquiet|unsilence|unlobotomy|unmute)
 		source ./bin/user/commands/unsilence.sh
 	;;
+	rehash|reload)
+		source ./bin/user/commands/rehash.sh
+	;;
 	*)
 		modMatch="0"
 		for i in var/.mods/*.sh; do
@@ -109,11 +112,23 @@ if [[ "${ignoreUser}" -eq "0" ]]; then
 			if [[ "${sqlSupport}" -eq "1" ]]; then
 				source ./bin/usr/mysql-update-seen-join.sh
 			fi
+
+			chan="${msgArr[2]#\#}"
+			if ! [[ -d "var/.track" ]]; then
+				mkdir "var/.track"
+			fi
+			echo "${senderNick}" >> "var/.track/.${chan}"
+
 			if -q egrep "grodt" <<<"${senderNick}" && ! fgrep ".*!.*@${senderHost}" "var/ignore.db"; then
 				echo ".*!.*@${senderHost}" >> var/ignore.db
 			fi
 			;;
 		KICK)
+			chan="${msgArr[2]#\#}"
+			if ! [[ -d "var/.track" ]]; then
+				mkdir "var/.track"
+			fi
+			sed -i "/${senderNick}/id" "var/.track/.${chan}"
 			;;
 		NOTICE)
 			;;
@@ -207,14 +222,37 @@ if [[ "${ignoreUser}" -eq "0" ]]; then
 			if [[ "${sqlSupport}" -eq "1" ]]; then
 				source ./bin/user/mysql/mysql-update-seen-quit.sh
 			fi
+			chan="${msgArr[2]#\#}"
+			if ! [[ -d "var/.track" ]]; then
+				mkdir "var/.track"
+			fi
+			sed -i "/${senderNick}/id" "var/.track/.${chan}"
 			;;
 		MODE)
+			chan="${msgArr[2]#\#}"
+			if ! [[ -d "var/.track" ]]; then
+				mkdir "var/.track"
+			fi
+			modeChg="${msgArr[3]}"
+			for (( i=0; i<${#modeChg}; i++ )); do
+				q="${modeChg:${i}:1}"
+				if [[ "${q}" == "+" ]]; then
+					adding="1"
+				elif [[ "${q}" == "-" ]]; then
+					adding="0"
+				fi
+			done
 			;;
 		PART) 
 			# MySQL Seen Stuff
 			if [[ "${sqlSupport}" -eq "1" ]]; then
 				source ./bin/user/mysql/mysql-update-seen-part.sh
 			fi
+			chan="${msgArr[2]#\#}"
+			if ! [[ -d "var/.track" ]]; then
+				mkdir "var/.track"
+			fi
+			sed -i "/${senderNick}/id" >> "var/.track/.${chan}"
 			;;
 		NICK)
 			;;
