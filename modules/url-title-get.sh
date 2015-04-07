@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-## Config
-# YouTube v3 API
-apiKey=""
-# None
-
 ## Source
 if ! [[ -e "var/.conf" ]]; then
 	nick="Null"
@@ -38,7 +33,7 @@ modFormCase="Yes"
 modHelp="Gets a URL's <title> and/or some other useful info"
 modFlag="m"
 
-if [[ -z "${apiKey}" ]]; then
+if [[ -z "${youTubeApiKey}" ]]; then
 	echo "A Google API key for YouTube is required"
 	exit 255
 fi
@@ -51,7 +46,7 @@ ytVid () {
 		vidId="${url#*watch?v=}"
 		vidId="${vidId:0:11}"
 	fi
-	apiUrl="https://www.googleapis.com/youtube/v3/videos?id=${vidId}&key=${apiKey}&part=snippet,contentDetails"
+	apiUrl="https://www.googleapis.com/youtube/v3/videos?id=${vidId}&key=${youTubeApiKey}&part=snippet,contentDetails"
 	vidInfo="$(curl -A "${nick}" -m 5 -k -s -L "${apiUrl}")"
 	vidTitle="$(fgrep -m 1 "\"title\": \"" <<<"${vidInfo}")"
 	vidTitle="${vidTitle%\",*}"

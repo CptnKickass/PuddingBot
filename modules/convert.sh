@@ -1,16 +1,8 @@
 #!/usr/bin/env bash
 
-## Config
 # Credit for conversions to convert.net
-# API available at: http://www.convert.net/api.php
-
-# Convert.net API user ID
-apiKey=""
-# Convert.net Developer Token ID
-apiKeyToken=""
 
 ## Source
-
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=("curl" "w3m")
@@ -37,14 +29,14 @@ modForm=("convert")
 modFormCase=""
 modHelp="Uses convert.net API to convert things"
 modFlag="m"
-if [[ -z "${apiKey}" ]]; then
+if [[ -z "${convApiKey}" ]]; then
 	echo "A convert.net API user ID is required"
-elif [[ -z "${apiKeyToken}" ]]; then
+elif [[ -z "${convApiKeyToken}" ]]; then
 	echo "A convert.net developer token ID is required"
 elif [[ -z "${msgArr[4]}" ]]; then
 	echo "This command requires a parameter"
 else
-	searchResult="$(curl -m 5 -s --data-urlencode "expression=${msgArr[@]:4}" "http://www.stands4.com/services/v2/conv.php?uid=${apiKey}&tokenid=${apiKeyToken}")"
+	searchResult="$(curl -m 5 -s --data-urlencode "expression=${msgArr[@]:4}" "http://www.stands4.com/services/v2/conv.php?uid=${convApiKey}&tokenid=${convApiKeyToken}")"
 	returnCode="$(fgrep "<errorCode>" <<<"${searchResult}")"
 	returnCode="${returnCode#*<errorCode>}"
 	returnCode="${returnCode%</errorCode>*}"

@@ -28,7 +28,8 @@ modFormCase="No"
 modHelp="Provides sed functionality"
 modFlag="m"
 target="${msgArr[2]}"
-sedCom="${msgArr[3]#:}"
+sedCom="${msgArr[@]:(3)}"
+sedCom="${sedCom#:}"
 sedItem="${sedCom#s/}"
 sedItem="${sedItem%%/*}"
 if [[ -n "${sedItem}" ]]; then
@@ -43,9 +44,9 @@ if [[ -n "${sedItem}" ]]; then
 	line="${prevLine#* :}"
 	if [[ -n "${line}" ]]; then
 		lineFixed="$(sed -E "${sedCom}" <<<"${line}")"
-		if ! [[ "${lineFixed}" == "${line}" ]] && [[ "${#lineFixed}" -le "200" ]]; then
+		if ! [[ -n "${lineFixed}" ]] && [[ "${lineFixed}" == "${line}" ]] && [[ "${#lineFixed}" -le "200" ]]; then
 			echo "[FTFY] <${prevSend}> ${lineFixed}"
-		elif ! [[ "${lineFixed}" == "${line}" ]] && [[ "${#lineFixed}" -gt "200" ]]; then
+		elif ! [[ -n "${lineFixed}" ]] && [[ "${lineFixed}" == "${line}" ]] && [[ "${#lineFixed}" -gt "200" ]]; then
 			echo "sed response not sent due to result being over 200 characters"
 		fi
 	fi

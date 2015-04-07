@@ -52,4 +52,3 @@ echo "s   |         / /      \\__/\\___/    |          |s"
 echo "e  |           /        |    |       |         |e"
 echo "x  |          |         |    |       |         |x"
 echo "* g o a t s e x * g o a t s e x * g o a t s e x *"
-exit 0

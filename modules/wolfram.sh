@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-## Config
-# WolframAlpha API Key
-apiKey=""
-
 ## Source
 if [[ -e "var/.conf" ]]; then
 	source var/.conf
@@ -40,7 +36,7 @@ modHelp="Queries wolfram alpha for your question"
 modFlag="m"
 # Color character used to start a category: [1;36m
 # Color character used to end a category: [0m
-if [[ -z "${apiKey}" ]]; then
+if [[ -z "${wolfApiKey}" ]]; then
 	echo "A Wolfram Alpha API key is required"
 elif [[ -z "${msgArr[4]}" ]]; then
 	echo "This command requires a parameter"
@@ -50,7 +46,7 @@ else
 	# properly encode query
 	wolfQ="$(sed 's/+/%2B/g' <<<"${wolfQ}" | tr '\ ' '\+')"
 	# fetch and parse result
-	result=$(curl -s "http://api.wolframalpha.com/v2/query?input=${wolfQ}&appid=${apiKey}&format=plaintext")
+	result=$(curl -s "http://api.wolframalpha.com/v2/query?input=${wolfQ}&appid=${wolfApiKey}&format=plaintext")
 	echo "Wolfram Alpha Results:"
 	echo -e "${result}" | tr '\n' '\t' | sed -e 's/<plaintext>/\'$'\n<plaintext>/g' | grep -oE "<plaintext>.*</plaintext>|<pod title=.[^\']*" | sed 's!<plaintext>!!g; s!</plaintext>!!g;  s!<pod title=.*!\\\x1b[1;36m&\\\x1b[0m!g; s!<pod title=.!!g; s!\&amp;!\&!' | tr '\t' '\n' | sed  '/^$/d; s/\ \ */\ /g' | while read line; do
 		if egrep -q "$(echo -e "\e\[1;36m")" <<<"${line}"; then

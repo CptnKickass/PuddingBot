@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-## Config
-# goo.gl API key
-apiKey=""
-
 ## Source
 if [[ -e "var/.conf" ]]; then
 	source var/.conf
@@ -39,13 +35,13 @@ modForm=("short" "shorten")
 modFormCase=""
 modHelp="Shortens a URL via Google's URL shortener service"
 modFlag="m"
-if [[ -z "${apiKey}" ]]; then
+if [[ -z "${gooGlApiKey}" ]]; then
 	echo "A Google API key is required"
 elif [[ -z "${msgArr[4]}" ]]; then
 	shortItem="$(fgrep "PRIVMSG" "${input}" | egrep -o "http(s?):\/\/[^ \"\(\)\<\>]*" | tail -n 1)"
 	if [[ -n "${shortItem}" ]]; then
 		echo "Shortening most recently spoken URL (${shortItem})"
-		shortUrl="$(curl -A "${nick}" -m 5 -k -s -L -H "Content-Type: application/json" -d "{\"longUrl\": \"${shortItem}\"}" "https://www.googleapis.com/urlshortener/v1/url?key=${apiKey}" | fgrep "\"id\"" | egrep -o "http(s)?://goo.gl/[A-Z|a-z|0-9]+")"
+		shortUrl="$(curl -A "${nick}" -m 5 -k -s -L -H "Content-Type: application/json" -d "{\"longUrl\": \"${shortItem}\"}" "https://www.googleapis.com/urlshortener/v1/url?key=${gooGlApiKey}" | fgrep "\"id\"" | egrep -o "http(s)?://goo.gl/[A-Z|a-z|0-9]+")"
 		echo "Shortened URL: ${shortUrl}"
 	else
 		echo "No URL to shorten provided, and no recently spoken URL's in my memory."
@@ -54,7 +50,7 @@ elif ! egrep -q "http(s?):\/\/[^ \"\(\)\<\>]*" <<<"${msgArr[4]}"; then
 	echo "This does not appear to be a valid URL"
 else
 	shortItem="${msgArr[4]}"
-	shortUrl="$(curl -A "${nick}" -m 5 -k -s -L -H "Content-Type: application/json" -d "{\"longUrl\": \"${shortItem}\"}" "https://www.googleapis.com/urlshortener/v1/url?key=${apiKey}" | fgrep "\"id\"" | egrep -o "http(s)?://goo.gl/[A-Z|a-z|0-9]+")"
+	shortUrl="$(curl -A "${nick}" -m 5 -k -s -L -H "Content-Type: application/json" -d "{\"longUrl\": \"${shortItem}\"}" "https://www.googleapis.com/urlshortener/v1/url?key=${gooGlApiKey}" | fgrep "\"id\"" | egrep -o "http(s)?://goo.gl/[A-Z|a-z|0-9]+")"
 	echo "Shortened URL: ${shortUrl}"
 fi
 exit 0

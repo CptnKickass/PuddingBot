@@ -37,12 +37,16 @@ re="you're"
 explain="${explain//she\'s/${re}}"
 explain="${explain//he\'s/${re}}"
 explain="${explain//they\'re/${re}}"
+explain="${explain//she is/you are}"
+explain="${explain//he is/you are}"
+explain="${explain//they are/you are}"
 if [[ -z "${target}" ]]; then
 	echo "This command requires a target"
+elif [[ "${target,,}" == "${nick,,}" ]]; then
+	echo "${senderNick}: Insufficient permissions. Try again with sudo."
 elif [[ -z "${explain}" ]]; then
 	echo "You didn't tell me what to explain"
 	echo "(Format is: !explain to SnoFox that he's a faggot)"
 else
 	echo "${target}: ${explain}"
 fi
-exit 0

@@ -1,16 +1,8 @@
 #!/usr/bin/env bash
 
-## Config
 # Credit for conversions to definitions.net
-# API available at: http://www.definitions.net/api.php
-
-# Definitions.net API user ID
-apiKey=""
-# Definitions.net Developer Token ID
-apiKeyToken=""
 
 ## Source
-
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=("curl" "w3m")
@@ -37,14 +29,14 @@ modForm=("def" "define")
 modFormCase=""
 modHelp="Uses definitions.net API to define things"
 modFlag="m"
-if [[ -z "${apiKey}" ]]; then
+if [[ -z "${defApiKey}" ]]; then
 	echo "A definitions.net API user ID is required"
-elif [[ -z "${apiKeyToken}" ]]; then
+elif [[ -z "${defApiKeyToken}" ]]; then
 	echo "A definitions.net developer token ID is required"
 elif [[ -z "${msgArr[4]}" ]]; then
 	echo "This command requires a parameter"
 else
-	searchResult="$(curl -m 5 -s --get --data-urlencode "word=${msgArr[@]:4}" "http://www.stands4.com/services/v2/defs.php?uid=${apiKey}&tokenid=${apiKeyToken}")"
+	searchResult="$(curl -m 5 -s --get --data-urlencode "word=${msgArr[@]:4}" "http://www.stands4.com/services/v2/defs.php?uid=${defApiKey}&tokenid=${defApiKeyToken}")"
 	returnCode="$(fgrep -c "<error>" <<<"${searchResult}")"
 	if [[ "${returnCode}" -eq "0" ]]; then
 		result="$(fgrep "<result>" <<<"${searchResult}")"
@@ -80,4 +72,3 @@ else
 		echo "Unable to obtain conversion (Definitions.net returned error code ${returnCode}, and error message ${errorMessage})"
 	fi
 fi
-exit 0
