@@ -1,0 +1,23 @@
+# Imgur API
+imgurApi=""
+
+# API available at: http://www.convert.net/api.php
+# Convert.net API user ID
+convApiKey=""
+# Convert.net Developer Token ID
+convApiKeyToken=""
+
+# API available at: http://www.definitions.net/api.php
+# Definitions.net API user ID
+defApiKey=""
+# Definitions.net Developer Token ID
+defApiKeyToken=""
+
+# goo.gl API key
+gooGlApiKey=""
+
+# YouTube v3 API
+youTubeApiKey=""
+
+# WolframAlpha API Key
+wolfApiKey=""
