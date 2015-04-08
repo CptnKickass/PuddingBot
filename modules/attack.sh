@@ -74,7 +74,8 @@ fi
 		attack="${attack//\{where\}/${location}}"
 	fi
 	if [[ "${msgArr[4],,}" == "${nick,,}" ]]; then
-		echo "ACTION ${attack} in a miraculous backfire of events"
+		backfire=("in a miraculous backfire of events" "like that son of a bitch deserved in the first place" "who had it coming let's all be honest")
+		echo "ACTION ${attack}, ${backfire[${RANDOM} % ${#backfire[@]} ]] }"
 	else
 		echo "ACTION ${attack}"
 	fi
