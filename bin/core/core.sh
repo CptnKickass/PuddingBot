@@ -242,6 +242,36 @@ do
 			senderTarget="${channels[0]}"
 			mapfile outArr <<<"${out}" 
 		fi
+		# This should really only be checked when a 005 is sent, so it'll go here
+		# to ensure it's not run every time we receive a message
+		prefixSyms="$(egrep "^prefixSym=\"" "var/.status")"
+		prefixSyms="${prefixSyms#prefixSym=\"}"
+		prefixSyms="${prefixSyms%\"}"
+		prefixLtrs="$(egrep "^prefixLtr=\"" "var/.status")"
+		prefixLtrs="${prefixLtrs#prefixLtr=\"}"
+		prefixLtrs="${prefixLtrs%\"}"
+		# This prevents this from being set multiple times
+		unset prefixSym
+		unset prefixLtr
+		while IFS= read -r -n1 char
+		do
+			prefixSym+=("${char}")
+		done <<<"${prefixSyms}"
+		while IFS= read -r -n1 char
+		do
+			prefixLtr+=("${char}")
+		done <<<"${prefixLtrs}"
+		reg="${prefixSym[@]}"
+		reg="${reg// /|}"
+		reg="${reg#|}"
+		reg="${reg%|}"
+		# The appended space at the end is for users with no status prefix symbol
+		prefixSymReg="[${reg}| ]"
+		reg="${prefixLtr[@]}"
+		reg="${reg// /|}"
+		reg="${reg#|}"
+		reg="${reg%|}"
+		prefixLtrReg="[${reg}]"
 	else
 		# This should never be reached, but exists for debug purposes
 		echo "$(date -R) [${0}] ${msgArr[@]}" >> $(<var/bot.pid).debug

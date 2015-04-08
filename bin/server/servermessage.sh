@@ -26,6 +26,17 @@ case "${msgArr[1]}" in
 	;;
 	# 005 is BOUNCE
 	005)
+	prefix="$(fgrep -i "PREFIX=" <<<"${msgArr[@]}")"
+	if [[ -n "${prefix}" ]]; then
+		prefixSym="${prefix,,}"
+		prefixSym="${prefixSym#*prefix=(*)}"
+		prefixSym="${prefixSym%% *}"
+		echo "prefixSym=\"${prefixSym}\"" >> var/.status
+		prefixLtr="${prefix,,}"
+		prefixLtr="${prefixLtr#*prefix=(}"
+		prefixLtr="${prefixLtr%%)*}"
+		echo "prefixLtr=\"${prefixLtr}\""
+	fi
 	;;
 	# 006 is MAP
 	006)
@@ -491,16 +502,15 @@ case "${msgArr[1]}" in
 	;;
 	# 353 is NAMREPLY
 	353)
-	chan="${msgArr[4]#\#}"
 	if ! [[ -d "var/.track" ]]; then
 		mkdir "var/.track"
 	fi
-	if [[ -e "var/.track/.${chan}" ]]; then
-		rm "var/.track/.${chan}"
+	if [[ -e "var/.track/.${msgArr[4],,}" ]]; then
+		rm "var/.track/.${msgArr[4],,}"
 	fi
 	msgArr[5]="${msgArr[5]#:}"
 	for i in "${msgArr[@]:5}"; do
-		echo "${i}" >> "var/.track/.${chan}"
+		echo "${i}" >> "var/.track/.${msgArr[4],,}"
 	done
 	;;
 	# 354 is WHOSPCRPL

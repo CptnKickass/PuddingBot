@@ -1,11 +1,9 @@
 To do:
 * Fix tail not dying on kill
 * Update host.sh to be IPv6 compatible
-* Move all API keys to an "api.conf" file
 * Add user verification for registration to prevent abuse
 * Add some kind of structured logging option
 * Add method for changing user flags
-* Add nick tracking of some kind, as far as channel ops/voice/etc
 * Add documentation of how factoids work
 * Add a way to modify/delete one reply value of a factoid with multiple reply values, rather than having to delete the entire factoid
 * Add failed login notifications
@@ -29,3 +27,5 @@ To do:
 * Add idle channel messages
 * Check to see if a username was given in login parameters. If so, use that username.
 * Add API key requirements during dependency checks of modules
+* Add Instagram module
+* Figure out why G:Maps returns 503 to url-title-get module
