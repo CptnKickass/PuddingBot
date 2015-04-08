@@ -156,7 +156,45 @@ if [[ "${#factVals[@]}" -ne "0" ]]; then
 			esac
 		done < <(egrep -o -i "<sender(\^|,)?>" <<<"${factOut}")
 	fi
-	factOut="${factOut//<sender>/${senderNick}}"
+	if egrep -q -i "<botnick(\^|,)?>" <<<"${factOut}"; then
+		while read q; do
+			q="${q#<}"
+			q="${q%>}"
+			case "${q,,}" in
+				botnick,)
+				factOut="${factOut//<botnick,>/${nick,,}}"
+				;;
+				botnick^)
+				factOut="${factOut//<botnick^>/${nick^^}}"
+				;;
+				*)
+				factOut="${factOut//<botnick>/${nick}}"
+				;;
+			esac
+		done < <(egrep -o -i "<botnick(\^|,)?>" <<<"${factOut}")
+	fi
+	if egrep -q -i "<random(\^|,)?>" <<<"${factOut}"; then
+		while read q; do
+			readarray -t randomArr < "var/.track/.${senderTarget,,}"
+			randomNick="${randomArr[${RANDOM} % ${#randomArr[@]} ]] }"
+			for z in "${prefixSym[@]}"; do
+				randomNick="${randomNick#${z}}"
+			done
+			q="${q#<}"
+			q="${q%>}"
+			case "${q,,}" in
+				random,)
+				factOut="${factOut//<random,>/${randomNick,,}}"
+				;;
+				random^)
+				factOut="${factOut//<random^>/${randomNick^^}}"
+				;;
+				*)
+				factOut="${factOut//<random>/${randomNick}}"
+				;;
+			esac
+		done < <(egrep -o -i "<random(\^|,)?>" <<<"${factOut}")
+	fi
 	case "${repAct}" in
 		reply)
 		echo "${factOut#*> }"
@@ -186,6 +224,12 @@ msgTrim="$(sed "s/<ACTION>/<action>/i" <<<"${msgTrim}")"
 msgTrim="$(sed "s/<SENDER>/<sender>/i" <<<"${msgTrim}")"
 msgTrim="$(sed "s/<SENDER,>/<sender,>/i" <<<"${msgTrim}")"
 msgTrim="$(sed "s/<SENDER^>/<sender^>/i" <<<"${msgTrim}")"
+msgTrim="$(sed "s/<BOTNICK>/<botnick>/i" <<<"${msgTrim}")"
+msgTrim="$(sed "s/<BOTNICK,>/<botnick,>/i" <<<"${msgTrim}")"
+msgTrim="$(sed "s/<BOTNICK^>/<botnick^>/i" <<<"${msgTrim}")"
+msgTrim="$(sed "s/<RANDOM>/<random>/i" <<<"${msgTrim}")"
+msgTrim="$(sed "s/<RANDOM,>/<random,>/i" <<<"${msgTrim}")"
+msgTrim="$(sed "s/<RANDOM^>/<random^>/i" <<<"${msgTrim}")"
 
 msgArr=(${msgTrim})
 wasAddressed="0"

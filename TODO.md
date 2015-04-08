@@ -20,7 +20,6 @@ To do:
 * Add Imgur search module
 * Add a memo-on-next-seen type module
 * Add an SMS module
-* Add a way to address the bot in factoid reply values
 * Add /r/ lengthener
 * Add Cards Against Humanity module
 * Add Choose Your Own Adventure module or factoid set
