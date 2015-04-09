@@ -38,11 +38,14 @@ location=("in the chest" "on the head" "on the bum")
 if [[ -z "${msgArr[4]}" ]]; then
 	readarray -t randomArr < "var/.track/.${senderTarget,,}"
 	atkTarg="${randomArr[${RANDOM} % ${#randomArr[@]} ]] }"
-	while [[ "${atkTrg,,}" == "${nick,,}" ]]; do
-		atkTarg="${randomArr[${RANDOM} % ${#randomArr[@]} ]] }"
-	done
 	for z in "${prefixSym[@]}"; do
 		atkTarg="${atkTarg#${z}}"
+	done
+	while [[ "${atkTrg,,}" == "${nick,,}" ]]; do
+		atkTarg="${randomArr[${RANDOM} % ${#randomArr[@]} ]] }"
+		for z in "${prefixSym[@]}"; do
+			atkTarg="${atkTarg#${z}}"
+		done
 	done
 else
 	atkTarg="${msgArr[@]:4}"

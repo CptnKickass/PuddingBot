@@ -3,9 +3,15 @@
 if [[ "${isPm}" -eq "1" ]]; then
 	loggedIn="$(fgrep -c "${senderUser}@${senderHost}" "var/.admins")"
 	if [[ "${loggedIn}" -eq "0" ]]; then
-		lUser="${msgArr[4]}"
-		lPass="${msgArr[5]}"
-		lHash="$(echo -n "${lPass}" | sha256sum | awk '{print $1}')"
+		if [[ -z "${msgArr[6]}" ]]; then
+			lUser="${msgArr[4]}"
+			lPass="${msgArr[5]}"
+			lHash="$(echo -n "${lPass}" | sha256sum | awk '{print $1}')"
+		else
+			lUser="${msgArr[5]}"
+			lPass="${msgArr[6]}"
+			lHash="$(echo -n "${lPass}" | sha256sum | awk '{print $1}')"
+		fi
 		if [[ -n "${lUser}" ]]; then
 			if egrep -q "^user=\"${lUser}\"$" ${userDir}/*.conf; then
 				matchFile="$(egrep "^user=\"${lUser}\"$" ${userDir}/*.conf /dev/null)"

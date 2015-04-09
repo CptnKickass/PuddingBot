@@ -1,6 +1,5 @@
 To do:
 * Fix tail not dying on kill
-* Update host.sh to be IPv6 compatible
 * Add user verification for registration to prevent abuse
 * Add some kind of structured logging option
 * Add method for changing user flags
@@ -24,7 +23,7 @@ To do:
 * Add Cards Against Humanity module
 * Add Choose Your Own Adventure module or factoid set
 * Add idle channel messages
-* Check to see if a username was given in login parameters. If so, use that username.
 * Add API key requirements during dependency checks of modules
 * Add Instagram module
 * Figure out why G:Maps returns 503 to url-title-get module
+* Add flood protection
