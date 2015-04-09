@@ -1,4 +1,6 @@
 To do:
+* Update dependencies and work on improving API dependency check
+* Move functions of core.sh to bin/core/functions.sh so they can be updated on-the-fly
 * Fix tail not dying on kill
 * Add user verification for registration to prevent abuse
 * Add some kind of structured logging option
