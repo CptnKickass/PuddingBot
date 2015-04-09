@@ -116,6 +116,20 @@ source var/.conf
 source var/.api
 }
 
+getRandomNick () {
+	readarray -t randomArr < "var/.track/.${senderTarget,,}"
+	randomNick="${randomArr[${RANDOM} % ${#randomArr[@]} ]] }"
+	for z in "${prefixSym[@]}"; do
+		randomNick="${randomNick#${z}}"
+	done
+	while [[ "${atkTrg,,}" == "${nick,,}" ]]; do
+		randomNick="${randomArr[${RANDOM} % ${#randomArr[@]} ]] }"
+		for z in "${prefixSym[@]}"; do
+			randomNick="${randomNick#${z}}"
+		done
+	done
+}
+
 echo "Creating datafile"
 # This should be done with a pipe, but a flat file is easier to debug
 # Create the file that will be the messages going out to the server

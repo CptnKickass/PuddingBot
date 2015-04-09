@@ -175,11 +175,7 @@ if [[ "${#factVals[@]}" -ne "0" ]]; then
 	fi
 	if egrep -q -i "<random(\^|,)?>" <<<"${factOut}"; then
 		while read q; do
-			readarray -t randomArr < "var/.track/.${senderTarget,,}"
-			randomNick="${randomArr[${RANDOM} % ${#randomArr[@]} ]] }"
-			for z in "${prefixSym[@]}"; do
-				randomNick="${randomNick#${z}}"
-			done
+			getRandomNick;
 			q="${q#<}"
 			q="${q%>}"
 			case "${q,,}" in
