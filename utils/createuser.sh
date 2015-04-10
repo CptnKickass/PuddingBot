@@ -51,4 +51,3 @@ echo "pass=\"${passHash}\"" >> users/${username}.conf
 echo "flags=\"${flags}\"" >> users/${username}.conf
 echo "clones=\"${clones}\"" >> users/${username}.conf
 echo "Done."
-exit 0

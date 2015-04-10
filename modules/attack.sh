@@ -4,21 +4,42 @@ if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=()
 	if [[ "${#deps[@]}" -ne "0" ]]; then
-		for i in ${deps[@]}; do
+		for i in "${deps[@]}"; do
 			if ! command -v ${i} > /dev/null 2>&1; then
 				echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
 				depFail="1"
 			fi
 		done
-		if [[ "${depFail}" -eq "1" ]]; then
-			exit 1
+	fi
+	apiFail="0"
+	apis=()
+	if [[ "${#apis[@]}" -ne "0" ]]; then
+		if [[ -e "api.conf" ]]; then
+			for i in "${apis[@]}"; do
+				val="$(egrep "^${i}" "api.conf")"
+				val="${val#${i}=\"}"
+				val="${val%\"}"
+				if [[ -z "${val}" ]]; then
+					echo -e "Missing api key \"${red}${i}${reset}\"! Exiting."
+					apiFail="1"
+				fi
+			done
 		else
-			echo "ok"
-			exit 0
+			path="$(pwd)"
+			path="${path##*/}"
+			path="./${path}/${0##*/}"
+			echo "Unable to locate \"api.conf\"!"
+			echo "(Are you running the dependency check from the main directory?)"
+			echo "(ex: ${path} --dep-check)"
+			exit 255
 		fi
-	else
+	fi
+	if [[ "${depFail}" -eq "0" ]] && [[ "${apiFail}" -eq "0" ]]; then
 		echo "ok"
 		exit 0
+	else
+		echo "Dependency check failed. See above errors."
+		exit 255
 	fi
 fi
 
@@ -44,35 +65,35 @@ if [[ -z "${msgArr[4]}" ]]; then
 else
 	atkTarg="${msgArr[@]:4}"
 fi
-	attack="${temp[${RANDOM} % ${#temp[@]} ]] }"
-	if [[ "${msgArr[4],,}" == "${nick,,}" ]]; then
-		attack="${attack//\{user\}/${senderNick}}"
-	else
-		attack="${attack//\{user\}/${atkTarg}}"
-	fi
-	if fgrep -q "{item}" <<<"${attack}"; then
-		item="${itemSingle[${RANDOM} % ${#itemSingle[@]} ]] }"
-		attack="${attack//\{item\}/${item}}"
-	fi
-	if fgrep -q "{item_plural}" <<<"${attack}"; then
-		items="${itemPlural[${RANDOM} % ${#itemPlural[@]} ]] }"
-		attack="${attack//\{item_plural\}/${items}}"
-	fi
-	if fgrep -q "{throws}" <<<"${attack}"; then
-		throw="${throw[${RANDOM} % ${#throw[@]} ]] }"
-		attack="${attack//\{throws\}/${throw}}"
-	fi
-	if fgrep -q "{hits}" <<<"${attack}"; then
-		hits="${hits[${RANDOM} % ${#hits[@]} ]] }"
-		attack="${attack//\{hits\}/${hits}}"
-	fi
-	if fgrep -q "{where}" <<<"${attack}"; then
-		location="${location[${RANDOM} % ${#location[@]} ]] }"
-		attack="${attack//\{where\}/${location}}"
-	fi
-	if [[ "${msgArr[4],,}" == "${nick,,}" ]]; then
-		backfire=("in a miraculous backfire of events" "like that son of a bitch deserved in the first place" "who had it coming let's all be honest")
-		echo "ACTION ${attack}, ${backfire[${RANDOM} % ${#backfire[@]} ]] }"
-	else
-		echo "ACTION ${attack}"
-	fi
+attack="${temp[${RANDOM} % ${#temp[@]} ]] }"
+if [[ "${msgArr[4],,}" == "${nick,,}" ]]; then
+	attack="${attack//\{user\}/${senderNick}}"
+else
+	attack="${attack//\{user\}/${atkTarg}}"
+fi
+if fgrep -q "{item}" <<<"${attack}"; then
+	item="${itemSingle[${RANDOM} % ${#itemSingle[@]} ]] }"
+	attack="${attack//\{item\}/${item}}"
+fi
+if fgrep -q "{item_plural}" <<<"${attack}"; then
+	items="${itemPlural[${RANDOM} % ${#itemPlural[@]} ]] }"
+	attack="${attack//\{item_plural\}/${items}}"
+fi
+if fgrep -q "{throws}" <<<"${attack}"; then
+	throw="${throw[${RANDOM} % ${#throw[@]} ]] }"
+	attack="${attack//\{throws\}/${throw}}"
+fi
+if fgrep -q "{hits}" <<<"${attack}"; then
+	hits="${hits[${RANDOM} % ${#hits[@]} ]] }"
+	attack="${attack//\{hits\}/${hits}}"
+fi
+if fgrep -q "{where}" <<<"${attack}"; then
+	location="${location[${RANDOM} % ${#location[@]} ]] }"
+	attack="${attack//\{where\}/${location}}"
+fi
+if [[ "${msgArr[4],,}" == "${nick,,}" ]]; then
+	backfire=("in a miraculous backfire of events" "like that son of a bitch deserved in the first place" "who had it coming let's all be honest")
+	echo "ACTION ${attack}, ${backfire[${RANDOM} % ${#backfire[@]} ]] }"
+else
+	echo "ACTION ${attack}"
+fi

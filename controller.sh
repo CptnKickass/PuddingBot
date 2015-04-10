@@ -46,7 +46,7 @@ apiFile="api.conf"
 # Check dependencies for the controller script
 # Define some functions
 checkSanity () {
-	deps=("bash" "read" "fgrep" "egrep" "echo" "cut" "sed" "ps" "awk" "nc" "touch" "mktemp")
+	deps=("bash" "awk" "date" "dd" "echo" "egrep" "fgrep" "mktemp" "printf" "ps" "pwd" "read" "sed" "source" "uname")
 	for i in ${deps[@]}; do
 		echo -n "Checking for dependency ${i}..."
 		if ! command -v ${i} > /dev/null 2>&1; then
@@ -120,37 +120,43 @@ checkSanity () {
 		fi
 	done
 
-	sqlUser="$(egrep -m 1 "^sqlUser=\"" "${confFile}")"
-	sqlUser="${sqlUser#sqlUser=\"}"
-	sqlUser="${sqlUser%\"}"
-	if [[ -z "${sqlUser}" ]]; then
-		echo "No SQL Username defined. Disabling SQL support..."
-		sqlSupport="0"
-	else
-		sqlPass="$(egrep -m 1 "^sqlPass=\"" "${confFile}")"
-		sqlPass="${sqlPass#sqlPass=\"}"
-		sqlPass="${sqlPass%\"}"
-		if [[ -z "${sqlPass}" ]]; then
-			echo "No SQL Password defined. Disabling SQL support..."
+	if command -v mysql > /dev/null 2>&1; then
+		echo "MySQL binary found."
+		sqlUser="$(egrep -m 1 "^sqlUser=\"" "${confFile}")"
+		sqlUser="${sqlUser#sqlUser=\"}"
+		sqlUser="${sqlUser%\"}"
+		if [[ -z "${sqlUser}" ]]; then
+			echo "No SQL Username defined. Disabling SQL support..."
 			sqlSupport="0"
 		else
-			sqlDB="$(egrep -m 1 "^sqlDBname=\"" "${confFile}")"
-			sqlDB="${sqlDB#sqlDBname=\"}"
-			sqlDB="${sqlDB%\"}"
-			if [[ -z "${sqlDB}" ]]; then
-				echo "No SQL Database name defined. Disabling SQL support..."
+			sqlPass="$(egrep -m 1 "^sqlPass=\"" "${confFile}")"
+			sqlPass="${sqlPass#sqlPass=\"}"
+			sqlPass="${sqlPass%\"}"
+			if [[ -z "${sqlPass}" ]]; then
+				echo "No SQL Password defined. Disabling SQL support..."
 				sqlSupport="0"
 			else
-				mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDB};" > /dev/null 2>&1
-				if [[ "${?}" -eq "0" ]]; then
-					echo "Valid SQL username, password, and database name found. Enabling SQL support."
-					sqlSupport="1"
-				else
-					echo "Invalid SQL username, password, and database name entered (Access test failed). Disabling SQL support."
+				sqlDB="$(egrep -m 1 "^sqlDBname=\"" "${confFile}")"
+				sqlDB="${sqlDB#sqlDBname=\"}"
+				sqlDB="${sqlDB%\"}"
+				if [[ -z "${sqlDB}" ]]; then
+					echo "No SQL Database name defined. Disabling SQL support..."
 					sqlSupport="0"
+				else
+					mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDB};" > /dev/null 2>&1
+					if [[ "${?}" -eq "0" ]]; then
+						echo "Valid SQL username, password, and database name found. Enabling SQL support."
+						sqlSupport="1"
+					else
+						echo "Invalid SQL username, password, and database name entered (Access test failed). Disabling SQL support."
+						sqlSupport="0"
+					fi
 				fi
 			fi
 		fi
+	else
+		echo "MySQL binary not found. Disabling SQL support..."
+		sqlSupport="0"
 	fi
 
 	egrep -v "^#" "${confFile}" | egrep -v "^loadMod=\"" | while read i; do

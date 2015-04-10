@@ -2,29 +2,49 @@
 
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
-	deps=()
+	deps=("tail")
 	if [[ "${#deps[@]}" -ne "0" ]]; then
-		for i in ${deps[@]}; do
+		for i in "${deps[@]}"; do
 			if ! command -v ${i} > /dev/null 2>&1; then
 				echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
 				depFail="1"
 			fi
 		done
-		if [[ "${depFail}" -eq "1" ]]; then
-			exit 1
+	fi
+	apiFail="0"
+	apis=()
+	if [[ "${#apis[@]}" -ne "0" ]]; then
+		if [[ -e "api.conf" ]]; then
+			for i in "${apis[@]}"; do
+				val="$(egrep "^${i}" "api.conf")"
+				val="${val#${i}=\"}"
+				val="${val%\"}"
+				if [[ -z "${val}" ]]; then
+					echo -e "Missing api key \"${red}${i}${reset}\"! Exiting."
+					apiFail="1"
+				fi
+			done
 		else
-			echo "ok"
-			exit 0
+			path="$(pwd)"
+			path="${path##*/}"
+			path="./${path}/${0##*/}"
+			echo "Unable to locate \"api.conf\"!"
+			echo "(Are you running the dependency check from the main directory?)"
+			echo "(ex: ${path} --dep-check)"
+			exit 255
 		fi
-	else
+	fi
+	if [[ "${sqlSupport}" -eq "0" ]]; then
+		echo "MySQL support required for this module, but not enabled!"
+		depFail="1"
+	fi
+	if [[ "${depFail}" -eq "0" ]] && [[ "${apiFail}" -eq "0" ]]; then
 		echo "ok"
 		exit 0
+	else
+		echo "Dependency check failed. See above errors."
+		exit 255
 	fi
-fi
-
-if [[ "${sqlSupport}" -eq "0" ]]; then
-	echo "This module requires SQL support to be enabled"
-	exit 255
 fi
 
 modHook="Prefix"

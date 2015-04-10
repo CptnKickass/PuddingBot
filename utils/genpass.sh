@@ -6,4 +6,3 @@ echo ""
 hash="$(echo -n "${pass}" | sha256sum | awk '{print $1}')"
 echo "Hash of \"${pass}\": ${hash}"
 echo ""
-exit 0
