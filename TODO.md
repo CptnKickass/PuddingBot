@@ -5,7 +5,7 @@ To do:
 * Fix tail not dying on kill
 * Figure out why G:Maps returns 503 to url-title-get module
 * Add user verification for registration to prevent abuse
-* Add some kind of structured logging option
+* Add some kind of structured logging option using irssi logging format
 * Add method for changing user flags
 * Add documentation of how factoids work
 * Add a way to modify/delete one reply value of a factoid with multiple reply values, rather than having to delete the entire factoid
@@ -31,3 +31,4 @@ To do:
 * Add flood protection
 * Add bold to sed module
 * Add weather module (Weather underground API)
+* Add pisg user interface for registered users
