@@ -2,6 +2,7 @@
 
 # For simplicities sake, I'll keep all commands in this function
 comExec () {
+loggingIn="0"
 case "${com}" in
 	register)
 		source ./bin/user/commands/register.sh
@@ -10,6 +11,7 @@ case "${com}" in
 		source ./bin/user/commands/set.sh
 	;;
 	login)
+		loggingIn="1"
 		source ./bin/user/commands/login.sh
 	;;
 	logout)
@@ -101,10 +103,10 @@ done < var/ignore.db
 
 if [[ "${ignoreUser}" -eq "0" ]]; then
 	isPm="0"
+
 	if [[ "${senderTarget,,}" == "${nick,,}" ]]; then
-		# It's a PM. We should assume we're being addressed in the same manner as commands.
-		senderTarget="${senderNick}"
 		isPm="1"
+		senderTarget="${senderNick}"
 	fi
 	
 	case "${msgArr[1]^^}" in
@@ -215,7 +217,8 @@ if [[ "${ignoreUser}" -eq "0" ]]; then
 			fi
 			# Someone changed modes? Time for a new names!
 			for file in "$(egrep -l -R "^${prefixSymReg}?${senderNick}" "var/.track")"; do
-				echo "NAMES ${file#var/.track/.}" >> "${output}"
+				fname="${file#var/.track/.}"
+				echo "NAMES ${fname,,}" >> "${output}"
 			done
 			echo "NAMES ${senderTarget}" >> "${output}"
 			;;

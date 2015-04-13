@@ -106,6 +106,7 @@ do
 		if [[ "${logIn}" -eq "1" ]]; then
 			source ./bin/core/log.sh --in
 		fi
+
 		if [[ "${msgArr[1]}" == "PRIVMSG" ]]; then
 			directOut="0"
 			if [[ "${msgArr[@]:(-2):1}" == ">" ]]; then
@@ -129,9 +130,6 @@ do
 			rm "var/.rehash"
 		fi
 
-		if [[ "$(fgrep -c "${senderTarget}" <<< "${nick}")" -eq "1" ]]; then
-			senderTarget="${senderNick}"
-		fi
 		if [[ -n "${out}" ]]; then
 			mapfile outArr <<<"${out}" 
 		fi
