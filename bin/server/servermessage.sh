@@ -572,15 +572,19 @@ case "${msgArr[1]}" in
 	if [[ -n "${operId}" ]] && [[ -n "${operPass}" ]]; then
 		echo "OPER ${operId} ${operPass}"
 		if [[ -n "${operModes}" ]]; then
-			echo "MODE ${nick} ${operModes}" >> ${output}
+			echo "MODE ${nick} ${operModes}" >> "${output}"
 		fi
 	fi
 	if [[ -n "${nickPass}" ]]; then
-		echo "PRIVMSG NickServ :identify ${nickPass}" >> ${output}
+		echo "PRIVMSG NickServ :identify ${nickPass}" >> "${output}"
 		nickPassSent="1"
 	fi
 	for item in ${channels[*]}; do
-		echo "JOIN ${item}" >> ${output}
+		echo "JOIN ${item}" >> "${output}"
+		echo "${item,,}" >> "var/.inchan"
+		if [[ "${logIn}" -eq "1" ]]; then
+			source ./bin/core/log.sh --start
+		fi
 	done
 	if [[ -n "${lastCom}" ]]; then
 		echo "${lastCom}" >> ${output}

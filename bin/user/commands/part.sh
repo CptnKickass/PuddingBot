@@ -10,6 +10,11 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 			echo "${msgArr[4]} does not appear to be a valid channel"
 		else
 			echo "PART ${msgArr[4]} :Leaving channel per ${senderNick}" >> ${output}
+			item="${msgArr[4]}"
+			sed -i "/${item,,}/d" "var/.inchan"
+			if [[ "${logIn}" -eq "1" ]]; then
+				source ./bin/core/log.sh --stop
+			fi
 		fi
 	else
 		echo "You do not have sufficient permissions for this command"

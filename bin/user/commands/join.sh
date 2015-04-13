@@ -10,6 +10,11 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 			echo "${msgArr[4]} does not appear to be a valid channel"
 		else
 			echo "JOIN ${msgArr[4]}" >> ${output}
+			item="${msgArr[4]}"
+			echo "${item,,}" >> "var/.inchan"
+			if [[ "${logIn}" -eq "1" ]]; then
+				source ./bin/core/log.sh --stop
+			fi
 		fi
 	else
 		echo "You do not have sufficient permissions for this command"

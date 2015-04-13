@@ -1,12 +1,9 @@
 To do:
-* Update dependencies and work on improving API dependency check
-* Add API key requirements during dependency checks of modules
 * Move functions of core.sh to bin/core/functions.sh so they can be updated on-the-fly
 * Fix tail not dying on kill
 * Figure out why G:Maps returns 503 to url-title-get module
 * Figure out how to print bold/italics/underlines/colors
 * Add user verification for registration to prevent abuse
-* Add some kind of structured logging option using irssi logging format
 * Add method for changing user flags
 * Add documentation of how factoids work
 * Add a way to modify/delete one reply value of a factoid with multiple reply values, rather than having to delete the entire factoid

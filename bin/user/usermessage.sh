@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 # For simplicities sake, I'll keep all commands in this function
 comExec () {
 case "${com}" in
@@ -213,6 +214,9 @@ if [[ "${ignoreUser}" -eq "0" ]]; then
 				source ./bin/user/mysql/mysql-update-seen-quit.sh
 			fi
 			# Someone changed modes? Time for a new names!
+			for file in "$(egrep -l -R "^${prefixSymReg}?${senderNick}" "var/.track")"; do
+				echo "NAMES ${file#var/.track/.}" >> "${output}"
+			done
 			echo "NAMES ${senderTarget}" >> "${output}"
 			;;
 		MODE)

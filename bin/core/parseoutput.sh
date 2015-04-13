@@ -11,23 +11,27 @@ fi
 
 if [[ "${#outArr[@]}" -ne "0" ]]; then
 	unset sendArr
-	for line in "${outArr[@]}"; do
-		while IFS= read -rn350 -d '' sendArr[i++]; do :; done <<< "${line}"
+	for outLine in "${outArr[@]}"; do
+		while IFS= read -rn350 -d '' sendArr[i++]; do :; done <<< "${outLine}"
 	done
+	unset outLine
 	unset outArr
-	for line in "${sendArr[@]}"; do
-		# This is a cheap way to remove trailing newlines
-		line="$(echo "${line}")"
+	for outLine in "${sendArr[@]}"; do
+		# This is a cheap way to remove trailing newoutLines
+		outLine="$(echo "${outLine}")"
 
 		if [[ "${directOut}" == "1" ]]; then
 			senderTarget="${oMsgArr[@]:(-1):1}"
-			line="${senderNick} wants you to know: ${line}"
+			outLine="${senderNick} wants you to know: ${outLine}"
 		elif [[ "${directOut}" == "2" ]]; then
-			line=("${oMsgArr[@]:(-1):1}: ${line}")
+			outLine=("${oMsgArr[@]:(-1):1}: ${outLine}")
 		fi
 
-		if [[ -n "${line}" ]] && ! [[ "${line}" =~ ^" "+$ ]]; then
-			echo "${outAct} ${senderTarget} :${line}" >> "${output}"
+		if [[ -n "${outLine}" ]] && ! [[ "${outLine}" =~ ^" "+$ ]]; then
+			echo "${outAct} ${senderTarget} :${outLine}" >> "${output}"
+			if [[ "${logIn}" -eq "1" ]]; then
+				source ./bin/core/log.sh --out
+			fi
 			sleep 0.25
 		fi
 	done

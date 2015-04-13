@@ -211,6 +211,12 @@ else
 		if [[ -e "var/.status" ]]; then
 			rm "var/.status"
 		fi
+		if [[ -e "var/.inchan" ]]; then
+			rm -rf "var/.inchan"
+		fi
+		if [[ -e "var/.track" ]]; then
+			rm -rf "var/.track"
+		fi
 	fi
 
 	# Check for a sane environment from our variables
@@ -249,7 +255,7 @@ else
 			mod="${mod#*\"}"
 			if [[ -e "modules/${mod}" ]]; then
 				# File exists. Check that its dependencies are met.
-				./modules/${mod} --dep-check 2>&1 | head -n 1 | while read line; do
+				source ./modules/${mod} --dep-check 2>&1 | head -n 1 | while read line; do
 					if [[ "${line}" == "ok" ]]; then
 						cp "modules/${mod}" "var/.mods/${mod}"
 						echo -e "Loaded module:  ${green}${mod}${reset}"
@@ -259,7 +265,7 @@ else
 				done
 			elif [[ -e "contrib/${mod}" ]]; then
 				# File exists. Check that its dependencies are met.
-				./contrib/${mod} --dep-check 2>&1 | head -n 1 | while read line; do
+				source ./contrib/${mod} --dep-check 2>&1 | head -n 1 | while read line; do
 					if [[ "${line}" == "ok" ]]; then
 						cp "contrib/${mod}" "var/.mods/${mod}"
 						echo -e "Loaded module:  ${green}${mod}${reset}"
@@ -334,7 +340,7 @@ else
 				echo -e "Skipped module: ${red}${mod}${reset} (No such module found)"
 			else
 				# File exists. Check that its dependencies are met.
-				./modules/${mod} --dep-check 2>&1 | head -n 1 | while read line; do
+				source ./modules/${mod} --dep-check 2>&1 | head -n 1 | while read line; do
 					if [[ "${line}" == "ok" ]]; then
 						cp "modules/${mod}" "var/.mods/${mod}"
 						echo -e "Loaded module:  ${green}${mod}${reset}"
@@ -354,7 +360,10 @@ fi
 stopBot () {
 if [[ -e "var/bot.pid" ]]; then
 	source var/.conf
-	echo "Sending QUIT to IRCd"
+	if [[ "${logIn}" -eq "1" ]]; then
+		source ./bin/core/log.sh --quit
+	fi
+	echo "Sending QUIT to bot"
 	echo "QUIT :Killed from console" >> ${output}
 	echo "Killing bot PID ($(< var/bot.pid))"
 	kill $(<var/bot.pid)
@@ -367,7 +376,11 @@ fi
 forceStopBot () {
 source var/.conf
 if [[ -e "var/bot.pid" ]]; then
-	echo "Sending QUIT to IRCd"
+	source var/.conf
+	if [[ "${logIn}" -eq "1" ]]; then
+		source ./bin/core/log.sh --quit
+	fi
+	echo "Sending QUIT to bot"
 	echo "QUIT :Killed from console" >> ${output}
 	echo "Attempting to kill bot PID ($(< var/bot.pid)) nicely"
 	kill < var/bot.pid
@@ -394,6 +407,12 @@ if [[ -e "var/bot.pid" ]]; then
 	fi
 	if [[ -e "var/.admins" ]]; then
 		rm -f "var/.admins"
+	fi
+	if [[ -e "var/.inchan" ]]; then
+		rm -rf "var/.inchan"
+	fi
+	if [[ -e "var/.track" ]]; then
+		rm -rf "var/.track"
 	fi
 	echo "NOTICE! Due to a known bug of unknown origin, the \"tail -f\" PID cannot be killed by this controller. Please kill it manually."
 else

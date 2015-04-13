@@ -43,92 +43,7 @@ inArr="0"
 echo "startTime=\"$(date +%s)\"" >> var/.status
 
 # Functions
-inArray () {
-# When passing items to this to see if they're in the array or not,
-# the format should be:
-# inArray "${itemToBeCheck}" "${arrayToCheck[@]}"
-# If it is in the array, it'll return the boolean of inArr=1.
-local n=${1} h
-shift
-for h; do
-	if [[ ${n} = "${h}" ]]; then
-		inArr="1"
-	else
-		inArr="0"
-	fi
-done
-}
-
-rehash () {
-rm "var/.conf"
-rm "var/.api"
-
-egrep -v "(^$|^#)" "${apiFile}" >> var/.api
-
-sqlUser="$(egrep -m 1 "^sqlUser=\"" "${confFile}")"
-sqlUser="${sqlUser#sqlUser=\"}"
-sqlUser="${sqlUser%\"}"
-if [[ -z "${sqlUser}" ]]; then
-	sqlSupport="0"
-else
-	sqlPass="$(egrep -m 1 "^sqlPass=\"" "${confFile}")"
-	sqlPass="${sqlPass#sqlPass=\"}"
-	sqlPass="${sqlPass%\"}"
-	if [[ -z "${sqlPass}" ]]; then
-		sqlSupport="0"
-	else
-		sqlDB="$(egrep -m 1 "^sqlDBname=\"" "${confFile}")"
-		sqlDB="${sqlDB#sqlDBname=\"}"
-		sqlDB="${sqlDB%\"}"
-		if [[ -z "${sqlDB}" ]]; then
-			sqlSupport="0"
-		else
-			mysql --raw --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDB};" > /dev/null 2>&1
-			if [[ "${?}" -eq "0" ]]; then
-				sqlSupport="1"
-			else
-				sqlSupport="0"
-			fi
-		fi
-	fi
-fi
-
-egrep -v "^#" "${confFile}" | egrep -v "^loadMod=\"" | while read i; do
-	testVar="${i}"
-	testVar="${testVar#*=\"}"
-	testVar="${testVar%\"}"
-	if [[ "${i%%=\"*}" == "logIn" ]]; then
-		case "${testVar,,}" in
-			yes)
-			i="logIn=\"1\"";;
-			no)
-			i="logIn=\"0\"";;
-		esac
-	fi
-	echo "${i}" >> var/.conf
-done
-
-echo "sqlSupport=\"${sqlSupport}\"" >> var/.conf
-echo "confFile=\"${confFile}\""
-echo "apiFile=\"${apiFile}\""
-
-source var/.conf
-source var/.api
-}
-
-getRandomNick () {
-	readarray -t randomArr < "var/.track/.${senderTarget,,}"
-	randomNick="${randomArr[${RANDOM} % ${#randomArr[@]} ]] }"
-	for z in "${prefixSym[@]}"; do
-		randomNick="${randomNick#${z}}"
-	done
-	while [[ "${atkTrg,,}" == "${nick,,}" ]]; do
-		randomNick="${randomArr[${RANDOM} % ${#randomArr[@]} ]] }"
-		for z in "${prefixSym[@]}"; do
-			randomNick="${randomNick#${z}}"
-		done
-	done
-}
+source ./bin/core/functions.sh
 
 echo "Creating datafile"
 # This should be done with a pipe, but a flat file is easier to debug
@@ -152,16 +67,14 @@ do
 	# Remote the ^M control character at the end of each line
 	message="${message%}"
 	msgArr=(${message})
+	msgRaw="${msgArr[@]:3}"
+	msgRaw="${msgRaw#:}"
 
 	echo "${msgArr[@]}" >> "${input}"
 
 	# ${allMsgArr[@]} array will contain all input
 	allMsgArr+=("${msgArr[@]}")
 
-	if [[ "${logIn}" -eq "1" ]]; then
-		# This is where messages should be parsed for logging
-		echo "Place holder" > /dev/null
-	fi
 	# The incoming messages should be in one of the following formats:
 	# :${nick} (Bot setting modes on itself)
 	# :n!u@h (Another client)
@@ -170,6 +83,8 @@ do
 	if [[ "${msgArr[0]}" == "PING" ]]; then
 		# The message is a PING
 		echo "PONG ${msgArr[1]}" >> "${output}"
+		# Check our timed commands
+		source ./bin/core/time.sh
 	elif [[ "${msgArr[0]}" == ":${nick}" ]]; then
 		# The bot is changing modes on itself
 		out="$(source ./bin/self/botmodechange.sh)"
@@ -189,6 +104,9 @@ do
 		isCtcp="$(egrep -ic ":(PING|VERSION|TIME|DATE)" <<<"${msgArr[3]}")" 
 		isHelp="$(egrep -ic ":(!)?(${nick}[:;,]?)?help" <<<"${msgArr[@]:(3):2}")" 
 
+		if [[ "${logIn}" -eq "1" ]]; then
+			source ./bin/core/log.sh --in
+		fi
 		if [[ "${msgArr[1]}" == "PRIVMSG" ]]; then
 			directOut="0"
 			if [[ "${msgArr[@]:(-2):1}" == ">" ]]; then
@@ -240,6 +158,12 @@ do
 		if [[ -e "var/.mods" ]]; then
 			rm -rf "var/.mods"
 		fi
+		if [[ -e "var/.inchan" ]]; then
+			rm -rf "var/.inchan"
+		fi
+		if [[ -e "var/.track" ]]; then
+			rm -rf "var/.track"
+		fi
 		if [[ -e "var/.status" ]]; then
 			rm -f "var/.status"
 		fi
@@ -280,7 +204,7 @@ do
 		reg="${reg#|}"
 		reg="${reg%|}"
 		# The appended space at the end is for users with no status prefix symbol
-		prefixSymReg="[${reg}| ]"
+		prefixSymReg="[${reg}]"
 		reg="${prefixLtr[@]}"
 		reg="${reg// /|}"
 		reg="${reg#|}"

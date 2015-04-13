@@ -2,6 +2,7 @@
 *.debug
 contrib/grodt.sh
 contrib/snofox.sh
+logs/
 users/*.conf
 var/
 pudding.conf
