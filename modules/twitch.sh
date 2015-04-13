@@ -12,7 +12,7 @@ if [[ "$1" == "--dep-check" ]]; then
 		done
 	fi
 	apiFail="0"
-	apis=("twitchApiKey")
+	apis=("")
 	if [[ "${#apis[@]}" -ne "0" ]]; then
 		if [[ -e "api.conf" ]]; then
 			for i in "${apis[@]}"; do
