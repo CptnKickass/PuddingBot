@@ -109,7 +109,7 @@ checkSanity () {
 		exit 255
 	fi
 
-	confReq=("nick" "ident" "gecos" "server" "port" "owner" "ownerEmail" "comPrefix" "genFlags" "logIn" "dataDir" "output" "input")
+	confReq=("nick" "ident" "gecos" "server" "port" "owner" "ownerEmail" "comPrefix" "genFlags" "nickPass" "logIn" "idleTime" "dataDir" "output" "input" "userDir")
 	for i in "${confReq[@]}"; do
 		testVar="$(egrep -m 1 "^${i}=\"" "${confFile}")"
 		testVar="${testVar#${i}=\"}"
@@ -186,7 +186,7 @@ if [[ -e "var/bot.pid" ]]; then
 else
 	echo "Initiating PuddingBot v${ver}"
 	echo ""
-	if [[ ! -e "${confFile}" ]]; then
+	if ! [[ -e "${confFile}" ]]; then
 		echo "You do not appear to have a \"${confFile}\" file!"
 		echo "Did you not copy your EXAMPLE file?"
 		exit 255
@@ -217,6 +217,9 @@ else
 		if [[ -e "var/.track" ]]; then
 			rm -rf "var/.track"
 		fi
+		if [[ -e "var/.last" ]]; then
+			rm -rf "var/.last"
+		fi
 	fi
 
 	# Check for a sane environment from our variables
@@ -232,16 +235,21 @@ else
 		source ./var/.conf
 
 		# If ${dataDir} does not exist, create it
-		if [[ ! -d "${dataDir}" ]]; then
+		if ! [[ -d "${dataDir}" ]]; then
 			echo "Creating data directory"
 			mkdir "${dataDir}"
+		fi
+
+		# Create last watched dir
+		if ! [[ -d "var/.last" ]]; then
+			mkdir "var/.last"
 		fi
 
 		# If logging is enabled
 		if [[ "${logIn}" -eq "1" ]]; then
 			echo "Logging enabled"
 			# If logging directory does not exist, create it
-			if [[ ! -d "${dataDir}/logs" ]]; then
+			if ! [[ -d "${dataDir}/logs" ]]; then
 				echo "Created log directory"
 				mkdir "${dataDir}/logs"
 			fi
@@ -307,7 +315,7 @@ else
 		source ./var/.conf
 
 		# If ${dataDir} does not exist, create it
-		if [[ ! -d "${dataDir}" ]]; then
+		if ! [[ -d "${dataDir}" ]]; then
 			echo "Creating data directory"
 			mkdir "${dataDir}"
 		fi
@@ -323,7 +331,7 @@ else
 		if [[ "${logIn}" -eq "1" ]]; then
 			echo "Logging enabled"
 			# If logging directory does not exist, create it
-			if [[ ! -d "${dataDir}/logs" ]]; then
+			if ! [[ -d "${dataDir}/logs" ]]; then
 				echo "Created log directory"
 				mkdir "${dataDir}/logs"
 			fi
@@ -335,7 +343,7 @@ else
 		egrep "^loadMod" "${confFile}" | sort -u | while read mod; do
 			mod="${mod%\"}"
 			mod="${mod#*\"}"
-			if [[ ! -e "modules/${mod}" ]]; then
+			if ! [[ -e "modules/${mod}" ]]; then
 				# No such file exists
 				echo -e "Skipped module: ${red}${mod}${reset} (No such module found)"
 			else
@@ -413,6 +421,9 @@ if [[ -e "var/bot.pid" ]]; then
 	fi
 	if [[ -e "var/.track" ]]; then
 		rm -rf "var/.track"
+	fi
+	if [[ -e "var/.last" ]]; then
+		rm -rf "var/.last"
 	fi
 	echo "NOTICE! Due to a known bug of unknown origin, the \"tail -f\" PID cannot be killed by this controller. Please kill it manually."
 else

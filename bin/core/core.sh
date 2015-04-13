@@ -29,7 +29,7 @@ fi
 touch var/.status
 
 # Setup file for ignore list
-if [[ ! -e "var/ignore.db" ]]; then
+if ! [[ -e "var/ignore.db" ]]; then
 	touch var/ignore.db
 fi
 
@@ -41,6 +41,9 @@ nickPassSent="0"
 inArr="0"
 # So we can know what our uptime is
 echo "startTime=\"$(date +%s)\"" >> var/.status
+
+# Variables we want defined but not in the config
+idleLines="bin/core/idlelines.txt"
 
 # Functions
 source ./bin/core/functions.sh
@@ -111,6 +114,10 @@ do
 		if [[ "${senderTarget,,}" == "${nick,,}" ]]; then
 			isPm="1"
 			senderTarget="${senderNick}"
+		fi
+
+		if [[ "${isPm}" -eq "0" ]]; then
+			echo "$(date +%s)" > "var/.last/${senderTarget,,}"
 		fi
 
 		if [[ "${msgArr[1]}" == "PRIVMSG" ]]; then

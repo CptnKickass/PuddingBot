@@ -65,9 +65,9 @@ if [[ -n "${sedItem}" ]]; then
 	line="${prevLine#* :}"
 	if [[ -n "${line}" ]]; then
 		lineFixed="$(sed -E "${sedCom}" <<<"${line}")"
-		if ! [[ -n "${lineFixed}" ]] && [[ "${lineFixed}" == "${line}" ]] && [[ "${#lineFixed}" -le "200" ]]; then
+		if [[ -n "${lineFixed}" ]] && ! [[ "${lineFixed}" == "${line}" ]] && [[ "${#lineFixed}" -le "200" ]]; then
 			echo "[FTFY] <${prevSend}> ${lineFixed}"
-		elif ! [[ -n "${lineFixed}" ]] && [[ "${lineFixed}" == "${line}" ]] && [[ "${#lineFixed}" -gt "200" ]]; then
+		elif [[ -n "${lineFixed}" ]] && ! [[ "${lineFixed}" == "${line}" ]] && [[ "${#lineFixed}" -gt "200" ]]; then
 			echo "[FTFY] sed response not sent due to result being over 200 characters"
 		fi
 	fi
