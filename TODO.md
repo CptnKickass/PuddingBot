@@ -1,4 +1,5 @@
 To do:
+* Remove user passwords from logging
 * Move functions of core.sh to bin/core/functions.sh so they can be updated on-the-fly
 * Fix tail not dying on kill
 * Figure out why G:Maps returns 503 to url-title-get module

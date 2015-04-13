@@ -10,20 +10,21 @@ if ! [[ -d "${logDir}/${networkName}" ]]; then
 fi
 
 msgTime="$(date "+%H:%M:%S")"
+msgRaw=(${msgRaw})
 case "${1}" in
 	--in)
-	case "${msgArr[1]^^}" in
+	case "${msgRaw[1]^^}" in
 		JOIN) 
 		echo "${msgTime} -!- ${senderNick} [${senderUser}@${senderHost}] has joined ${senderTarget}" >> "${logDir}/${networkName}/${senderTarget}.log"
 		;;
 		KICK)
-		kickReason="${msgArr[@]:4}"
+		kickReason="${msgRaw[@]:4}"
 		echo "${msgTime} -!- ${senderNick} [${senderUser}@${senderHost}] has left ${senderTarget} [${partReason}]" >> "${logDir}/${networkName}/${senderTarget}.log"
 		;;
 		NOTICE)
 		re='[#|&]'
-		noticeMsg="${msgArr[@]:3}"
-		if [[ "${msgArr[2]:0:1}" =~ ${re} ]]; then
+		noticeMsg="${msgRaw[@]:3}"
+		if [[ "${msgRaw[2]:0:1}" =~ ${re} ]]; then
 			echo "${msgTime} -!- ${senderNick}:${senderTarget}- ${noticeMsg#:}" >> "${logDir}/${networkName}/${senderTarget}.log"
 		else
 			senderTarget="${senderNick}"
@@ -32,7 +33,7 @@ case "${1}" in
 		;;
 		PRIVMSG)
 		re='[#|&]'
-		if [[ "${msgArr[2]:0:1}" =~ ${re} ]]; then
+		if [[ "${msgRaw[2]:0:1}" =~ ${re} ]]; then
 			nickType="$(egrep "^${prefixSymReg}?${senderNick}" "var/.track/.${senderTarget}")"
 			if [[ "${nickType:0:1}" =~ ${prefixSymReg} ]]; then
 				nickType="<${nickType}>"
@@ -43,43 +44,49 @@ case "${1}" in
 			nickType="<${senderNick}>"
 			senderTarget="${senderNick}"
 		fi
-		echo "${msgTime} ${nickType} ${msgRaw}" >> "${logDir}/${networkName}/${senderTarget}.log"
+		if [[ "${msgRaw[3]}" == ":ACTION" ]]; then
+			actMsg="${msgRaw[@]:4}"
+			echo "${msgTime} * ${senderNick} ${actMsg%}" >> "${logDir}/${networkName}/${senderTarget}.log"
+		else
+			sayMsg="${msgRaw[@]:3}"
+			echo "${msgTime} ${nickType} ${sayMsg#:}" >> "${logDir}/${networkName}/${senderTarget}.log"
+		fi
 		;;
 		QUIT)
-		quitMsg="${msgArr[@]:3}"
+		quitMsg="${msgRaw[@]:3}"
 		for file in "$(egrep -l -R "^${prefixSymReg}?${senderNick}" "var/.track")"; do
 			echo "${msgTime} -!- ${senderNick} [${senderUser}@${senderHost}] has quit [${quitMsg#:}]" >> "${logDir}/${networkName}/${file}.log"
 		done
 		;;
 		MODE)
-		modeChg="${msgArr[@]:3}"
+		modeChg="${msgRaw[@]:3}"
 		echo "${msgTime} -!- mode/${senderTarget} [${modeChg}] by ${senderNick}" >> "${logDir}/${networkName}/${senderTarget}.log"
 		;;
 		PART) 
-		partReason="${msgArr[@]:3}"
+		partReason="${msgRaw[@]:3}"
 		echo "${msgTime} -!- ${senderNick} [${senderUser}@${senderHost}] has left ${senderTarget} [${partReason#:}]" >> "${logDir}/${networkName}/${senderTarget}.log"
 		;;
 		NICK)
 		for file in "$(egrep -l -R "^${prefixSymReg}?${senderNick}" "var/.track")"; do
-			echo "${msgTime} -!- ${senderNick} is now known as ${msgArr[2]#:}" >> "${logDir}/${networkName}/${file}.log"
+			echo "${msgTime} -!- ${senderNick} is now known as ${msgRaw[2]#:}" >> "${logDir}/${networkName}/${file}.log"
 		done
 		;;
 		WALLOPS)
 		;;
 		TOPIC)
-		topicMsg="${msgArr[@]:3}"
+		topicMsg="${msgRaw[@]:3}"
 		echo "${msgTime} -!- ${senderNick} has changed the topic of ${senderTarget} to: ${topicMsg#:}" >> "${logDir}/${networkName}/${senderTarget}.log"
 		;;
 		INVITE)
 		;;
 		*)
-		echo "$(date -R) [${0}] ${msgArr[@]}" >> ${dataDir}/$(<var/bot.pid).debug
+		echo "$(date -R) [${0}] ${msgRaw[@]}" >> ${dataDir}/$(<var/bot.pid).debug
 		;;
 	esac
 	;;
 	--out)
 		re='[#|&]'
-		if [[ "${msgArr[2]:0:1}" =~ ${re} ]]; then
+		if [[ "${msgRaw[2]:0:1}" =~ ${re} ]]; then
 			nickType="$(egrep "^${prefixSymReg}?${nick}" "var/.track/.${senderTarget}")"
 			if [[ "${nickType:0:1}" =~ ${prefixSymReg} ]]; then
 				nickType="<${nickType}>"

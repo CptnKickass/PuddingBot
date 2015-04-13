@@ -67,8 +67,7 @@ do
 	# Remote the ^M control character at the end of each line
 	message="${message%}"
 	msgArr=(${message})
-	msgRaw="${msgArr[@]:3}"
-	msgRaw="${msgRaw#:}"
+	msgRaw="${msgArr[@]}"
 
 	echo "${msgArr[@]}" >> "${input}"
 
