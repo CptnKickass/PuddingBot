@@ -102,13 +102,6 @@ while read i; do
 done < var/ignore.db
 
 if [[ "${ignoreUser}" -eq "0" ]]; then
-	isPm="0"
-
-	if [[ "${senderTarget,,}" == "${nick,,}" ]]; then
-		isPm="1"
-		senderTarget="${senderNick}"
-	fi
-	
 	case "${msgArr[1]^^}" in
 		JOIN) 
 			# MySQL Seen Stuff

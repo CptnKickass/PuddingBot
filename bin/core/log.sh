@@ -109,21 +109,21 @@ case "${1}" in
 	done
 	;;
 	--start)
-	echo "--- Log opened $(date "+%a %b %d %H:%M:%S %Y")" >> "${logDir}/${networkName}/${item}.log"
+	echo "--- Log opened $(date "+%a %b %d %H:%M:%S %Y")" >> "${logDir}/${networkName,,}/${item,,}.log"
 	;;
 	--stop)
-	echo "--- Log closed $(date "+%a %b %d %H:%M:%S %Y")" >> "${logDir}/${networkName}/${item}.log"
+	echo "--- Log closed $(date "+%a %b %d %H:%M:%S %Y")" >> "${logDir}/${networkName,,}/${item,,}.log"
 	;;
 	--day)
 	readarray -t inChan < "var/.inchan"
 	for item in "${inChan[@]}"; do
-		echo "--- Day changed $(date "+%a %b %d %Y")" >> "${logDir}/${networkName}/${item}.log"
+		echo "--- Day changed $(date "+%a %b %d %Y")" >> "${logDir}/${networkName,,}/${item,,}.log"
 	done
 	;;
 	--quit)
 	readarray -t inChan < "var/.inchan"
 	for item in "${inChan[@]}"; do
-		echo "--- Log closed $(date "+%a %b %d %H:%M:%S %Y")" >> "${logDir}/${networkName}/${item}.log"
+		echo "--- Log closed $(date "+%a %b %d %H:%M:%S %Y")" >> "${logDir}/${networkName,,}/${item,,}.log"
 	done
 	;;
 esac

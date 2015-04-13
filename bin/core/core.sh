@@ -107,6 +107,12 @@ do
 			source ./bin/core/log.sh --in
 		fi
 
+		isPm="0"
+		if [[ "${senderTarget,,}" == "${nick,,}" ]]; then
+			isPm="1"
+			senderTarget="${senderNick}"
+		fi
+
 		if [[ "${msgArr[1]}" == "PRIVMSG" ]]; then
 			directOut="0"
 			if [[ "${msgArr[@]:(-2):1}" == ">" ]]; then

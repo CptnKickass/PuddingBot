@@ -35,7 +35,7 @@ case "${msgArr[1]}" in
 		prefixLtr="${prefix,,}"
 		prefixLtr="${prefixLtr#*prefix=(}"
 		prefixLtr="${prefixLtr%%)*}"
-		echo "prefixLtr=\"${prefixLtr}\""
+		echo "prefixLtr=\"${prefixLtr}\"" >> var/.status
 	fi
 	;;
 	# 006 is MAP
