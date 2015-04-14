@@ -119,6 +119,10 @@ if [[ "${ignoreUser}" -eq "0" ]]; then
 		NOTICE)
 			;;
 		PRIVMSG)
+			# Update channel activity logs
+			if [[ "${isPm}" -eq "0" ]]; then
+				echo "$(date +%s)" > "var/.last/${senderTarget,,}"
+			fi
 			# MySQL Seen Stuff
 			if [[ "${sqlSupport}" -eq "1" ]]; then
 				source ./bin/user/mysql/mysql-update-seen-privmsg.sh

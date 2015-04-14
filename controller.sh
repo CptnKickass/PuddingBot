@@ -48,7 +48,7 @@ apiFile="api.conf"
 checkSanity () {
 	deps=("bash" "awk" "date" "dd" "echo" "egrep" "fgrep" "mktemp" "printf" "ps" "pwd" "read" "sed" "source" "uname")
 	for i in ${deps[@]}; do
-		echo -n "Checking for dependency ${i}..."
+		echo -n "Checking f/r dependency ${i}..."
 		if ! command -v ${i} > /dev/null 2>&1; then
 			echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
 			exit 1 
@@ -65,10 +65,19 @@ checkSanity () {
 	fi
 
 	if [[ -e "var/.conf" ]]; then
-		rm -f "var/.conf"
+		rm -rf "var/.conf"
 	fi
 	if [[ -e "var/.api" ]]; then
-		rm -f "var/.api"
+		rm -rf "var/.api"
+	fi
+	if [[ -e "var/.mods" ]]; then
+		rm -rf "var/.mods"
+	fi
+	if [[ -e "var/.last" ]]; then
+		rm -rf "var/.last"
+	fi
+	if [[ -e "var/.track" ]]; then
+		rm -rf "var/.track"
 	fi
 
 	# Check to make sure at least one admin exists

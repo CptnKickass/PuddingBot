@@ -116,10 +116,6 @@ do
 			senderTarget="${senderNick}"
 		fi
 
-		if [[ "${isPm}" -eq "0" ]]; then
-			echo "$(date +%s)" > "var/.last/${senderTarget,,}"
-		fi
-
 		if [[ "${msgArr[1]}" == "PRIVMSG" ]]; then
 			directOut="0"
 			if [[ "${msgArr[@]:(-2):1}" == ">" ]]; then
