@@ -12,17 +12,17 @@ ACTION rides around the channel on his bicycle, running over everyone's toes to 
 ACTION checks the pulse rates of everyone to see if someone is left alive
 ACTION wonders what the hell people do when they join a channel and just idle.
 ACTION Hello? Anyone alive? Anyone at all?
-ACTION pelts ${randomNick} with stale peanuts.
+ACTION pelts <random> with stale peanuts.
 ACTION sings, My balogna has a first name its O-S-C-A-R my balogna has a second name its M-A-Y-E-R, oh I love to eat it every day....and if you ask me why I'll saaaaaay............Cause Oscar Mayer has a way with B-O-L-O-G-N-A
 ACTION sits and twiddles his thumbs
 ACTION runs around in circles until he gets dizzy and falls over.
 ACTION counts the number of dead people, and desides to dig the graves later.
 ACTION desides to get up and go get a beer.
 ACTION bitches and complains about the damn silence.
-ACTION desides to go search for porn on the net. WOW! Look there is ${randomNick}!
-ACTION beats ${randomNick} upside the head!
+ACTION desides to go search for porn on the net. WOW! Look there is <random>!
+ACTION beats <random> upside the head!
 ACTION starts to sing "I like big butts and I can not lie..."
-ACTION strips ${randomNick} naked and pushes him/her into the middle of the channel
+ACTION strips <random> naked and pushes him/her into the middle of the channel
 SAY Damn... It's so quiet in here I'm wondering if I'm in #CorpseSex
 SAY Gesh people. Talk allready!
 SAY Start chating or the beating shall commence! Wait.. you sick basterds would enjoy beatings... scratch that...

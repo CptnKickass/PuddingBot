@@ -48,7 +48,7 @@ apiFile="api.conf"
 checkSanity () {
 	deps=("bash" "awk" "date" "dd" "echo" "egrep" "fgrep" "mktemp" "printf" "ps" "pwd" "read" "sed" "source" "uname")
 	for i in ${deps[@]}; do
-		echo -n "Checking f/r dependency ${i}..."
+		echo -n "Checking for dependency ${i}..."
 		if ! command -v ${i} > /dev/null 2>&1; then
 			echo -e "Missing dependency \"${red}${i}${reset}\"! Exiting."
 			exit 1 

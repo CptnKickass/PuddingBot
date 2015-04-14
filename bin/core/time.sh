@@ -22,8 +22,11 @@ if [[ "${idleTime}" -ne "0" ]]; then
 			senderTarget="${chan}"
 			readarray -t rand < "${idleLines}"
 			rand=(${rand[${RANDOM} % ${#rand[@]} ]] })
-			if fgrep -q "\${randomNick}" <<<"${rand[@]}"; then
+			if egrep -q "\<random[^|,]?\>" <<<"${rand[@]}"; then
 				getRandomNick;
+				rand=(${rand[@]//<random>/${randomNick}})
+				rand=(${rand[@]//<random^>/${randomNick^^}})
+				rand=(${rand[@]//<random,>/${randomNick,,}})
 			fi
 			if [[ "${rand[0],,}" == "say" ]]; then
 				out="${rand[@]:1}"
