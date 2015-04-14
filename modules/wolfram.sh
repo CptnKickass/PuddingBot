@@ -75,7 +75,7 @@ else
 			echo "${wolfArr[@]}"
 			unset wolfArr
 			line="$(sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" <<<"${line}")"
-			echo "${line}"
+			echo "[Wolfram] ${line}"
 			sleep 1
 		else
 			# It's an answer

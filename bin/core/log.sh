@@ -100,7 +100,13 @@ case "${1}" in
 			nickType="<${nick}>"
 			logTarget="${senderNick}"
 		fi
-		echo "${msgTime} ${nickType} ${outLine}" >> "${logDir}/${networkName,,}/${logTarget,,}.log"
+		outLineArr=(${outLine})
+		if [[ "${outLineArr[0]}" == "ACTION" ]]; then
+			actMsg="${outLineArr[@]:1}"
+			echo "${msgTime} * ${nick} ${actMsg%}" >> "${logDir}/${networkName,,}/${logTarget,,}.log"
+		else
+			echo "${msgTime} ${nickType} ${outLineArr[@]}" >> "${logDir}/${networkName,,}/${logTarget,,}.log"
+		fi
 	;;
 	--nick)
 	for file in var/.track/.*; do
