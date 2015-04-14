@@ -206,18 +206,42 @@ if [[ "${ignoreUser}" -eq "0" ]]; then
 		QUIT)
 			loggedIn="$(fgrep -c "${senderUser}@${senderHost}" "var/.admins")"
 			if [[ "${loggedIn}" -eq "1" ]]; then
-				sed -i "/${senderUser}@${senderHost}/d" "var/.admins"
+				line="$(fgrep "${senderUser}@${senderHost}" "var/.admins")"
+				lineArr=(${line})
+				lineNo="$(fgrep -n "${senderUser}@${senderHost}" "var/.admins")"
+				lineNo="${lineNo%%:*}"
+				if [[ "$(fgrep "${senderUser}@${senderHost}" "var/.admins" | awk '{print $2}')" -ne "1" ]]; then
+					# More than one logged in. Only trim the client leaving.
+					lineArr[1]="$(( ${lineArr[1]} - 1 ))"
+					sed -i "${lineNo}d" "var/.admins"
+					newLine="${lineArr[@]//${senderUser}@${senderHost}/}"
+					echo "${newLine//  / }" >> "var/.admins"
+				else
+					# Last logged in client. Delete the whole login string.
+					sed -i "${lineNo}d" "var/.admins"
+				fi
 			fi
+
 			# MySQL Seen Stuff
 			if [[ "${sqlSupport}" -eq "1" ]]; then
 				source ./bin/user/mysql/mysql-update-seen-quit.sh
 			fi
+
 			# Someone changed modes? Time for a new names!
-			for file in "$(egrep -l -R "^${prefixSymReg}?${senderNick}" "var/.track")"; do
-				fname="${file#var/.track/.}"
-				echo "NAMES ${fname,,}" >> "${output}"
+			for s in "${prefixSym[@]}"; do
+				for file in "$(fgrep -l -R "${s}${senderNick}" "var/.track")"; do
+					fname="${file#var/.track/.}"
+					if [[ -n "${fname,,}" ]]; then
+						echo "NAMES ${fname,,}" >> "${output}"
+					fi
+				done
 			done
-			echo "NAMES ${senderTarget}" >> "${output}"
+			for file in "$(fgrep -l -R "${senderNick}" "var/.track")"; do
+				fname="${file#var/.track/.}"
+				if [[ -n "${fname,,}" ]]; then
+					echo "NAMES ${fname,,}" >> "${output}"
+				fi
+			done
 			;;
 		MODE)
 			# Someone changed modes? Time for a new names!

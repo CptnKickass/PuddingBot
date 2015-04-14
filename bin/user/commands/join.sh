@@ -12,8 +12,9 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 			echo "JOIN ${msgArr[4]}" >> ${output}
 			item="${msgArr[4]}"
 			echo "${item,,}" >> "var/.inchan"
+			date +%s > "var/.last/${item,,}"
 			if [[ "${logIn}" -eq "1" ]]; then
-				source ./bin/core/log.sh --stop
+				source ./bin/core/log.sh --start
 			fi
 		fi
 	else

@@ -582,6 +582,7 @@ case "${msgArr[1]}" in
 	for item in ${channels[*]}; do
 		echo "JOIN ${item}" >> "${output}"
 		echo "${item,,}" >> "var/.inchan"
+		date +%s > "var/.last/${item,,}"
 		if [[ "${logIn}" -eq "1" ]]; then
 			source ./bin/core/log.sh --start
 		fi

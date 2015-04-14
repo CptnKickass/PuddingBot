@@ -12,6 +12,7 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 			echo "PART ${msgArr[4]} :Leaving channel per ${senderNick}" >> ${output}
 			item="${msgArr[4]}"
 			sed -i "/${item,,}/d" "var/.inchan"
+			rm "var/.last/${item,,}"
 			if [[ "${logIn}" -eq "1" ]]; then
 				source ./bin/core/log.sh --stop
 			fi

@@ -35,12 +35,16 @@ case "${1}" in
 		PRIVMSG)
 		re='[#|&]'
 		if [[ "${msgRaw[2]:0:1}" =~ ${re} ]]; then
-			nickType="$(egrep "^${prefixSymReg}?${senderNick}" "var/.track/.${logTarget,,}")"
-			if [[ "${nickType:0:1}" =~ ${prefixSymReg} ]]; then
-				nickType="<${nickType}>"
-			else
-				nickType="< ${nickType}>"
-			fi
+			readarray -t nickTypeArr < "var/.track/.${logTarget,,}"
+			for nickTypeTmp in "${nickTypeArr[@]}"; do
+				if [[ "${nickTypeTmp}" =~ ${prefixSymReg}"${senderNick}" ]]; then
+					nickType="<${nickTypeTmp}>"
+					break
+				elif [[ "${nickTypeTmp}" == "${senderNick}" ]]; then
+					nickType="< ${nickTypeTmp}>"
+					break
+				fi
+			done 
 		else
 			nickType="<${senderNick}>"
 			logTarget="${senderNick}"
@@ -55,9 +59,22 @@ case "${1}" in
 		;;
 		QUIT)
 		quitMsg="${msgRaw[@]:3}"
-		for file in "$(egrep -l -R "^${prefixSymReg}?${senderNick}" "var/.track")"; do
-			file="${file#var/.track/.}"
-			echo "${msgTime} -!- ${senderNick} [${senderUser}@${senderHost}] has quit [${quitMsg#:}]" >> "${logDir}/${networkName,,}/${file,,}.log"
+		for file in "$(fgrep -l -R "${senderNick}" "var/.track")"; do
+			readarray -t quitArr < "${file}"
+			for tmp in "${quitArr[@]}"; do
+				if [[ "${tmp}" =~ ${prefixSymReg}"${senderNick}" ]]; then
+					logTarget="${logDir}/${networkName,,}/${file#var/.track/.}.log"
+					logTarget="${logTarget//\/\///}"
+					echo "${msgTime} -!- ${senderNick} [${senderUser}@${senderHost}] has quit [${quitMsg#:}]" >> "${logTarget}"
+					break
+				elif [[ "${tmp}" == "${senderNick}" ]]; then
+					logTarget="${logDir}/${networkName,,}/${file#var/.track/.}.log"
+					logTarget="${logTarget//\/\///}"
+					echo "${msgTime} -!- ${senderNick} [${senderUser}@${senderHost}] has quit [${quitMsg#:}]" >> "${logTarget}"
+					break
+				fi
+			done 
+			break
 		done
 		;;
 		MODE)
