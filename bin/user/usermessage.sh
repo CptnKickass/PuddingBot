@@ -109,11 +109,12 @@ if [[ "${ignoreUser}" -eq "0" ]]; then
 				source ./bin/usr/mysql-update-seen-join.sh
 			fi
 
-			# Someone changed modes? Time for a new names!
-			echo "NAMES ${senderTarget}" >> "${output}"
+			# Someone joind/ Add them to the names list.
+			echo "${senderNick}" >> "var/.track/.${senderTarget,,}"
 			;;
 		KICK)
 			# Someone changed modes? Time for a new names!
+			rm "var/.track/.${senderTarget,,}"
 			echo "NAMES ${senderTarget}" >> "${output}"
 			;;
 		NOTICE)
@@ -232,6 +233,7 @@ if [[ "${ignoreUser}" -eq "0" ]]; then
 				for file in "$(fgrep -l -R "${s}${senderNick}" "var/.track")"; do
 					fname="${file#var/.track/.}"
 					if [[ -n "${fname,,}" ]]; then
+						rm "var/.track/.${senderTarget,,}"
 						echo "NAMES ${fname,,}" >> "${output}"
 					fi
 				done
@@ -239,12 +241,14 @@ if [[ "${ignoreUser}" -eq "0" ]]; then
 			for file in "$(fgrep -l -R "${senderNick}" "var/.track")"; do
 				fname="${file#var/.track/.}"
 				if [[ -n "${fname,,}" ]]; then
+					rm "var/.track/.${senderTarget,,}"
 					echo "NAMES ${fname,,}" >> "${output}"
 				fi
 			done
 			;;
 		MODE)
 			# Someone changed modes? Time for a new names!
+			rm "var/.track/.${senderTarget,,}"
 			echo "NAMES ${senderTarget}" >> "${output}"
 			;;
 		PART) 
@@ -253,6 +257,7 @@ if [[ "${ignoreUser}" -eq "0" ]]; then
 				source ./bin/user/mysql/mysql-update-seen-part.sh
 			fi
 			# Someone changed modes? Time for a new names!
+			rm "var/.track/.${senderTarget,,}"
 			echo "NAMES ${senderTarget}" >> "${output}"
 			;;
 		NICK)

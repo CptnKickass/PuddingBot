@@ -39,6 +39,7 @@ echo "$$" > var/bot.pid
 fullCon="0"
 nickPassSent="0"
 inArr="0"
+reqNames="0"
 # So we can know what our uptime is
 echo "startTime=\"$(date +%s)\"" >> var/.status
 
@@ -173,6 +174,9 @@ do
 		if [[ -e "var/.status" ]]; then
 			rm -f "var/.status"
 		fi
+		if [[ -e "var/.last" ]]; then
+			rm -rf "var/.last"
+		fi
 		if [[ -e "var/bot.pid" ]]; then
 			pid="$(<var/bot.pid)"
 			rm -f "var/bot.pid"
@@ -262,6 +266,12 @@ if [[ -e "var/.mods" ]]; then
 fi
 if [[ -e "var/.status" ]]; then
 	rm -f "var/.status"
+fi
+if [[ -e "var/.last" ]]; then
+	rm -rf "var/.last"
+fi
+if [[ -e "var/.track" ]]; then
+	rm -rf "var/.track"
 fi
 if [[ -e "var/bot.pid" ]]; then
 	pid="$(<var/bot.pid)"

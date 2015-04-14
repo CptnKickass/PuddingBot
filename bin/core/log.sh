@@ -58,7 +58,7 @@ case "${1}" in
 		fi
 		;;
 		QUIT)
-		quitMsg="${msgRaw[@]:3}"
+		quitMsg="${msgRaw[@]:2}"
 		for file in "$(fgrep -l -R "${senderNick}" "var/.track")"; do
 			readarray -t quitArr < "${file}"
 			for tmp in "${quitArr[@]}"; do

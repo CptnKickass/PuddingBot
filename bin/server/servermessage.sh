@@ -505,9 +505,6 @@ case "${msgArr[1]}" in
 	if ! [[ -d "var/.track" ]]; then
 		mkdir "var/.track"
 	fi
-	if [[ -e "var/.track/.${msgArr[4],,}" ]]; then
-		rm "var/.track/.${msgArr[4],,}"
-	fi
 	msgArr[5]="${msgArr[5]#:}"
 	for i in "${msgArr[@]:5}"; do
 		echo "${i}" >> "var/.track/.${msgArr[4],,}"
@@ -580,6 +577,7 @@ case "${msgArr[1]}" in
 		nickPassSent="1"
 	fi
 	for item in ${channels[*]}; do
+		reqNames="1"
 		echo "JOIN ${item}" >> "${output}"
 		echo "${item,,}" >> "var/.inchan"
 		date +%s > "var/.last/${item,,}"
