@@ -89,7 +89,7 @@ case "${1}" in
 	;;
 	--out)
 		re='[#|&]'
-		if [[ "${msgRaw[2]:0:1}" =~ ${re} ]]; then
+		if [[ "${logTarget:0:1}" =~ ${re} ]]; then
 			nickType="$(egrep "^${prefixSymReg}?${nick}" "var/.track/.${logTarget,,}")"
 			if [[ "${nickType:0:1}" =~ ${prefixSymReg} ]]; then
 				nickType="<${nickType}>"
