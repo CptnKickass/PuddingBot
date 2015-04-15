@@ -47,15 +47,20 @@ modHook="Prefix"
 modForm=("todo")
 modFormCase="No"
 modHelp="Add items to Pudding's todo list"
-modFlag="A"
+modFlag="T"
 
 loggedIn="$(fgrep -c "${senderUser}@${senderHost}" var/.admins)"
 if [[ "${loggedIn}" -eq "1" ]]; then
 	if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${modFlag}"; then
 		if [[ "${msgArr[4]}" =~ "push" ]]; then
-			git add TODO.md 2>&1
-			git commit -m "Updated todo file" 2>&1
-			git push 2>&1
+			modFlag="A"
+			if fgrep "${senderUser}@${senderHost}" var/.admins | awk '{print $3}' | fgrep -q "${modFlag}"; then
+				git add TODO.md 2>&1
+				git commit -m "Updated todo file" 2>&1
+				git push 2>&1
+			else
+				echo "You do not have sufficient permissions for this command"
+			fi
 		else
 			toAdd="${msgArr[@]:4}"
 			echo "* ${toAdd}" >> TODO.md

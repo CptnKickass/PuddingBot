@@ -31,3 +31,4 @@ To do:
 * Add bold to sed module
 * Add weather module (Weather underground API)
 * Add pisg user interface for registered users
+* Write a !comic function
