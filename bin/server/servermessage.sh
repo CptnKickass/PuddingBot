@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 
-case "${msgArr[1]}" in
+case "${msgArr[1]^^}" in
+	NOTICE)
+	if fgrep -q "Looking up your hostname" <<<"${msgArr[@]}"; then
+		if [[ -n "${serverpass}" ]]; then
+				echo "NICK ${nick}" >> "${output}"
+				echo "USER ${ident} +iwx * :${gecos}" >> "${output}"
+				echo "PASS ${serverpass}" >> "${output}"
+			else
+				echo "NICK ${nick}" >> "${output}"
+				echo "USER ${ident} +iwx * :${gecos}" >> "${output}"
+		fi
+	fi
+	;;
 	# 001 is WELCOME
 	001)
 	fullCon="1"

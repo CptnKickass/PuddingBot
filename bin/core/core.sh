@@ -52,15 +52,7 @@ source ./bin/core/functions.sh
 echo "Creating datafile"
 # This should be done with a pipe, but a flat file is easier to debug
 # Create the file that will be the messages going out to the server
-touch "${output}"
-if [[ -n "${serverpass}" ]]; then
-		echo "NICK ${nick}" >> "${output}"
-		echo "USER ${ident} +iwx * :${gecos}" >> "${output}"
-		echo "PASS ${serverpass}" >> "${output}"
-	else
-		echo "NICK ${nick}" >> "${output}"
-		echo "USER ${ident} +iwx * :${gecos}" >> "${output}"
-fi
+mkfifo "${output}"
 
 echo "Connecting to IRC server"
 # This is where the initial connection is spawned
