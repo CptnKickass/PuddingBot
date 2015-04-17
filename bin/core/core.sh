@@ -75,9 +75,6 @@ do
 
 	echo "${msgArr[@]}" >> "${input}"
 
-	# ${allMsgArr[@]} array will contain all input
-	allMsgArr+=("${msgArr[@]}")
-
 	# The incoming messages should be in one of the following formats:
 	# :${nick} (Bot setting modes on itself)
 	# :n!u@h (Another client)

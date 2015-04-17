@@ -1,10 +1,8 @@
 To do:
 * Remove user passwords from logging
-* Move functions of core.sh to bin/core/functions.sh so they can be updated on-the-fly
-* Fix tail not dying on kill
 * Figure out why G:Maps returns 503 to url-title-get module
 * Figure out how to print bold/italics/underlines/colors
-* Add user verification for registration to prevent abuse
+* If an alias is already in use, pisg should not allow another user to take it as well
 * Add method for changing user flags
 * Add documentation of how factoids work
 * Add a way to modify/delete one reply value of a factoid with multiple reply values, rather than having to delete the entire factoid
@@ -30,5 +28,4 @@ To do:
 * Add flood protection
 * Add bold to sed module
 * Add weather module (Weather underground API)
-* Add pisg user interface for registered users
-* Write a !comic function
+* Add a !comic function
