@@ -35,7 +35,7 @@ case "${1}" in
 		PRIVMSG)
 		re='[#|&]'
 		if [[ "${msgRaw[2]:0:1}" =~ ${re} ]]; then
-			readarray -t nickTypeArr < "var/.track/.${logTarget,,}"
+			readarray -t nickTypeArr < "var/.track/${logTarget,,}"
 			for nickTypeTmp in "${nickTypeArr[@]}"; do
 				if [[ "${nickTypeTmp}" =~ ${prefixSymReg}"${senderNick}" ]]; then
 					nickType="<${nickTypeTmp}>"
@@ -63,12 +63,12 @@ case "${1}" in
 			readarray -t quitArr < "${file}"
 			for tmp in "${quitArr[@]}"; do
 				if [[ "${tmp}" =~ ${prefixSymReg}"${senderNick}" ]]; then
-					logTarget="${logDir}/${networkName,,}/${file#var/.track/.}.log"
+					logTarget="${logDir}/${networkName,,}/${file#var/.track/}.log"
 					logTarget="${logTarget//\/\///}"
 					echo "${msgTime} -!- ${senderNick} [${senderUser}@${senderHost}] has quit [${quitMsg#:}]" >> "${logTarget}"
 					break
 				elif [[ "${tmp}" == "${senderNick}" ]]; then
-					logTarget="${logDir}/${networkName,,}/${file#var/.track/.}.log"
+					logTarget="${logDir}/${networkName,,}/${file#var/.track/}.log"
 					logTarget="${logTarget//\/\///}"
 					echo "${msgTime} -!- ${senderNick} [${senderUser}@${senderHost}] has quit [${quitMsg#:}]" >> "${logTarget}"
 					break
@@ -87,7 +87,7 @@ case "${1}" in
 		;;
 		NICK)
 		for file in "$(egrep -l -R "^${prefixSymReg}?${senderNick}" "var/.track")"; do
-			file="${file#var/.track/.}"
+			file="${file#var/.track/}"
 			echo "${msgTime} -!- ${senderNick} is now known as ${msgRaw[2]#:}" >> "${logDir}/${networkName,,}/${file,,}.log"
 		done
 		;;
@@ -107,7 +107,7 @@ case "${1}" in
 	--out)
 		re='[#|&]'
 		if [[ "${logTarget:0:1}" =~ ${re} ]]; then
-			nickType="$(egrep "^${prefixSymReg}?${nick}" "var/.track/.${logTarget,,}")"
+			nickType="$(egrep "^${prefixSymReg}?${nick}" "var/.track/${logTarget,,}")"
 			if [[ "${nickType:0:1}" =~ ${prefixSymReg} ]]; then
 				nickType="<${nickType}>"
 			else
@@ -126,8 +126,8 @@ case "${1}" in
 		fi
 	;;
 	--nick)
-	for file in var/.track/.*; do
-		file="${file#var/.track/.}"
+	for file in var/.track/*; do
+		file="${file#var/.track/}"
 		echo "${msgTime} -!- You're now known as ${msgRaw[4]}" >> "${logDir}/${networkName,,}/${file,,}.log"
 	done
 	;;

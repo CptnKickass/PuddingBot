@@ -519,7 +519,7 @@ case "${msgArr[1]^^}" in
 	fi
 	msgArr[5]="${msgArr[5]#:}"
 	for i in "${msgArr[@]:5}"; do
-		echo "${i}" >> "var/.track/.${msgArr[4],,}"
+		echo "${i}" >> "var/.track/${msgArr[4],,}"
 	done
 	;;
 	# 354 is WHOSPCRPL

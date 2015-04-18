@@ -74,7 +74,7 @@ source var/.api
 }
 
 getRandomNick () {
-	readarray -t randomArr < "var/.track/.${senderTarget,,}"
+	readarray -t randomArr < "var/.track/${senderTarget,,}"
 	randomNick="${randomArr[${RANDOM} % ${#randomArr[@]} ]] }"
 	for z in "${prefixSym[@]}"; do
 		randomNick="${randomNick#${z}}"
