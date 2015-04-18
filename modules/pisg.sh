@@ -131,27 +131,51 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 						alias|aliases)
 						newAlias="${msgArr[@]:6}"
 						newAlias="${newAlias//\"/}"
-						if [[ -n "${newAlias}" ]]; then
-							newTag="<user nick=\"${mNick}\" alias=\"${newAlias}\">"
-							if [[ -n "${link}" ]]; then
-								newTag="${newTag%>} link=\"${link}\">"
-							fi
-							if [[ -n "${pic}" ]]; then
-								newTag="${newTag%>} pic=\"${pic}\" bigpic=\"${pic}\">"
-							fi
-							if [[ -n "${sex}" ]]; then
-								newTag="${newTag%>} sex=\"${sex}\">"
-							fi
-							if [[ -z "${alias}" ]]; then
-								echo "Set new alias(es) to: ${newAlias}"
+						newAlias=(${newAlias})
+						if [[ "${#newAlias[@]}" -ne "0" ]]; then
+							while read d; do
+								a="${d#*\" alias=\"}"
+								a="${a%%\"*}"
+								b="${d#<user nick=\"}"
+								b="${b%%\"*}"
+								for c in "${newAlias[@]}"; do
+									if fgrep -q -i "${c}" <<<"${a}" || fgrep -q -i "${c}" <<<"${b}"; then
+										inUse="1"
+										inUseItem="${c}"
+										break
+									else
+										inUse="0"
+									fi
+								done
+								if [[ "${inUse}" -eq "1" ]]; then
+									break
+								fi
+							done < <(fgrep " alias=\"" "${pisgUserPath}" | fgrep -v "<user nick=\"${user}\"")
+
+							if [[ "${inUse}" -eq "0" ]]; then
+								newTag="<user nick=\"${mNick}\" alias=\"${newAlias[@]}\">"
+								if [[ -n "${link}" ]]; then
+									newTag="${newTag%>} link=\"${link}\">"
+								fi
+								if [[ -n "${pic}" ]]; then
+									newTag="${newTag%>} pic=\"${pic}\" bigpic=\"${pic}\">"
+								fi
+								if [[ -n "${sex}" ]]; then
+									newTag="${newTag%>} sex=\"${sex}\">"
+								fi
+								if [[ -z "${alias}" ]]; then
+									echo "Set new alias(es) to: ${newAlias[@]}"
+								else
+									echo "Changed alias(es) from: ${alias} to: ${newAlias[@]}"
+								fi
+								sed -i "${tagLineNo}d" "${pisgUserPath}"
+								echo "${newTag}" >> "${pisgUserPath}"
+								cat "${pisgUserPath}" > "${pisgConfPath}"
+								cat "${pisgOptPath}" >> "${pisgConfPath}"
+								cat "${pisgChanPath}" >> "${pisgConfPath}"
 							else
-								echo "Changed alias(es) from: ${alias} to: ${newAlias}"
+								echo "Unable to set new alias tag! Item \"${inUseItem}\" is already claimed by another user."
 							fi
-							sed -i "${tagLineNo}d" "${pisgUserPath}"
-							echo "${newTag}" >> "${pisgUserPath}"
-							cat "${pisgUserPath}" > "${pisgConfPath}"
-							cat "${pisgOptPath}" >> "${pisgConfPath}"
-							cat "${pisgChanPath}" >> "${pisgConfPath}"
 						else
 							echo "This command requires a parameter."
 						fi
