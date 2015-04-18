@@ -2,7 +2,6 @@ To do:
 * Remove user passwords from logging
 * Figure out why G:Maps returns 503 to url-title-get module
 * Figure out how to print bold/italics/underlines/colors
-* If an alias is already in use, pisg should not allow another user to take it as well
 * Add method for changing user flags
 * Add documentation of how factoids work
 * Add a way to modify/delete one reply value of a factoid with multiple reply values, rather than having to delete the entire factoid
