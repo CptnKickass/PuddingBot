@@ -76,6 +76,7 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 		if fgrep -q " alias=\"" <<<"${tag}"; then
 			alias="${tag#*\" alias=\"}"
 			alias="${alias%%\"*}"
+			alias=(${alias})
 		else
 			unset alias
 		fi
@@ -109,8 +110,8 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 						echo "You do not appear to have a pisg tag."
 					else
 						echo "Nick: ${mNick}"
-						if [[ -n "${alias}" ]]; then
-							echo "Aliases: ${alias}"
+						if [[ -n "${alias[@]}" ]]; then
+							echo "Aliases: ${alias[@]}"
 						fi
 						if [[ -n "${link}" ]]; then
 							echo "Link: ${link}"
@@ -163,10 +164,17 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 								if [[ -n "${sex}" ]]; then
 									newTag="${newTag%>} sex=\"${sex}\">"
 								fi
-								if [[ -z "${alias}" ]]; then
+								if [[ -z "${alias[@]}" ]]; then
 									echo "Set new alias(es) to: ${newAlias[@]}"
 								else
-									echo "Changed alias(es) from: ${alias} to: ${newAlias[@]}"
+									for a in "${alias[@]}"; do
+										newAlias=(${newAlias[@]/${a}/})
+									done
+									if [[ "${#newAlias[@]}" -ne "0" ]]; then
+										echo "Added alias(es) ${newAlias[@]} to ${alias[@]}"
+									else
+										echo "You already have those aliases!"
+									fi
 								fi
 								sed -i "${tagLineNo}d" "${pisgUserPath}"
 								echo "${newTag}" >> "${pisgUserPath}"
@@ -187,8 +195,8 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 						if [[ -n "${newLink}" ]]; then
 							if egrep -q -i -o "${re}" <<<"${newLink}"; then
 								newTag="<user nick=\"${mNick}\" link=\"${newLink}\">"
-								if [[ -n "${alias}" ]]; then
-									newTag="${newTag%>} alias=\"${alias}\">"
+								if [[ -n "${alias[@]}" ]]; then
+									newTag="${newTag%>} alias=\"${alias[@]}\">"
 								fi
 								if [[ -n "${pic}" ]]; then
 									newTag="${newTag%>} pic=\"${pic}\" bigpic=\"${pic}\">"
@@ -220,8 +228,8 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 						if [[ -n "${newPic}" ]]; then
 							if egrep -q -i -o "${re}" <<<"${newPic}"; then
 								newTag="<user nick=\"${mNick}\" pic=\"${newPic}\" bigpic=\"${newPic}\">"
-								if [[ -n "${alias}" ]]; then
-									newTag="${newTag%>} alias=\"${alias}\">"
+								if [[ -n "${alias[@]}" ]]; then
+									newTag="${newTag%>} alias=\"${alias[@]}\">"
 								fi
 								if [[ -n "${link}" ]]; then
 									newTag="${newTag%>} link=\"${link}\">"
@@ -253,8 +261,8 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 							newSex="${newSex,,}"
 							if [[ "${newSex}" =~ [m|f|b] ]]; then
 								newTag="<user nick=\"${mNick}\" sex=\"${newSex}\">"
-								if [[ -n "${alias}" ]]; then
-									newTag="${newTag%>} alias=\"${alias}\">"
+								if [[ -n "${alias[@]}" ]]; then
+									newTag="${newTag%>} alias=\"${alias[@]}\">"
 								fi
 								if [[ -n "${pic}" ]]; then
 									newTag="${newTag%>} pic=\"${pic}\" bigpic=\"${pic}\">"
@@ -290,23 +298,62 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 						echo "Your main nick cannot be removed."
 						;;
 						alias|aliases)
-						if [[ -n "${alias}" ]]; then
-							newTag="<user nick=\"${mNick}\">"
-							if [[ -n "${link}" ]]; then
-								newTag="${newTag%>} link=\"${link}\">"
+						if [[ -n "${alias[@]}" ]]; then
+							if [[ -z "${msgArr[@]:6}" ]]; then
+								newTag="<user nick=\"${mNick}\">"
+								echo "Removed all aliases from your user."
+								if [[ -n "${link}" ]]; then
+									newTag="${newTag%>} link=\"${link}\">"
+								fi
+								if [[ -n "${pic}" ]]; then
+									newTag="${newTag%>} pic=\"${pic}\" bigpic=\"${pic}\">"
+								fi
+								if [[ -n "${sex}" ]]; then
+									newTag="${newTag%>} sex=\"${sex}\">"
+								fi
+								sed -i "${tagLineNo}d" "${pisgUserPath}"
+								echo "${newTag}" >> "${pisgUserPath}"
+								cat "${pisgUserPath}" > "${pisgConfPath}"
+								cat "${pisgOptPath}" >> "${pisgConfPath}"
+								cat "${pisgChanPath}" >> "${pisgConfPath}"
+							else
+								unset unsetArr
+								aliasArr=(${msgArr[@]:6})
+								n="0"
+								for a in "${aliasArr[@]}"; do
+									for b in "${alias[@]}"; do
+										if [[ "${a,,}" == "${b,,}" ]]; then
+											unsetArr+=(${n})
+										fi
+										(( n++ ))
+									done
+								done
+								if [[ "${#unsetArr[@]}" -ne "0" ]]; then
+									for a in "${unsetArr[@]}"; do
+										unset alias[${a}]
+									done
+								fi
+								if [[ "${#alias[@]}" -ne "0" ]]; then
+									newTag="<user nick=\"${mNick}\" alias=\"${alias[@]}\">"
+									echo "Changed your alias to ${alias[@]}"
+									if [[ -n "${link}" ]]; then
+										newTag="${newTag%>} link=\"${link}\">"
+									fi
+									if [[ -n "${pic}" ]]; then
+										newTag="${newTag%>} pic=\"${pic}\" bigpic=\"${pic}\">"
+									fi
+									if [[ -n "${sex}" ]]; then
+										newTag="${newTag%>} sex=\"${sex}\">"
+									fi
+									sed -i "${tagLineNo}d" "${pisgUserPath}"
+									echo "${newTag}" >> "${pisgUserPath}"
+									cat "${pisgUserPath}" > "${pisgConfPath}"
+									cat "${pisgOptPath}" >> "${pisgConfPath}"
+									cat "${pisgChanPath}" >> "${pisgConfPath}"
+								else
+									echo "No changes to make!"
+								fi
 							fi
-							if [[ -n "${pic}" ]]; then
-								newTag="${newTag%>} pic=\"${pic}\" bigpic=\"${pic}\">"
-							fi
-							if [[ -n "${sex}" ]]; then
-								newTag="${newTag%>} sex=\"${sex}\">"
-							fi
-							echo "Removed alias tag from your user."
-							sed -i "${tagLineNo}d" "${pisgUserPath}"
-							echo "${newTag}" >> "${pisgUserPath}"
-							cat "${pisgUserPath}" > "${pisgConfPath}"
-							cat "${pisgOptPath}" >> "${pisgConfPath}"
-							cat "${pisgChanPath}" >> "${pisgConfPath}"
 						else
 							echo "No alias tag to delete from your user!"
 						fi
@@ -314,8 +361,8 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 						link)
 						if [[ -n "${link}" ]]; then
 							newTag="<user nick=\"${mNick}\">"
-							if [[ -n "${alias}" ]]; then
-								newTag="${newTag%>} alias=\"${alias}\">"
+							if [[ -n "${alias[@]}" ]]; then
+								newTag="${newTag%>} alias=\"${alias[@]}\">"
 							fi
 							if [[ -n "${pic}" ]]; then
 								newTag="${newTag%>} pic=\"${pic}\" bigpic=\"${pic}\">"
@@ -336,8 +383,8 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 						pic)
 						if [[ -n "${pic}" ]]; then
 							newTag="<user nick=\"${mNick}\">"
-							if [[ -n "${alias}" ]]; then
-								newTag="${newTag%>} alias=\"${alias}\">"
+							if [[ -n "${alias[@]}" ]]; then
+								newTag="${newTag%>} alias=\"${alias[@]}\">"
 							fi
 							if [[ -n "${sex}" ]]; then
 								newTag="${newTag%>} sex=\"${sex}\">"
@@ -358,8 +405,8 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 						sex|gender)
 						if [[ -n "${sex}" ]]; then
 							newTag="<user nick=\"${mNick}\">"
-							if [[ -n "${alias}" ]]; then
-								newTag="${newTag%>} alias=\"${alias}\">"
+							if [[ -n "${alias[@]}" ]]; then
+								newTag="${newTag%>} alias=\"${alias[@]}\">"
 							fi
 							if [[ -n "${pic}" ]]; then
 								newTag="${newTag%>} pic=\"${pic}\" bigpic=\"${pic}\">"
