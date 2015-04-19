@@ -36,6 +36,7 @@ fi
 echo "$$" > var/bot.pid
 
 # We need these to be boolean instead of blank
+regSent="0"
 fullCon="0"
 nickPassSent="0"
 inArr="0"
@@ -74,9 +75,13 @@ do
 	# PING (PING's from the IRCd server)
 	if [[ "${msgArr[0]}" == "PING" ]]; then
 		# The message is a PING
-		echo "PONG ${msgArr[1]}" >> "${output}"
-		# Check our timed commands
-		source ./bin/core/time.sh
+		if [[ "${regSent}" -eq "0" ]]; then
+			echo "PONG ${msgArr[1]}" >> "${output}"
+		else
+			echo "PONG ${msgArr[1]}" >> "${output}"
+			# Check our timed commands
+			source ./bin/core/time.sh
+		fi
 	elif [[ "${msgArr[0]}" == ":${nick}" ]]; then
 		# The bot is changing modes on itself
 		out="$(source ./bin/self/botmodechange.sh)"
@@ -135,12 +140,10 @@ do
 	elif [[ "${msgArr[0]}" == "ERROR" ]]; then
 		echo "Received error message: ${msgArr[@]}"
 		if [[ -e "${output}" ]]; then
-			#rm -f "${output}" 
-			mv "${output}" "${output} - $(date)"
+			rm -f "${output}" 
 		fi
 		if [[ -e "${input}" ]]; then
-			#rm -f "${input}"
-			mv "${input}" "${input} - $(date)"
+			rm -f "${input}"
 		fi
 		if [[ -e "var/.admins" ]]; then
 			rm -f "var/.admins"
@@ -166,11 +169,12 @@ do
 		if [[ -e "var/.last" ]]; then
 			rm -rf "var/.last"
 		fi
+		if [[ -e "var/.silence" ]]; then
+			rm -rf "var/.silence"
+		fi
 		if [[ -e "var/bot.pid" ]]; then
-			pid="$(<var/bot.pid)"
 			rm -f "var/bot.pid"
 		fi
-		kill ${pid}
 		exit 0
 	elif ! egrep -q "^:.*!.*@.*$" <<<"${msgArr[0]}"; then
 		# The message does not match an n!u@h mask, and should be a server
@@ -234,12 +238,10 @@ done
 
 # We've broken free of the above loop? We're exiting.
 if [[ -e "${output}" ]]; then
-	#rm -f "${output}" 
-	mv "${output}" "${output} - $(date)"
+	rm -f "${output}" 
 fi
 if [[ -e "${input}" ]]; then
-	#rm -f "${input}"
-	mv "${input}" "${input} - $(date)"
+	rm -f "${input}"
 fi
 if [[ -e "var/.admins" ]]; then
 	rm -f "var/.admins"
@@ -253,18 +255,22 @@ fi
 if [[ -e "var/.mods" ]]; then
 	rm -rf "var/.mods"
 fi
+if [[ -e "var/.inchan" ]]; then
+	rm -rf "var/.inchan"
+fi
+if [[ -e "var/.track" ]]; then
+	rm -rf "var/.track"
+fi
 if [[ -e "var/.status" ]]; then
 	rm -f "var/.status"
 fi
 if [[ -e "var/.last" ]]; then
 	rm -rf "var/.last"
 fi
-if [[ -e "var/.track" ]]; then
-	rm -rf "var/.track"
+if [[ -e "var/.silence" ]]; then
+	rm -rf "var/.silence"
 fi
 if [[ -e "var/bot.pid" ]]; then
-	pid="$(<var/bot.pid)"
 	rm -f "var/bot.pid"
 fi
-kill ${pid}
 exit 0

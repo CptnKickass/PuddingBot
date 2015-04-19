@@ -2,7 +2,7 @@
 
 case "${msgArr[1]^^}" in
 	NOTICE)
-	if fgrep -q "Looking up your hostname" <<<"${msgArr[@]}"; then
+	if [[ "${msgArr[@]:3}" =~ ":*** Looking up your hostname..." ]]; then
 		if [[ -n "${serverpass}" ]]; then
 				echo "NICK ${nick}" >> "${output}"
 				echo "USER ${ident} +iwx * :${gecos}" >> "${output}"
@@ -11,6 +11,7 @@ case "${msgArr[1]^^}" in
 				echo "NICK ${nick}" >> "${output}"
 				echo "USER ${ident} +iwx * :${gecos}" >> "${output}"
 		fi
+		regSent="1"
 	fi
 	;;
 	# 001 is WELCOME
