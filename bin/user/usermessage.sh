@@ -247,7 +247,8 @@ if [[ "${ignoreUser}" -eq "0" ]]; then
 			done
 			;;
 		MODE)
-			if [[ "${senderTarget:0:1}" =~ [#|&] ]]; then
+			re="[#|&]"
+			if [[ "${senderTarget:0:1}" =~ ${re} ]]; then
 			# Someone changed modes in a channel? Time for a new names!
 				rm "var/.track/${senderTarget,,}"
 				echo "NAMES ${senderTarget}" >> "${output}"

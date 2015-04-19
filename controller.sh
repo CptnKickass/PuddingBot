@@ -311,13 +311,49 @@ if [[ -e "var/bot.pid" ]]; then
 else
 	echo "Initiating PuddingBot v${ver}"
 	echo ""
+	if ! [[ -e "${confFile}" ]]; then
+		echo "You do not appear to have a \"${confFile}\" file!"
+		echo "Did you not copy your EXAMPLE file?"
+		exit 255
+	fi
+	# If output datafile still exists from last time, remove it
+	if [[ -e "${output}" ]]; then
+		echo "Removing old datafiles (Improper shutdown?)"
+		#rm -f "${output}"
+		mv "${output}" "${output} - $(date)"
+		if [[ -e "var/.admins" ]]; then
+			rm "var/.admins"
+		fi
+		if [[ -d "var/.mods" ]]; then
+			rm -rf "var/.mods"
+		fi
+		if [[ -e "var/.conf" ]]; then
+			rm "var/.conf"
+		fi
+		if [[ -e "var/.api" ]]; then
+			rm "var/.api"
+		fi
+		if [[ -e "var/.status" ]]; then
+			rm "var/.status"
+		fi
+		if [[ -e "var/.inchan" ]]; then
+			rm -rf "var/.inchan"
+		fi
+		if [[ -e "var/.track" ]]; then
+			rm -rf "var/.track"
+		fi
+		if [[ -e "var/.last" ]]; then
+			rm -rf "var/.last"
+		fi
+	fi
+
 	# Check for a sane environment from our variables
 	echo "Checking config for sanity"
 	checkSanity;
 
 	if [[ "${badConf}" -eq "1" ]]; then
 		echo "Please fix above config options prior to start bot."
-		return 1
+		exit 255
 	else
 		# Load variables into controller
 		echo "Loading variables into controller"
@@ -329,11 +365,9 @@ else
 			mkdir "${dataDir}"
 		fi
 
-		# If output datafile still exists from last time, remove it
-		if [[ -e "${output}" ]]; then
-			echo "Removing old datafile (Improper shutdown?)"
-			mv "${output}" "${output} - $(date)"
-			#rm -f "${output}"
+		# Create last watched dir
+		if ! [[ -d "var/.last" ]]; then
+			mkdir "var/.last"
 		fi
 
 		# If logging is enabled
@@ -352,10 +386,7 @@ else
 		egrep "^loadMod" "${confFile}" | sort -u | while read mod; do
 			mod="${mod%\"}"
 			mod="${mod#*\"}"
-			if ! [[ -e "modules/${mod}" ]]; then
-				# No such file exists
-				echo -e "Skipped module: ${red}${mod}${reset} (No such module found)"
-			else
+			if [[ -e "modules/${mod}" ]]; then
 				# File exists. Check that its dependencies are met.
 				source ./modules/${mod} --dep-check 2>&1 | head -n 1 | while read line; do
 					if [[ "${line}" == "ok" ]]; then
@@ -365,6 +396,19 @@ else
 						echo -e "Skipped module: ${red}${mod}${reset} (Dependency check failed)"
 					fi
 				done
+			elif [[ -e "contrib/${mod}" ]]; then
+				# File exists. Check that its dependencies are met.
+				source ./contrib/${mod} --dep-check 2>&1 | head -n 1 | while read line; do
+					if [[ "${line}" == "ok" ]]; then
+						cp "contrib/${mod}" "var/.mods/${mod}"
+						echo -e "Loaded module:  ${green}${mod}${reset}"
+					else
+						echo -e "Skipped module: ${red}${mod}${reset} (Dependency check failed)"
+					fi
+				done
+			else
+				# No such file exists
+				echo -e "Skipped module: ${red}${mod}${reset} (No such module found)"
 			fi
 		done
 		# Start the actual bot

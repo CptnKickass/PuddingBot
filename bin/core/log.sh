@@ -144,10 +144,12 @@ case "${1}" in
 	done
 	;;
 	--quit)
-	readarray -t inChan < "var/.inchan"
-	for item in "${inChan[@]}"; do
-		echo "--- Log closed $(date "+%a %b %d %H:%M:%S %Y")" >> "${logDir}/${networkName,,}/${item,,}.log"
-	done
+	if [[ -e "var/.inchan" ]]; then
+		readarray -t inChan < "var/.inchan"
+		for item in "${inChan[@]}"; do
+			echo "--- Log closed $(date "+%a %b %d %H:%M:%S %Y")" >> "${logDir}/${networkName,,}/${item,,}.log"
+		done
+	fi
 	;;
 esac
 

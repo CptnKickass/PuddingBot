@@ -35,6 +35,8 @@ fi
 
 echo "$$" > var/bot.pid
 
+unset message
+unset msgArr
 # We need these to be boolean instead of blank
 regSent="0"
 fullCon="0"
@@ -53,7 +55,8 @@ source ./bin/core/functions.sh
 echo "Creating datafile"
 # This should be done with a pipe, but a flat file is easier to debug
 # Create the file that will be the messages going out to the server
-mkfifo "${output}"
+#mkfifo "${output}"
+touch "${output}"
 
 echo "Connecting to IRC server"
 # This is where the initial connection is spawned
@@ -175,7 +178,7 @@ do
 		if [[ -e "var/bot.pid" ]]; then
 			rm -f "var/bot.pid"
 		fi
-		exit 0
+		break
 	elif ! egrep -q "^:.*!.*@.*$" <<<"${msgArr[0]}"; then
 		# The message does not match an n!u@h mask, and should be a server
 		out="$(source ./bin/server/servermessage.sh)"
@@ -230,9 +233,6 @@ do
 	if [[ -e "var/.silence1" ]]; then
 		mv "var/.silence1" "var/.silence"
 	fi
-
-	# Wipe the output file
-	#echo "" > "${output}"
 done
 done
 

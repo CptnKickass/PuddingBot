@@ -3,6 +3,8 @@
 case "${msgArr[1]^^}" in
 	NOTICE)
 	if [[ "${msgArr[@]:3}" =~ ":*** Looking up your hostname..." ]]; then
+		# Give the connection a second to register
+		sleep 1
 		if [[ -n "${serverpass}" ]]; then
 				echo "NICK ${nick}" >> "${output}"
 				echo "USER ${ident} +iwx * :${gecos}" >> "${output}"
