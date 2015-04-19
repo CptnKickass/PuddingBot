@@ -140,7 +140,7 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 								b="${d#<user nick=\"}"
 								b="${b%%\"*}"
 								for c in "${newAlias[@]}"; do
-									if fgrep -q -i "${c}" <<<"${a}" || fgrep -q -i "${c}" <<<"${b}"; then
+									if [[ "${c,,}" == "${a,,}" ]] || [[ "${c,,}" == "${b,,}" ]]; then
 										inUse="1"
 										inUseItem="${c}"
 										break
@@ -154,33 +154,61 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 							done < <(fgrep " alias=\"" "${pisgUserPath}" | fgrep -v "<user nick=\"${user}\"")
 
 							if [[ "${inUse}" -eq "0" ]]; then
-								newTag="<user nick=\"${mNick}\" alias=\"${newAlias[@]}\">"
-								if [[ -n "${link}" ]]; then
-									newTag="${newTag%>} link=\"${link}\">"
-								fi
-								if [[ -n "${pic}" ]]; then
-									newTag="${newTag%>} pic=\"${pic}\" bigpic=\"${pic}\">"
-								fi
-								if [[ -n "${sex}" ]]; then
-									newTag="${newTag%>} sex=\"${sex}\">"
-								fi
-								if [[ -z "${alias[@]}" ]]; then
-									echo "Set new alias(es) to: ${newAlias[@]}"
-								else
-									for a in "${alias[@]}"; do
-										newAlias=(${newAlias[@]/${a}/})
-									done
+								if [[ "${#newAlias[@]}" -eq "0" ]]; then
+									echo "No new aliases to set!"
+								elif [[ "${msgArr[4],,}" == "set" ]]; then
+									echo "Changed alias(es) from ${alias[@]} to ${newAlias[@]}"
+									newTag="<user nick=\"${mNick}\" alias=\"${newAlias[@]}\">"
+									if [[ -n "${link}" ]]; then
+										newTag="${newTag%>} link=\"${link}\">"
+									fi
+									if [[ -n "${pic}" ]]; then
+										newTag="${newTag%>} pic=\"${pic}\" bigpic=\"${pic}\">"
+									fi
+									if [[ -n "${sex}" ]]; then
+										newTag="${newTag%>} sex=\"${sex}\">"
+									fi
+									sed -i "${tagLineNo}d" "${pisgUserPath}"
+									echo "${newTag}" >> "${pisgUserPath}"
+									cat "${pisgUserPath}" > "${pisgConfPath}"
+									cat "${pisgOptPath}" >> "${pisgConfPath}"
+									cat "${pisgChanPath}" >> "${pisgConfPath}"
+								elif [[ "${msgArr[4],,}" == "add" ]]; then
+									if [[ -n "${alias[@]}" ]]; then
+										for a in "${alias[@]}"; do
+											n="0"
+											for b in "${newAlias[@]}"; do
+												if [[ "${a,,}" == "${b,,}" ]]; then
+													unset newAlias[${n}]
+												else
+													(( n++ ))
+												fi
+											done
+										done
+									fi
 									if [[ "${#newAlias[@]}" -ne "0" ]]; then
 										echo "Added alias(es) ${newAlias[@]} to ${alias[@]}"
+										newTag="<user nick=\"${mNick}\" alias=\"${alias[@]} ${newAlias[@]}\">"
+										if [[ -n "${link}" ]]; then
+											newTag="${newTag%>} link=\"${link}\">"
+										fi
+										if [[ -n "${pic}" ]]; then
+											newTag="${newTag%>} pic=\"${pic}\" bigpic=\"${pic}\">"
+										fi
+										if [[ -n "${sex}" ]]; then
+											newTag="${newTag%>} sex=\"${sex}\">"
+										fi
+										sed -i "${tagLineNo}d" "${pisgUserPath}"
+										echo "${newTag}" >> "${pisgUserPath}"
+										cat "${pisgUserPath}" > "${pisgConfPath}"
+										cat "${pisgOptPath}" >> "${pisgConfPath}"
+										cat "${pisgChanPath}" >> "${pisgConfPath}"
 									else
-										echo "You already have those aliases!"
+										echo "New aliases already exist"
 									fi
+								else
+									echo "How did you find this message?"
 								fi
-								sed -i "${tagLineNo}d" "${pisgUserPath}"
-								echo "${newTag}" >> "${pisgUserPath}"
-								cat "${pisgUserPath}" > "${pisgConfPath}"
-								cat "${pisgOptPath}" >> "${pisgConfPath}"
-								cat "${pisgChanPath}" >> "${pisgConfPath}"
 							else
 								echo "Unable to set new alias tag! Item \"${inUseItem}\" is already claimed by another user."
 							fi
@@ -317,22 +345,17 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 								cat "${pisgOptPath}" >> "${pisgConfPath}"
 								cat "${pisgChanPath}" >> "${pisgConfPath}"
 							else
-								unset unsetArr
 								aliasArr=(${msgArr[@]:6})
-								n="0"
 								for a in "${aliasArr[@]}"; do
+									n="0"
 									for b in "${alias[@]}"; do
 										if [[ "${a,,}" == "${b,,}" ]]; then
-											unsetArr+=(${n})
+											unset alias[${n}]
+										else
+											(( n++ ))
 										fi
-										(( n++ ))
 									done
 								done
-								if [[ "${#unsetArr[@]}" -ne "0" ]]; then
-									for a in "${unsetArr[@]}"; do
-										unset alias[${a}]
-									done
-								fi
 								if [[ "${#alias[@]}" -ne "0" ]]; then
 									newTag="<user nick=\"${mNick}\" alias=\"${alias[@]}\">"
 									echo "Changed your alias to ${alias[@]}"
