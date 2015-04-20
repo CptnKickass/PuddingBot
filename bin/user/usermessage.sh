@@ -106,7 +106,7 @@ if [[ "${ignoreUser}" -eq "0" ]]; then
 		JOIN) 
 			# MySQL Seen Stuff
 			if [[ "${sqlSupport}" -eq "1" ]]; then
-				source ./bin/usr/mysql-update-seen-join.sh
+				source ./bin/user/mysql/mysql-update-seen-join.sh
 			fi
 
 			# Someone joind/ Add them to the names list.

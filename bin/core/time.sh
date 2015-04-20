@@ -36,8 +36,6 @@ if [[ "${idleTime}" -ne "0" ]]; then
 			mapfile outArr <<<"${out}"
 			if [[ -e "var/.silence" ]]; then
 			        unset outArr
-			elif [[ "${chan,,}" == "#goose" ]]; then
-				unset outArr
 			else
 			        if [[ "${#outArr[@]}" -ne "0" ]]; then
 			                source ./bin/core/parseoutput.sh

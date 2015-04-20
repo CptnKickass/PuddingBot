@@ -42,6 +42,7 @@ fullCon="0"
 nickPassSent="0"
 inArr="0"
 reqNames="0"
+input="${dataDir}/var/inbound"
 # So we can know what our uptime is
 echo "startTime=\"$(date +%s)\"" >> var/.status
 
@@ -67,7 +68,7 @@ do
 	msgArr=(${message})
 	msgRaw="${msgArr[@]}"
 
-	echo "${msgArr[@]}" >> "${input}"
+	#echo "${msgArr[@]}" >> "${input}"
 
 	# The incoming messages should be in one of the following formats:
 	# :${nick} (Bot setting modes on itself)
