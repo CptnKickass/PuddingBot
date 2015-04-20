@@ -38,7 +38,6 @@ echo "$$" > var/bot.pid
 unset message
 unset msgArr
 # We need these to be boolean instead of blank
-regSent="0"
 fullCon="0"
 nickPassSent="0"
 inArr="0"
@@ -55,8 +54,7 @@ source ./bin/core/functions.sh
 echo "Creating datafile"
 # This should be done with a pipe, but a flat file is easier to debug
 # Create the file that will be the messages going out to the server
-#mkfifo "${output}"
-touch "${output}"
+mkfifo "${output}"
 
 echo "Connecting to IRC server"
 # This is where the initial connection is spawned
@@ -78,13 +76,9 @@ do
 	# PING (PING's from the IRCd server)
 	if [[ "${msgArr[0]}" == "PING" ]]; then
 		# The message is a PING
-		if [[ "${regSent}" -eq "0" ]]; then
-			echo "PONG ${msgArr[1]}" >> "${output}"
-		else
-			echo "PONG ${msgArr[1]}" >> "${output}"
-			# Check our timed commands
-			source ./bin/core/time.sh
-		fi
+		echo "PONG ${msgArr[1]}" >> "${output}"
+		# Check our timed commands
+		source ./bin/core/time.sh
 	elif [[ "${msgArr[0]}" == ":${nick}" ]]; then
 		# The bot is changing modes on itself
 		out="$(source ./bin/self/botmodechange.sh)"

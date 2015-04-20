@@ -13,7 +13,6 @@ case "${msgArr[1]^^}" in
 				echo "NICK ${nick}" >> "${output}"
 				echo "USER ${ident} +iwx * :${gecos}" >> "${output}"
 		fi
-		regSent="1"
 	fi
 	;;
 	# 001 is WELCOME
