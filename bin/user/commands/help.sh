@@ -63,13 +63,13 @@ elif fgrep -q "${arg1,,}" <<<"${helpTopic[@]}"; then
 			echo "(${arg1,,}) => I'll give you an uptime report"
 			;;
 		register)
-			echo "(${arg1,,}) => Registers a user into the bot. Format is: \"REGISTER username password\". ***Note that this bot is in debug mode. Although your password will be stored as a sha256 hash in the user files, the raw input/output is being logged for debug purposes. Do not use a password you use anywher else!***"
+			echo "(${arg1,,}) => Registers a user into the bot. Format is: \"REGISTER username password\"."
 			;;
 		set)
 			arg2="${msgArr[5]}"
 			case "${arg2,,}" in
 				password)
-					echo "(${arg1,,})->(${arg2,,}) => Allows you to change your password. Format is: \"SET PASSWORD newpassword\". ***Note that this bot is in debug mode. Although your password will be stored as a sha256 hash in the user files, the raw input/output is being logged for debug purposes. Do not use a password you use anywher else!***"
+					echo "(${arg1,,})->(${arg2,,}) => Allows you to change your password. Format is: \"SET PASSWORD newpassword\"."
 					;;
 				clones)
 					echo "(${arg1,,})->(${arg2,,}) => Allows you to set the number of clones you want to allow to simultaneously be logged into your account. Format is: \"SET CLONES n\", where \"n\" is the number of clones you desire."

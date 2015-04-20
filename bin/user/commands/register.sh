@@ -7,9 +7,9 @@ if [[ "${isPm}" -eq "1" ]]; then
 		lPass="${msgArr[5]}"
 		lHash="$(echo -n "${lPass}" | sha256sum | awk '{print $1}')"
 		if [[ -z "${lUser}" ]]; then
-			echo "You must provide a username. Format is: \"register USERNAME PASSWORD\" ***Note that this bot is in debug mode. Although your password will be stored as a sha256 hash in the user files, the raw input/output is being logged for debug purposes. Do not use a password you use anywher else!***"
+			echo "You must provide a username. Format is: \"register USERNAME PASSWORD\""
 		elif [[ -z "${lPass}" ]]; then
-			echo "You must provide a password. Format is: \"register USERNAME PASSWORD\" ***Note that this bot is in debug mode. Although your password will be stored as a sha256 hash in the user files, the raw input/output is being logged for debug purposes. Do not use a password you use anywher else!***"
+			echo "You must provide a password. Format is: \"register USERNAME PASSWORD\""
 		fi
 		if [[ -n "${lUser}" ]] && [[ -n "${lPass}" ]]; then
 			if [[ -e "${userDir}/${lUser}.conf" ]]; then
