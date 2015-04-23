@@ -8,6 +8,8 @@ To do:
 * Add failed login notifications
 * Add a setting to require being logged in to interact with the bot at all
 * Add wolf/mafia game module
+* Add Cards Against Humanity module
+* Add Choose Your Own Adventure module or factoid set
 * Add some kind of "prize for karma" system
 * Add Twitter to URL module via API
 * Add SpeedTest.net to URL module via API
@@ -15,16 +17,13 @@ To do:
 * Add Wikipedia to URL module via API
 * Add Reddit to URL module via API
 * Add Imgur to URL module via API
+* Add weather underground module via API
 * Add google images search module
 * Add Imgur search module
 * Add a memo-on-next-seen type module
 * Add an SMS module
 * Add /r/ lengthener
-* Add Cards Against Humanity module
-* Add Choose Your Own Adventure module or factoid set
-* Add idle channel messages
-* Add Instagram module
+* Add Instagram module via API
 * Add flood protection
 * Add bold to sed module
-* Add weather module (Weather underground API)
 * Add a !comic function

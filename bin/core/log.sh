@@ -128,7 +128,7 @@ case "${1}" in
 	--nick)
 	for file in var/.track/*; do
 		file="${file#var/.track/}"
-		echo "${msgTime} -!- You're now known as ${msgRaw[4]}" >> "${logDir}/${networkName,,}/${file,,}.log"
+		echo "${msgTime} -!- ${nick} is now known as ${msgRaw[4]}" >> "${logDir}/${networkName,,}/${file,,}.log"
 	done
 	;;
 	--start)
