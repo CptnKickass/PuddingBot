@@ -11,19 +11,20 @@ To do:
 * Add Cards Against Humanity module
 * Add Choose Your Own Adventure module or factoid set
 * Add some kind of "prize for karma" system
-* Add Twitter to URL module via API
-* Add SpeedTest.net to URL module via API
-* Add Steam to URL module via API
-* Add Wikipedia to URL module via API
-* Add Reddit to URL module via API
-* Add Imgur to URL module via API
 * Add weather underground module via API
 * Add google images search module
 * Add Imgur search module
 * Add a memo-on-next-seen type module
 * Add an SMS module
 * Add /r/ lengthener
-* Add Instagram module via API
 * Add flood protection
 * Add bold to sed module
 * Add a !comic function
+* Figure out why Pudding stipped the colon in the "fuck you is <reply> And how! :D" factoid
+* Add Dropbox to url-title-get
+* Add GitHub to url-title-get
+* Add Stikked to url-title-get
+* Add NetFlix to url-title-get
+* Add Twitch.TV to url-title-get
+* Fix Steam in url-title-get (Run list.txt with instagram above steam URLs)
+* Reddit numbers need commas in url-title-get
