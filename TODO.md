@@ -1,7 +1,13 @@
 To do:
+* Change the way output text is parsed by adding it to a variable instead of echoing it
 * Remove user passwords from logging (Do this by replacing subshells with regular source scripts, and those files will add to outarr instead of echo out)
 * Figure out why G:Maps returns 503 to url-title-get module
 * Figure out how to print bold/italics/underlines/colors
+* Fix r_lengthener on non-existant subredditds
+* Add a way to do multiple seds at once (pipe separated perhaps? i.e. > s/tant/tent/ | s/itds/its)
+* Fix recent module
+* Improve Amazon price scraping
+* Modify grodt.sh to kickban any user that uses the nick 'goose' in a derogatory statement, that is not on a white list (basically any #atlanta regular)
 * Add method for changing user flags
 * Add documentation of how factoids work
 * Add a way to modify/delete one reply value of a factoid with multiple reply values, rather than having to delete the entire factoid
@@ -30,8 +36,3 @@ To do:
 * Add IMDB to url-title-get
 * Add Urban Dictionary to url-title-get
 * Add profiles to Imgur in url-title-get
-* Fix r_lengthener on non-existant subredditds
-* Add a way to do multiple seds at once (pipe separated perhaps? i.e. > s/tant/tent/ | s/itds/its)
-* Fix recent module
-* Improve Amazon price scraping
-* Modify grodt.sh to kickban any user that uses the nick 'goose' in a derogatory statement, that is not on a white list (basically any #atlanta regular)
