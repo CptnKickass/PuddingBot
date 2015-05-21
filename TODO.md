@@ -36,3 +36,4 @@ To do:
 * Add IMDB to url-title-get
 * Add Urban Dictionary to url-title-get
 * Add profiles to Imgur in url-title-get
+* Add date posted to Reddit in url-title-get
