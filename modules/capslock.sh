@@ -44,7 +44,7 @@ if [[ "$1" == "--dep-check" ]]; then
 fi
 
 modHook="Format"
-modForm=("^.*!.*@.* PRIVMSG .*:.*caps ?lock")
+modForm=("^.*!.*@.* PRIVMSG .*:.*caps ?lock$")
 modFormCase="No"
 modHelp="Inverts capslock'ed sentences"
 modFlag="m"
