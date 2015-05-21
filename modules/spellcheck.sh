@@ -54,5 +54,5 @@ elif [[ -n "${msgArr[4]}" ]] && [[ -n "${msgArr[5]}" ]]; then
 	echo "[Spell] Too many parameters for command"
 else
 	spellResult=($(ispell <<<"${msgArr[4]}" | head -n 2 | tail -n 1))
-	echo "${spellResult[@]:1}"
+	echo "[Spell] ${spellResult[@]:1}"
 fi

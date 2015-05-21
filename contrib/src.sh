@@ -57,15 +57,15 @@ if [[ -z "${msgArr[4]}" ]]; then
 else
 	readarray -t results <<<"$(find "${searchPath}" -not -path "${searchPath}/.git/*" -not -path "${searchPath}/var/*" -iname "${msgArr[@]:4}")" 
 	if [[ -z "${results[*]}" ]]; then
-		echo "No results found"
+		echo "[Src] No results found"
 	elif [[ "${#results[@]}" -gt "10" ]]; then
-		echo "More than 10 results returned. Not printing to prevent spam."
+		echo "[Src] More than 10 results returned. Not printing to prevent spam."
 	else
 		for line in "${results[@]}"; do
 			item="${line#*${searchPath}/}"
 			if ! fgrep -q "${item}" "${searchPath}/.gitignore}"; then
 				item="https://github.com/CptnKickass/PuddingBot/blob/master/${item}"
-				echo "${item}"
+				echo "[Src] ${item}"
 			fi
 		done
 	fi

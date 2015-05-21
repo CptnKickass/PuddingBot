@@ -50,5 +50,4 @@ modHelp="Spits out a line about what the fox says on demand"
 modFlag="m"
 
 responseArr=("Ring-ding-ding-ding-dingeringeding!" "Gering-ding-ding-ding-dingeringeding!" "Wa-pa-pa-pa-pa-pa-pow!" "Hatee-hatee-hatee-ho!" "Joff-tchoff-tchoffo-tchoffo-tchoff!" "Tchoff-tchoff-tchoffo-tchoffo-tchoff!" "Jacha-chacha-chacha-chow!" "Chacha-chacha-chacha-chow!" "Fraka-kaka-kaka-kaka-kow!" "A-hee-ahee ha-hee!" "Wa-wa-way-do Wub-wid-bid-dum-way-do Wa-wa-way-do!" "Bay-budabud-dum-bam!" "Abay-ba-da bum-bum bay-do!")
-foxResponse="${responseArr[${RANDOM} % ${#responseArr[@]} ]] }"
-echo "${foxResponse}"
+echo "[Fox] ${responseArr[${RANDOM} % ${#responseArr[@]} ]] }"

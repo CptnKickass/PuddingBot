@@ -45,7 +45,7 @@ elif [[ "${msgArr[4]}" -gt "10" ]]; then
 else
 	n="${msgArr[4]}"
 fi
-find ${searchPath} -type f -printf "%T@ %Tc %p\n" | sort -n | tail -n ${n} | awk '{print $8}' | while read out; do
+find ${searchPath} -not -path "${searchPath}/restricted/*" -type f -printf "%T@ %Tc %p\n" | sort -n | tail -n ${n} | awk '{print $9}' | while read out; do
 	out="https://${out#*public_html/}"
-	echo "${out}"
+	echo "[Recent] ${out}"
 done

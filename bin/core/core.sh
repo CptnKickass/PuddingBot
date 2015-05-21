@@ -38,6 +38,8 @@ echo "$$" > var/bot.pid
 unset message
 unset msgArr
 # We need these to be boolean instead of blank
+firstMsg="0"
+regSent="0"
 fullCon="0"
 nickPassSent="0"
 inArr="0"
@@ -61,6 +63,14 @@ echo "Connecting to IRC server"
 # This is where the initial connection is spawned
 while [[ -e "${output}" ]]; do tail -f "${output}" | nc "${server}" "${port}" | while read -r message
 do
+	if [[ "${firstMsg}" -eq "0" ]]; then
+		echo "NICK ${nick}" >> "${output}"
+		echo "USER ${ident} +iwx * :${gecos}" >> "${output}"
+		if [[ -n "${serverpass}" ]]; then
+			echo "PASS ${serverpass}" >> "${output}"
+		fi
+		firstMsg="1"
+	fi
 	isHelp="0"
 	isCtcp="0"
 	# Remote the ^M control character at the end of each line
@@ -68,7 +78,7 @@ do
 	msgArr=(${message})
 	msgRaw="${msgArr[@]}"
 
-	#echo "${msgArr[@]}" >> "${input}"
+	echo "${msgArr[@]}" >> "${input}"
 
 	# The incoming messages should be in one of the following formats:
 	# :${nick} (Bot setting modes on itself)
@@ -76,10 +86,17 @@ do
 	# :${server} (The IRCd server)
 	# PING (PING's from the IRCd server)
 	if [[ "${msgArr[0]}" == "PING" ]]; then
-		# The message is a PING
-		echo "PONG ${msgArr[1]}" >> "${output}"
-		# Check our timed commands
-		source ./bin/core/time.sh
+		if [[ "${regSent}" -eq "0" ]]; then
+			# Give the connection a second to register
+			sleep 1
+			echo "PONG ${msgArr[1]}" >> "${output}"
+			regSent="1"
+		else
+			# The message is a PING
+			echo "PONG ${msgArr[1]}" >> "${output}"
+			# Check our timed commands
+			source ./bin/core/time.sh
+		fi
 	elif [[ "${msgArr[0]}" == ":${nick}" ]]; then
 		# The bot is changing modes on itself
 		out="$(source ./bin/self/botmodechange.sh)"
@@ -96,8 +113,14 @@ do
 		senderUser="${senderFull#*!}"
 		senderUser="${senderUser%@*}"
 		senderHost="${senderFull#*@}"
-		isCtcp="$(egrep -ic ":(PING|VERSION|TIME|DATE)" <<<"${msgArr[3]}")" 
-		isHelp="$(egrep -ic ":(!)?(${nick}[:;,]?)?help" <<<"${msgArr[@]:(3):2}")" 
+		if egrep -ic ":(PING|VERSION|TIME|DATE)" <<<"${msgArr[3]}"; then
+			isCtcp="1"
+		fi
+		if egrep -i -q ":${nick}[[:punct:]]? help" <<<"${msgArr[@]:(3):2}"; then
+			isHelp="1"
+		elif fgrep -i -q ":${comPrefix}help" <<<"${msgArr[3]}"; then
+			isHelp="1"
+		fi
 
 		if [[ "${logIn}" -eq "1" ]]; then
 			source ./bin/core/log.sh --in

@@ -12,7 +12,7 @@ fi
 if [[ "${#outArr[@]}" -ne "0" ]]; then
 	unset sendArr
 	for outLine in "${outArr[@]}"; do
-		while IFS= read -rn350 -d '' sendArr[i++]; do :; done <<< "${outLine}"
+		while IFS= read -rn400 -d '' sendArr[i++]; do :; done <<< "${outLine}"
 	done
 	unset outLine
 	unset outArr

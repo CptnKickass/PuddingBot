@@ -58,9 +58,9 @@ modFlag="m"
 # Color character used to start a category: [1;36m
 # Color character used to end a category: [0m
 if [[ -z "${wolfApiKey}" ]]; then
-	echo "A Wolfram Alpha API key is required"
+	echo "[Wolfram] A Wolfram Alpha API key is required"
 elif [[ -z "${msgArr[4]}" ]]; then
-	echo "This command requires a parameter"
+	echo "[Wolfram] This command requires a parameter"
 else
 	unset wolfArr
 	wolfQ="${msgArr[@]:4}"
@@ -68,7 +68,7 @@ else
 	wolfQ="$(sed 's/+/%2B/g' <<<"${wolfQ}" | tr '\ ' '\+')"
 	# fetch and parse result
 	result=$(curl -s "http://api.wolframalpha.com/v2/query?input=${wolfQ}&appid=${wolfApiKey}&format=plaintext")
-	echo "Wolfram Alpha Results:"
+	echo "[Wolfram] Wolfram Alpha Results:"
 	echo -e "${result}" | tr '\n' '\t' | sed -e 's/<plaintext>/\'$'\n<plaintext>/g' | grep -oE "<plaintext>.*</plaintext>|<pod title=.[^\']*" | sed 's!<plaintext>!!g; s!</plaintext>!!g;  s!<pod title=.*!\\\x1b[1;36m&\\\x1b[0m!g; s!<pod title=.!!g; s!\&amp;!\&!' | tr '\t' '\n' | sed  '/^$/d; s/\ \ */\ /g' | while read line; do
 		if egrep -q "$(echo -e "\e\[1;36m")" <<<"${line}"; then
 			# It's a category

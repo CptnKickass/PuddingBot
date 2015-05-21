@@ -49,12 +49,12 @@ modFormCase=""
 modHelp="Calculates basic arithmetic and returns the result"
 modFlag="m"
 if [[ -z "${msgArr[4]}" ]]; then
-	echo "This command requires a parameter"
+	echo "[Math] This command requires a parameter"
 else
 	equation="${msgArr[@]:4}"
 	result="$(echo "scale=3; ${equation}" | bc 2>&1)"
 	if [[ "${#result}" -gt "50" ]]; then
 		result="${result:0:50} (Truncated to first 50 characters)"
 	fi
-	echo "[Calc] ${result}"
+	echo "[Math] ${result}"
 fi

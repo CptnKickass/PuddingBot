@@ -71,13 +71,13 @@ else
 		pos="${pos%%</partofspeech>*}"
 		if [[ -n "${def}" ]]; then
 			if [[ -n "${pos}" ]] && [[ -n "${example}" ]]; then
-				echo "${term} (${pos}) - ${def} - Example: ${ex}"
+				echo "[Define] ${term} (${pos}) - ${def} - Example: ${ex}"
 			elif [[ -n "${pos}" ]] && [[ -z "${example}" ]]; then
-				echo "${term} (${pos}) - ${def}"
+				echo "[Define] ${term} (${pos}) - ${def}"
 			elif [[ -z "${pos}" ]] && [[ -n "${example}" ]]; then
-				echo "${term} - ${def} - Example: ${ex}"
+				echo "[Define] ${term} - ${def} - Example: ${ex}"
 			else
-				echo "${term} - ${def}"
+				echo "[Define] ${term} - ${def}"
 			fi
 		else
 			echo "[Define] No definition found"

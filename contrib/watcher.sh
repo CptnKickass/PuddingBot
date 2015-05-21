@@ -35,6 +35,6 @@ input="https://${input}"
 
 if [[ -e "${output}" ]] && ! [[ -e "${output%/*}/.silence" ]] && ! [[ -e "${output%/*}/.silence1" ]]; then
 	for i in "${chan[@]}"; do
-		echo "PRIVMSG ${i} :[WATCHER] File Created: ${input}" >> "${output}"
+		echo "PRIVMSG ${i} :[Watcher] File Created: ${input}" >> "${output}"
 	done
 fi

@@ -64,7 +64,7 @@ else
 		for line in "${results[@]}"; do
 			item="${line#*public_html/}"
 			item="https://${item}"
-			echo "${item}"
+			echo "[Filesearch] ${item}"
 		done
 	fi
 fi

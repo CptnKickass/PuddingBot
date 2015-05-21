@@ -43,18 +43,14 @@ if [[ "$1" == "--dep-check" ]]; then
 	fi
 fi
 
-modHook="Prefix"
-modForm=("test")
-modFormCase=""
-modHelp="This module provides examples on how to write other modules"
+modHook="Format"
+modForm=("^.*!.*@.* PRIVMSG .*:.*caps ?lock")
+modFormCase="No"
+modHelp="Inverts capslock'ed sentences"
 modFlag="m"
-echo "[Test] \${com}: ${com}"
-echo "[Test] \${msgArr[@]}: ${msgArr[@]}"
-unset testArr
-n="0"
-for i in "${msgArr[@]}"; do
-	testArr+=("\${msgArr[${n}]}: ${i}  || ")
-	n="$(( ${n} + 1 ))"
-done
-testStr="${testArr[@]}"
-echo "[Test] ${testStr%  ||*}"
+
+prevLine="$(egrep -i "^:${senderNick}!.*@.* PRIVMSG ${senderTarget} :" "${input}" | tail -n 2 | head -n 1)"
+line="${prevLine#* :}"
+if [[ -n "${line}" ]]; then
+	echo "[CAPSLOCK] ${line~~}"
+fi

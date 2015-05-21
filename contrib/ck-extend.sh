@@ -56,6 +56,6 @@ if [[ "${isCk}" -ge "1" ]]; then
 		fixedUrl="${ckUrl/*ck.net/https://captain-kickass.net}"
 		fixedUrl="${fixedUrl/*sf.net/https://snofox.net}"
 		item="${fixedUrl}"
-		echo "[Expanded URL] ${item}"
+		echo "[Ck-extend] ${item}"
 	done
 fi

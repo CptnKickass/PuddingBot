@@ -111,6 +111,11 @@ if [[ "${ignoreUser}" -eq "0" ]]; then
 
 			# Someone joind/ Add them to the names list.
 			echo "${senderNick}" >> "var/.track/${senderTarget,,}"
+
+			# Do we have a memo for them?
+			if [[ -e "var/.notify" ]] && [[ -e "var/.mods/notify.sh" ]]; then
+				source ./var/.mods/notify.sh --check
+			fi
 			;;
 		KICK)
 			# Someone changed modes? Time for a new names!
@@ -130,6 +135,10 @@ if [[ "${ignoreUser}" -eq "0" ]]; then
 				factMessage="${msgArr[@]}"
 			fi
 			# Now that user's data is updated.
+			# Do we have a memo for them?
+			if [[ -e "var/.notify" ]] && [[ -e "var/.mods/notify.sh" ]]; then
+				source ./var/.mods/notify.sh --check
+			fi
 			# Let's check for karma
 			if egrep -q "^.*:([[:alnum:]]|[[:punct:]])+(\+\+|--)$" <<<"${msgArr[@]}"; then
 				if [[ "${sqlSupport}" -eq "1" ]]; then

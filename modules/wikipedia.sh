@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# view-source:http://en.wikipedia.org/w/api.php?action=opensearch&format=xml&search=portal
+
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
 	deps=()
@@ -49,7 +51,7 @@ modFormCase=""
 modHelp="Searches wikipedia for a query and returns the first result"
 modFlag="m"
 if [[ -z "${msgArr[4]}" ]]; then
-	echo "This command requires a parameter"
+	echo "[Wikipedia] This command requires a parameter"
 else
 	re="'"
 	qry="${msgArr[@]:4} site:wikipedia.org"

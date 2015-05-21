@@ -48,4 +48,4 @@ modForm=("^.*!.*@.* PRIVMSG (#|&).*:.*eat (a )?dick.*$" "^.*!.*@.* PRIVMSG (#|&)
 modFormCase="No"
 modHelp="Handles dickery"
 modFlag="m"
-echo "No, you eat a dick ${senderNick}"
+echo "[Z003XTT] No, you eat a dick ${senderNick}"

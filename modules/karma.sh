@@ -63,19 +63,19 @@ karmaTarget="$(sed 's/\\/\\\\/g' <<<"${karmaTarget}")"
 sqlUserExists="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM karma WHERE nick = '${karmaTarget}';")"
 if [[ -z "${sqlUserExists}" ]]; then
 	# Returned nothing. User does not exist.
-	echo "${karmaTarget} has no karma"
+	echo "[Karma] ${karmaTarget} has no karma"
 else
 	# User does exist.
 	karma="$(mysql --silent -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT value FROM karma WHERE nick = '${karmaTarget}';")"
 	if [[ "${karmaTarget,,}" == "${nick,,}" ]]; then
 		if [[ "${karma}" -eq "0" ]]; then
-			echo "I have no karma"
+			echo "[Karma] I have no karma"
 		else
-			echo "I have a karma of ${karma}"
+			echo "[Karma] I have a karma of ${karma}"
 		fi
 	elif [[ "${karma}" -eq "0" ]]; then
-		echo "${karmaTarget} has no karma"
+		echo "[Karma] ${karmaTarget} has no karma"
 	else
-		echo "${karmaTarget} has a karma of ${karma}"
+		echo "[Karma] ${karmaTarget} has a karma of ${karma}"
 	fi
 fi

@@ -67,7 +67,7 @@ seenTarget="$(sed "s/'/''/g" <<<"${seenTarget}")"
 sqlUserExists="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE ${sqlDBname}; SELECT * FROM seen WHERE nick = '${seenTarget}';")"
 if [[ -z "${sqlUserExists}" ]]; then
 	# Returned nothing. User does not exist.
-	echo "I have no such record of anyone by the nick ${seenTarget}"
+	echo "[Seen] I have no such record of anyone by the nick ${seenTarget}"
 else
 	# User does exist.
 	lastSeenNuh="$(mysql -u ${sqlUser} -p${sqlPass} -e "USE puddingbot; SELECT nuh FROM seen WHERE nick = '${seenTarget}';" | tail -n 1)"
@@ -108,5 +108,5 @@ else
 	else
 		seenAgo="${seconds}"
 	fi
-	echo "${seenTarget} last seen ${seenAgo} ago (from \"${lastSeenNuh#*!}\"), saying \"${lastSeenSaid}\" in ${lastSeenSaidIn}"
+	echo "[Seen] ${seenTarget} last seen ${seenAgo} ago (from \"${lastSeenNuh#*!}\"), saying \"${lastSeenSaid}\" in ${lastSeenSaidIn}"
 fi

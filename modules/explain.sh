@@ -62,14 +62,14 @@ explain="${explain//she is/you are}"
 explain="${explain//he is/you are}"
 explain="${explain//they are/you are}"
 if [[ -z "${target}" ]]; then
-	echo "This command requires a target"
+	echo "[Explain] This command requires a target"
 elif [[ "${target,,}" == "${nick,,}" ]]; then
-	echo "${senderNick}: Insufficient permissions. Try again with sudo."
+	echo "[Explain] ${senderNick}: Insufficient permissions. Try again with sudo."
 elif [[ "${target,,}" == "sudo" ]]; then
-	echo "${senderNick}: Insufficient permissions. Try again without sudo."
+	echo "[Explain] ${senderNick}: Insufficient permissions. Try again without sudo."
 elif [[ -z "${explain}" ]]; then
-	echo "You didn't tell me what to explain"
-	echo "(Format is: explain to SnoFox that he's a faggot)"
+	echo "[Explain] You didn't tell me what to explain"
+	echo "[Explain] (Format is: explain to SnoFox that he's a faggot)"
 else
-	echo "${target}: ${explain}"
+	echo "[Explain] ${target}: ${explain}"
 fi

@@ -50,15 +50,15 @@ modHelp="Checks DNS records for a domain"
 modFlag="m"
 hostToLookup="${msgArr[4]}"
 if [[ -z "${hostToLookup}" ]]; then
-	echo "This command requires a parameter."
+	echo "[Host] This command requires a parameter."
 elif [[ "${hostToLookup,,}" == "localhost" ]]; then
-	echo "You must think you're real clever, huh?"
+	echo "[Host] You must think you're real clever, huh?"
 elif [[ "${hostToLookup,,}" == "127.0.0.1" ]]; then
-	echo "http://en.wikipedia.org/wiki/Localhost"
+	echo "[Host] http://en.wikipedia.org/wiki/Localhost"
 elif [[ "${hostToLookup,,}" == "::1" ]]; then
-	echo "http://www.lifehack.org/articles/productivity/20-productive-ways-to-use-your-free-time.html"
+	echo "[Host] http://www.lifehack.org/articles/productivity/20-productive-ways-to-use-your-free-time.html"
 elif ! egrep -q "((([a-zA-Z](-?[a-zA-Z0-9])*)\.)*[a-zA-Z](-?[a-zA-Z0-9])+\.[a-zA-Z]{2,}|[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|[0-9+|a-z+|::?])" <<<"${hostToLookup}"; then
-	echo "The domain ${hostToLookup} does not appear to be a valid domain"
+	echo "[Host] The domain ${hostToLookup} does not appear to be a valid domain"
 else
 	hostReply="$(host "${hostToLookup}")"
 	cname="$(grep "is an alias for" <<<"${hostReply}" | awk '{print $6}' | sed -E "s/\.$//")" 
@@ -66,20 +66,20 @@ else
 	v4hosts="$(grep "has address" <<<"${hostReply}" | awk '{print $4}' | tr '\n' ' ' && echo "")" 
 	v6hosts="$(grep "has IPv6 address" <<<"${hostReply}" | awk '{print $5}' | tr '\n' ' ' && echo "")"
 	mailHosts="$(grep "mail is handled by" <<<"${hostReply}" | awk '{print $7}' | tr '\n' ' ' && echo "")"
-	echo "${hostToLookup} DNS Report:"
+	echo "[Host] ${hostToLookup} DNS Report:"
 	if [[ -n "${cname}" ]]; then
-		echo "${hostToLookup} is a CNAME for ${cname}"
+		echo "[Host] ${hostToLookup} is a CNAME for ${cname}"
 	fi
 	if [[ -n "${rdns}" ]]; then
-		echo "${hostToLookup} has a reverse DNS of ${rdns}"
+		echo "[Host] ${hostToLookup} has a reverse DNS of ${rdns}"
 	fi
 	if [[ -n "${v4hosts}" ]]; then
-		echo "IPv4: ${v4hosts}"
+		echo "[Host] IPv4: ${v4hosts}"
 	fi
 	if [[ -n "${v6hosts}" ]]; then
-		echo "IPv6: ${v6hosts}"
+		echo "[Host] IPv6: ${v6hosts}"
 	fi
 	if [[ -n "${mailHosts}" ]]; then
-		echo "Mail: ${mailHosts}"
+		echo "[Host] Mail: ${mailHosts}"
 	fi
 fi

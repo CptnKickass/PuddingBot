@@ -64,11 +64,11 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 		else
 			toAdd="${msgArr[@]:4}"
 			echo "* ${toAdd}" >> TODO.md
-			echo "Added \"* ${toAdd}\" to TODO.md"
+			echo "[Todo] Added \"* ${toAdd}\" to TODO.md"
 		fi
 	else
-		echo "You do not have sufficient permissions for this command"
+		echo "[Todo] You do not have sufficient permissions for this command"
 	fi
 else
-	echo "You must be logged in to use this command"
+	echo "[Todo] You must be logged in to use this command"
 fi

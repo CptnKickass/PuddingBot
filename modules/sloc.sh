@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
+dir=("bin/core" "bin/server" "bin/user" "bin/self" "modules" "contrib" "utils")
+
 if [[ "$1" == "--dep-check" ]]; then
 	depFail="0"
-	deps=()
+	deps=("column")
 	if [[ "${#deps[@]}" -ne "0" ]]; then
 		for i in "${deps[@]}"; do
 			if ! command -v ${i} > /dev/null 2>&1; then
@@ -44,17 +46,17 @@ if [[ "$1" == "--dep-check" ]]; then
 fi
 
 modHook="Prefix"
-modForm=("test")
+modForm=("sloc")
 modFormCase=""
-modHelp="This module provides examples on how to write other modules"
+modHelp="Counts the source lines of code in Pudding"
 modFlag="m"
-echo "[Test] \${com}: ${com}"
-echo "[Test] \${msgArr[@]}: ${msgArr[@]}"
-unset testArr
-n="0"
-for i in "${msgArr[@]}"; do
-	testArr+=("\${msgArr[${n}]}: ${i}  || ")
-	n="$(( ${n} + 1 ))"
+total="0"
+for d in "${dir[@]}"; do
+	n="$(egrep -R -v "(^$|^#|^	+#)" "${d}" | wc -l)"
+	total="$(( ${n} + ${total} ))"
 done
-testStr="${testArr[@]}"
-echo "[Test] ${testStr%  ||*}"
+for d in "${dir[@]}"; do
+	n="$(egrep -R -v "(^$|^#|^	+#)" "${d}" | wc -l)"
+	echo "[SLOC] ${d}: ${n}"
+done | column -t
+echo "[SLOC] Total SLOC: ${total}"

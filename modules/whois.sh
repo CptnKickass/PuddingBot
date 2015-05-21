@@ -49,7 +49,7 @@ modFormCase=""
 modHelp="Checks a domain for ownership availability (If a domain is registered or not)"
 modFlag="m"
 if [[ -z "${msgArr[4]}" ]]; then
-	echo "This command requires a parameter"
+	echo "[Whois] This command requires a parameter"
 else
 	domain="${msgArr[4]}"
 	whois="$(whois "${domain}" | egrep -c "^No match|^NOT FOUND|^Not fo|AVAILABLE|^No Data Fou|has not been regi|No entri")"

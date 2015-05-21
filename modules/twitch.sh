@@ -64,7 +64,7 @@ fi
 numOnline="0"
 numReg="0"
 if ! egrep -q "^meta=\"twitchuser=" ${userDir}/*.conf; then
-	echo "No registered Twitch.tv users online."
+	echo "[Twitch] No registered Twitch.tv users online."
 else
 	for match in $(fgrep "meta=\"twitchuser=" "${userDir}/"*.conf /dev/null); do
 		unset twitchUser
@@ -81,10 +81,10 @@ else
 			puddingUser="$(egrep -v "^#" "${puddingUserFile}" | fgrep "user=\"")"
 			puddingUser="${puddingUser#user=\"}"
 			puddingUser="${puddingUser%\"}"
-			echo "${puddingUser} is currently streaming ${streamContent} at http://www.twitch.tv/${twitchUser}"
+			echo "[Twitch] ${puddingUser} is currently streaming ${streamContent} at http://www.twitch.tv/${twitchUser}"
 		fi
 	done
 fi
 if [[ "${numOnline}" -eq "0" ]]; then
-	echo "No registered Twitch.tv users online."
+	echo "[Twitch] No registered Twitch.tv users online."
 fi

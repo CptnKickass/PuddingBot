@@ -99,35 +99,47 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 			unset sex
 		fi
 		if [[ -n "${ignored}" ]]; then
-			echo "User not found."
+			echo "[Pisg] User not found."
 		else
 			if [[ -z "${msgArr[4]}" ]]; then
-				echo "This command requires a parameter. Valid Parameters: (Show|List) (Add|Set) (Del|Rem|Delete|Remove)"
+				echo "[Pisg] This command requires a parameter. Valid Parameters: (Show|List) (Add|Set) (Del|Rem|Delete|Remove)"
 			else
 				case "${msgArr[4],,}" in
 					show|list)
 					if [[ -z "${tag}" ]]; then
-						echo "You do not appear to have a pisg tag."
+						echo "[Pisg] You do not appear to have a pisg tag."
 					else
-						echo "Nick: ${mNick}"
+						echo "[Pisg] Nick: ${mNick}"
 						if [[ -n "${alias[@]}" ]]; then
-							echo "Aliases: ${alias[@]}"
+							echo "[Pisg] Aliases: ${alias[@]}"
 						fi
 						if [[ -n "${link}" ]]; then
-							echo "Link: ${link}"
+							echo "[Pisg] Link: ${link}"
 						fi
 						if [[ -n "${pic}" ]]; then
-							echo "Pic: ${pic}"
+							echo "[Pisg] Pic: ${pic}"
 						fi
 						if [[ -n "${sex}" ]]; then
-							echo "Gender: ${sex}"
+							echo "[Pisg] Gender: ${sex}"
 						fi
+					fi
+					;;
+					create)
+					if [[ -z "${tag}" ]]; then
+						newTag="<user nick=\"${mNick}\">"
+						echo "${newTag}" >> "${pisgUserPath}"
+						cat "${pisgUserPath}" > "${pisgConfPath}"
+						cat "${pisgOptPath}" >> "${pisgConfPath}"
+						cat "${pisgChanPath}" >> "${pisgConfPath}"
+						echo "[Pisg] New pisg tag created for ${mNick}"
+					else
+						echo "[Pisg] You already have a pisg tag."
 					fi
 					;;
 					set|add)
 					case "${msgArr[5],,}" in
 						nick)
-						echo "Your main nick cannot be changed from your account name in Pudding."
+						echo "[Pisg] Your main nick cannot be changed from your account name in Pudding."
 						;;
 						alias|aliases)
 						newAlias="${msgArr[@]:6}"
@@ -155,9 +167,9 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 
 							if [[ "${inUse}" -eq "0" ]]; then
 								if [[ "${#newAlias[@]}" -eq "0" ]]; then
-									echo "No new aliases to set!"
+									echo "[Pisg] No new aliases to set!"
 								elif [[ "${msgArr[4],,}" == "set" ]]; then
-									echo "Changed alias(es) from ${alias[@]} to ${newAlias[@]}"
+									echo "[Pisg] Changed alias(es) from ${alias[@]} to ${newAlias[@]}"
 									newTag="<user nick=\"${mNick}\" alias=\"${newAlias[@]}\">"
 									if [[ -n "${link}" ]]; then
 										newTag="${newTag%>} link=\"${link}\">"
@@ -187,7 +199,7 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 										done
 									fi
 									if [[ "${#newAlias[@]}" -ne "0" ]]; then
-										echo "Added alias(es) ${newAlias[@]} to ${alias[@]}"
+										echo "[Pisg] Added alias(es) ${newAlias[@]} to ${alias[@]}"
 										newTag="<user nick=\"${mNick}\" alias=\"${alias[@]} ${newAlias[@]}\">"
 										if [[ -n "${link}" ]]; then
 											newTag="${newTag%>} link=\"${link}\">"
@@ -204,16 +216,16 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 										cat "${pisgOptPath}" >> "${pisgConfPath}"
 										cat "${pisgChanPath}" >> "${pisgConfPath}"
 									else
-										echo "New aliases already exist"
+										echo "[Pisg] New aliases already exist"
 									fi
 								else
-									echo "How did you find this message?"
+									echo "[Pisg] How did you find this message?"
 								fi
 							else
-								echo "Unable to set new alias tag! Item \"${inUseItem}\" is already claimed by another user."
+								echo "[Pisg] Unable to set new alias tag! Item \"${inUseItem}\" is already claimed by another user."
 							fi
 						else
-							echo "This command requires a parameter."
+							echo "[Pisg] This command requires a parameter."
 						fi
 						;;
 						link)
@@ -233,9 +245,9 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 									newTag="${newTag%>} sex=\"${sex}\">"
 								fi
 								if [[ -z "${link}" ]]; then
-									echo "Set new link to: ${newLink}"
+									echo "[Pisg] Set new link to: ${newLink}"
 								else
-									echo "Changed link from: ${link} to: ${newLink}"
+									echo "[Pisg] Changed link from: ${link} to: ${newLink}"
 								fi
 								sed -i "${tagLineNo}d" "${pisgUserPath}"
 								echo "${newTag}" >> "${pisgUserPath}"
@@ -243,10 +255,10 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 								cat "${pisgOptPath}" >> "${pisgConfPath}"
 								cat "${pisgChanPath}" >> "${pisgConfPath}"
 							else
-								echo "${newLink} does not appear to be a valid URL or e-mail address."
+								echo "[Pisg] ${newLink} does not appear to be a valid URL or e-mail address."
 							fi
 						else
-							echo "This command requires a parameter."
+							echo "[Pisg] This command requires a parameter."
 						fi
 						;;
 						pic)
@@ -266,9 +278,9 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 									newTag="${newTag%>} sex=\"${sex}\">"
 								fi
 								if [[ -z "${pic}" ]]; then
-									echo "Set new pic to: ${newPic}"
+									echo "[Pisg] Set new pic to: ${newPic}"
 								else
-									echo "Changed pic from: ${pic} to: ${newPic}"
+									echo "[Pisg] Changed pic from: ${pic} to: ${newPic}"
 								fi
 								sed -i "${tagLineNo}d" "${pisgUserPath}"
 								echo "${newTag}" >> "${pisgUserPath}"
@@ -276,10 +288,10 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 								cat "${pisgOptPath}" >> "${pisgConfPath}"
 								cat "${pisgChanPath}" >> "${pisgConfPath}"
 							else
-								echo "${newPic} does not appear to be a valid URL to an image file (Allowed file types are: PNG, JPG, JPEG, GIF)"
+								echo "[Pisg] ${newPic} does not appear to be a valid URL to an image file (Allowed file types are: PNG, JPG, JPEG, GIF)"
 							fi
 						else
-							echo "This command requires a parameter."
+							echo "[Pisg] This command requires a parameter."
 						fi
 						;;
 						sex|gender)
@@ -299,9 +311,9 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 									newTag="${newTag%>} link=\"${link}\">"
 								fi
 								if [[ -z "${sex}" ]]; then
-									echo "Set sex to: ${newSex}"
+									echo "[Pisg] Set sex to: ${newSex}"
 								else
-									echo "Changed sex from: ${sex} to: ${newSex}"
+									echo "[Pisg] Changed sex from: ${sex} to: ${newSex}"
 								fi
 								sed -i "${tagLineNo}d" "${pisgUserPath}"
 								echo "${newTag}" >> "${pisgUserPath}"
@@ -309,27 +321,27 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 								cat "${pisgOptPath}" >> "${pisgConfPath}"
 								cat "${pisgChanPath}" >> "${pisgConfPath}"
 							else
-								echo "${newSex} does not appear to be a valid gender (Genders are: M (Male), F (Female), B (Bot))"
+								echo "[Pisg] ${newSex} does not appear to be a valid gender (Genders are: M (Male), F (Female), B (Bot))"
 							fi
 						else
-							echo "This command requires a parameter."
+							echo "[Pisg] This command requires a parameter."
 						fi
 						;;
 						*)
-						echo "Invalid parameter. Parameters are: Alias, Link, Pic, Gender"
+						echo "[Pisg] Invalid parameter. Parameters are: Alias, Link, Pic, Gender"
 						;;
 					esac
 					;;
 					del|delete|rem|remove)
 					case "${msgArr[5],,}" in
 						nick)
-						echo "Your main nick cannot be removed."
+						echo "[Pisg] Your main nick cannot be removed."
 						;;
 						alias|aliases)
 						if [[ -n "${alias[@]}" ]]; then
 							if [[ -z "${msgArr[@]:6}" ]]; then
 								newTag="<user nick=\"${mNick}\">"
-								echo "Removed all aliases from your user."
+								echo "[Pisg] Removed all aliases from your user."
 								if [[ -n "${link}" ]]; then
 									newTag="${newTag%>} link=\"${link}\">"
 								fi
@@ -358,7 +370,7 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 								done
 								if [[ "${#alias[@]}" -ne "0" ]]; then
 									newTag="<user nick=\"${mNick}\" alias=\"${alias[@]}\">"
-									echo "Changed your alias to ${alias[@]}"
+									echo "[Pisg] Changed your alias to ${alias[@]}"
 									if [[ -n "${link}" ]]; then
 										newTag="${newTag%>} link=\"${link}\">"
 									fi
@@ -374,11 +386,11 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 									cat "${pisgOptPath}" >> "${pisgConfPath}"
 									cat "${pisgChanPath}" >> "${pisgConfPath}"
 								else
-									echo "No changes to make!"
+									echo "[Pisg] No changes to make!"
 								fi
 							fi
 						else
-							echo "No alias tag to delete from your user!"
+							echo "[Pisg] No alias tag to delete from your user!"
 						fi
 						;;
 						link)
@@ -393,14 +405,14 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 							if [[ -n "${sex}" ]]; then
 								newTag="${newTag%>} sex=\"${sex}\">"
 							fi
-							echo "Removed link tag from your user."
+							echo "[Pisg] Removed link tag from your user."
 							sed -i "${tagLineNo}d" "${pisgUserPath}"
 							echo "${newTag}" >> "${pisgUserPath}"
 							cat "${pisgUserPath}" > "${pisgConfPath}"
 							cat "${pisgOptPath}" >> "${pisgConfPath}"
 							cat "${pisgChanPath}" >> "${pisgConfPath}"
 						else
-							echo "No link tag to delete from your user!"
+							echo "[Pisg] No link tag to delete from your user!"
 						fi
 						;;
 						pic)
@@ -415,14 +427,14 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 							if [[ -n "${link}" ]]; then
 								newTag="${newTag%>} link=\"${link}\">"
 							fi
-							echo "Removed gender tag from your user."
+							echo "[Pisg] Removed gender tag from your user."
 							sed -i "${tagLineNo}d" "${pisgUserPath}"
 							echo "${newTag}" >> "${pisgUserPath}"
 							cat "${pisgUserPath}" > "${pisgConfPath}"
 							cat "${pisgOptPath}" >> "${pisgConfPath}"
 							cat "${pisgChanPath}" >> "${pisgConfPath}"
 						else
-							echo "No gender tag to delete from your user!"
+							echo "[Pisg] No gender tag to delete from your user!"
 						fi
 						;;
 						sex|gender)
@@ -437,30 +449,30 @@ if [[ "${loggedIn}" -eq "1" ]]; then
 							if [[ -n "${link}" ]]; then
 								newTag="${newTag%>} link=\"${link}\">"
 							fi
-							echo "Removed gender tag from your user."
+							echo "[Pisg] Removed gender tag from your user."
 							sed -i "${tagLineNo}d" "${pisgUserPath}"
 							echo "${newTag}" >> "${pisgUserPath}"
 							cat "${pisgUserPath}" > "${pisgConfPath}"
 							cat "${pisgOptPath}" >> "${pisgConfPath}"
 							cat "${pisgChanPath}" >> "${pisgConfPath}"
 						else
-							echo "No gender tag to delete from your user!"
+							echo "[Pisg] No gender tag to delete from your user!"
 						fi
 						;;
 						*)
-						echo "Invalid parameter. Parameters are: Alias, Link, Pic, Gender"
+						echo "[Pisg] Invalid parameter. Parameters are: Alias, Link, Pic, Gender"
 						;;
 					esac
 					;;
 					*)
-					echo "Invalid parameter. Parameters are: (Show|List), (Set|Add), (Del|Delete|Rem|Remove)"
+					echo "[Pisg] Invalid parameter. Parameters are: (Show|List), (Set|Add), (Del|Delete|Rem|Remove)"
 					;;
 				esac
 			fi
 		fi
 	else
-		echo "You do not have sufficient permissions for this command"
+		echo "[Pisg] You do not have sufficient permissions for this command"
 	fi
 else
-	echo "You must be logged in to use this command"
+	echo "[Pisg] You must be logged in to use this command"
 fi

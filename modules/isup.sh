@@ -73,6 +73,6 @@ else
 	elif [[ "${isSiteUp}" -eq "0" ]]; then
 		echo "[IsUp] ${siteToCheck} is DOWN, according to http://isup.me/"
 	else
-		echo "You should never get this message. Is http://isup.me/ down?"
+		echo "[IsUp] You should never get this message. Is http://isup.me/ down?"
 	fi
 fi
