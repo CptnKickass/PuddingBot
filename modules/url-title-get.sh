@@ -565,18 +565,18 @@ reddit () {
 			comments="${pageSrc#*\"num_comments\": }"
 			comments="${comments%%,*}"
 			if [[ "${comments}" -eq "1" ]]; then
-				comments="(${comments} comment)"
+				comments="${comments} comment"
 			elif [[ "${comments}" -gt "1" ]] && [[ "${comments}" -le "999" ]]; then
-				comments="(${comments} comments)"
+				comments="${comments} comments"
 			elif [[ "${comments}" -gt "999" ]]; then
-				comments="($(printf "%'d" ${comments}) comments)"
+				comments="$(printf "%'d" ${comments}) comments"
 			else
 				comments="You should never get this message! [Debug 1]"
 			fi
 			if [[ "${self,,}" == "true" ]]; then
-				link="(Self Post) http://redd.it/${id} : ${comments}"
+				link="(Self Post) ${comments} :  http://redd.it/${id}"
 			elif [[ "${self,,}" == "false" ]]; then
-				link="${link} | http://redd.it/${id} : ${comments}"
+				link="${link} | ${comments} : http://redd.it/${id}"
 			else
 				echo "You should never get this message! [Debug 2]"
 			fi
@@ -593,10 +593,14 @@ reddit () {
 			if [[ "${score}" -gt "999" ]]; then
 				score="$(printf "%'d" ${score})"
 			fi
+			created="${pageSrc#*\"created\": }"
+			created="${created%%,*}"
+			created="${created%.*}"
+			created="$(date -d @${created} "+%a, %b %d, %Y @ %H:%M:%S")"
 			if [[ "${nsfw,,}" == "true" ]]; then
-				pageTitle="[NSFW] (${author}) ${title} | ${link} | /r/${subreddit} | ${score} Points : ${ratio}% Upvoted"
+				pageTitle="[NSFW] (${author} in /r/${subreddit}) ${title} | ${link} | ${score} Points : ${ratio}% Upvoted | Posted ${created}"
 			else
-				pageTitle="(${author}) ${title} | ${link} | /r/${subreddit} | ${score} Points : ${ratio}% Upvoted"
+				pageTitle="(${author} in /r/${subreddit}) ${title} | ${link} | ${score} Points : ${ratio}% Upvoted | Posted ${created}"
 			fi
 		fi
 	elif [[ "${type}" -eq "2" ]]; then
@@ -605,25 +609,33 @@ reddit () {
 		if fgrep -q "\"error\"" <<<"${pageSrc}"; then
 			getTitle;
 		else
-			subName="${pageSrc#*\"display_name\": \"}"
-			subName="${subName%%\"*}"
-			tagLine="${pageSrc#*\"title\": \"}"
-			tagLine="${tagLine%%\"*}"
-			subs="${pageSrc#*\"subscribers\": }"
-			subs="${subs%%,*}"
-			if [[ "${subs}" -gt "999" ]]; then
-				subs="$(printf "%'d" ${subs})"
+			kind="${pageSrc#*\"kind\": \"}"
+			kind="${kind%%\"*}"
+			if [[ "${kind,,}" == "t5" ]]; then
+				subName="${pageSrc#*\"display_name\": \"}"
+				subName="${subName%%\"*}"
+				tagLine="${pageSrc#*\"title\": \"}"
+				tagLine="${tagLine%%\"*}"
+				subs="${pageSrc#*\"subscribers\": }"
+				subs="${subs%%,*}"
+				if [[ "${subs}" -gt "999" ]]; then
+					subs="$(printf "%'d" ${subs})"
+				fi
+				active="${pageSrc#*\"accounts_active\": }"
+				active="${active%%,*}"
+				if [[ "${active}" -gt "999" ]]; then
+					active="$(printf "%'d" ${active})"
+				fi
+				created="${pageSrc#*\"created\": }"
+				created="${created%%,*}"
+				created="${created%.*}"
+				created="$(date -d @${created} "+%a, %b %d, %Y @ %H:%M:%S")"
+				pageTitle="/r/${subName} | ${tagLine% } | Created ${created} | ${subs} Subscribers | ${active} Users currently viewing"
+			elif [[ "${kind,,}" == "listing" ]]; then
+				pageTitle="(/r/${id##*/}) No such subreddit exists"
+			else
+				pageTitle="Error: (/r/${id##*/}) No such subreddit exists"
 			fi
-			active="${pageSrc#*\"accounts_active\": }"
-			active="${active%%,*}"
-			if [[ "${active}" -gt "999" ]]; then
-				active="$(printf "%'d" ${active})"
-			fi
-			created="${pageSrc#*\"created\": }"
-			created="${created%%,*}"
-			created="${created%.*}"
-			created="$(date -d @${created} "+%a, %b %d, %Y @ %H:%M:%S")"
-			pageTitle="/r/${subName} | ${tagLine% } | Created ${created} | ${subs} Subscribers | ${active} Users currently viewing"
 		fi
 	elif [[ "${type}" -eq "3" ]]; then
 		# Place holder for username pages

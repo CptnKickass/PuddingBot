@@ -52,24 +52,32 @@ modFlag="m"
 while read sub; do
 	pageSrc="$(curl -A "${nick}" -m 5 -k -s -L "https://www.reddit.com/r/${sub}/about.json")"
 	if ! fgrep -q "\"error\"" <<<"${pageSrc}"; then
-		subName="${pageSrc#*\"display_name\": \"}"
-		subName="${subName%%\"*}"
-		tagLine="${pageSrc#*\"title\": \"}"
-		tagLine="${tagLine%%\"*}"
-		subs="${pageSrc#*\"subscribers\": }"
-		subs="${subs%%,*}"
-		if [[ "${subs}" -gt "999" ]]; then
-			subs="$(printf "%'d" ${subs})"
+		kind="${pageSrc#*\"kind\": \"}"
+		kind="${kind%%\"*}"
+		if [[ "${kind,,}" == "t5" ]]; then
+			subName="${pageSrc#*\"display_name\": \"}"
+			subName="${subName%%\"*}"
+			tagLine="${pageSrc#*\"title\": \"}"
+			tagLine="${tagLine%%\"*}"
+			subs="${pageSrc#*\"subscribers\": }"
+			subs="${subs%%,*}"
+			if [[ "${subs}" -gt "999" ]]; then
+				subs="$(printf "%'d" ${subs})"
+			fi
+			active="${pageSrc#*\"accounts_active\": }"
+			active="${active%%,*}"
+			if [[ "${active}" -gt "999" ]]; then
+				active="$(printf "%'d" ${active})"
+			fi
+			created="${pageSrc#*\"created\": }"
+			created="${created%%,*}"
+			created="${created%.*}"
+			created="$(date -d @${created} "+%a, %b %d, %Y @ %H:%M:%S")"
+			echo "[r_Lengthener] https://www.reddit.com/r/${subName} | ${tagLine% } | Created ${created} | ${subs} Subscribers | ${active} Users currently viewing"
+		elif [[ "${kind,,}" == "listing" ]]; then
+			echo "[r_Lengthener] No such subreddit exists"
 		fi
-		active="${pageSrc#*\"accounts_active\": }"
-		active="${active%%,*}"
-		if [[ "${active}" -gt "999" ]]; then
-			active="$(printf "%'d" ${active})"
-		fi
-		created="${pageSrc#*\"created\": }"
-		created="${created%%,*}"
-		created="${created%.*}"
-		created="$(date -d @${created} "+%a, %b %d, %Y @ %H:%M:%S")"
-		echo "[r_Lengthener] https://www.reddit.com/r/${subName} | ${tagLine% } | Created ${created} | ${subs} Subscribers | ${active} Users currently viewing"
+	else
+		echo "[r_Lengthener] Error: No such subreddit exists"
 	fi
 done < <(egrep -o "([[:punct:]]| )/?r/[[:alnum:]]+" <<<"${msgArr[@]}" | sed "s/^.*r\///g" | sort -u)
