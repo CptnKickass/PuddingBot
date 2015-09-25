@@ -46,7 +46,7 @@ if [[ "$1" == "--dep-check" ]]; then
 fi
 
 modHook="Prefix"
-modForm=("wiki2")
+modForm=("wiki" "wikipedia")
 modFormCase=""
 modHelp="Searches wikipedia for a query and returns the first result"
 modFlag="m"
