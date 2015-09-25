@@ -34,3 +34,7 @@ To do:
 * Add IMDB to url-title-get
 * Add Urban Dictionary to url-title-get
 * Add profiles to Imgur in url-title-get
+* If an addressed command does not match a known command prefix, check for modules that require regex matching. If that fails, check for factoids.
+* Add gfycat to url-title-get
+* &feature=youtu.be shouldn't fuck up youtube links in url-title-get
+* Implement an "unforget" command for factoids

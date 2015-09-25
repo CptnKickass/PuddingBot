@@ -57,7 +57,8 @@ source ./bin/core/functions.sh
 echo "Creating datafile"
 # This should be done with a pipe, but a flat file is easier to debug
 # Create the file that will be the messages going out to the server
-mkfifo "${output}"
+#mkfifo "${output}"
+touch "${output}"
 
 echo "Connecting to IRC server"
 # This is where the initial connection is spawned
@@ -75,7 +76,8 @@ do
 	isCtcp="0"
 	# Remote the ^M control character at the end of each line
 	message="${message%}"
-	msgArr=(${message})
+	echo "${message}"
+	read -ra msgArr <<<"${message}"
 	msgRaw="${msgArr[@]}"
 
 	echo "${msgArr[@]}" >> "${input}"
@@ -149,6 +151,7 @@ do
 		fi	
 
 		out="$(source ./bin/user/usermessage.sh)"
+		#out="${msgArr[@]}"
 
 		if [[ -e "var/.rehash" ]]; then
 			rehash;

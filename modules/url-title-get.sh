@@ -564,7 +564,9 @@ reddit () {
 			self="${self%%,*}"
 			comments="${pageSrc#*\"num_comments\": }"
 			comments="${comments%%,*}"
-			if [[ "${comments}" -eq "1" ]]; then
+			if [[ "${comments}" -eq "0" ]]; then
+				comments="No comments"
+			elif [[ "${comments}" -eq "1" ]]; then
 				comments="${comments} comment"
 			elif [[ "${comments}" -gt "1" ]] && [[ "${comments}" -le "999" ]]; then
 				comments="${comments} comments"

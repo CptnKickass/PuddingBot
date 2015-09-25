@@ -21,6 +21,8 @@ if [[ "${isPm}" -eq "1" ]]; then
 				genFlags="${genFlags/genF/f}"
 				echo "${genFlags}" >> "${userDir}/${lUser}.conf"
 				echo "clones=\"3\"" >> "${userDir}/${lUser}.conf"
+				genFlags="${genFlags%\"}"
+				genFlags="${genFlags#*\"}"
 				echo "${lUser} 1 ${genFlags} ${senderUser}@${senderHost}" >> var/.admins
 				echo "Successfully registered and logged in with username \"${lUser}\" and password \"${lPass}\". Please note that your default alloted clones that can be logged in at once is 3. Please use: \"set clones N\" to change this, where \"N\" is your desired number of clones."
 			fi
