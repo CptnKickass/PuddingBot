@@ -40,3 +40,4 @@ To do:
 * Implement an "unforget" command for factoids
 * Improve sed module to allow escaped characters
 * Add a factstats command
+* Fix seen if target is not found announcement
